@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teleglobal NOC Operations Engine</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
+        .container { max-width: 1350px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .header-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 25px; gap: 15px; flex-wrap: wrap; }
+        h1 { color: #1e293b; margin: 0; font-size: 24px; font-weight: 700; }
+        .nav-group { display: flex; gap: 10px; align-items: center; }
+        .nav-link-btn { background: #2563eb; color: white; padding: 10px 18px; border-radius: 6px; font-weight: 600; font-size: 14px; border: none; text-decoration: none; cursor: pointer; }
+        .nav-link-btn.alt { background: #475569; }
+        .nav-link-btn.logout { background: #ef4444; }
+        .nav-link-btn:hover { opacity: 0.9; }
+
+        .kpi-row { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
+        .kpi-card { flex: 1; min-width: 220px; padding: 20px; border-radius: 6px; border: 1px solid #e2e8f0; text-align: center; color: white; }
+        .kpi-card.total { background: #3b82f6; }
+        .kpi-card.open { background: #ef4444; }
+        .kpi-card.monitoring { background: #f59e0b; }
+        .kpi-card.closed { background: #10b981; }
+        .kpi-val { font-size: 28px; font-weight: bold; margin-top: 5px; }
+        
+        .form-group { margin-bottom: 18px; }
+        label { display: block; font-weight: 600; margin-bottom: 6px; color: #475569; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 14px; background-color: #fff; }
+        .row { display: flex; gap: 15px; }
+        .col { flex: 1; }
+        .search-btn { background: #2563eb; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-weight: bold; width: 100%; height: 41px; }
+        .submit-btn { background: #10b981; color: white; border: none; padding: 14px; width: 100%; cursor: pointer; border-radius: 6px; font-size: 16px; font-weight: bold; margin-top: 15px; }
+        .card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 6px; margin-bottom: 20px; }
+        .status-msg { padding: 12px; margin-top: 15px; border-radius: 4px; font-weight: bold; display: none; }
+        .signature-preview { background: #f1f5f9; border: 1px dashed #cbd5e1; padding: 12px; font-family: monospace; font-size: 12px; white-space: pre-wrap; margin-top: 8px; border-radius: 4px; color: #334155; }
+        
+        /* Dropdown Selection Element Style */
+        .dropdown-selection-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 13px; transition: background 0.1s ease; }
+
+        /* Modern Select Row Designs */
+        .cc-container { display: flex; flex-direction: column; gap: 6px; background: white; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; max-height: 200px; overflow-y: auto; }
+        .cc-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 4px; cursor: pointer; border: 1px solid #e2e8f0; background: #f8fafc; transition: all 0.2s ease; user-select: none; }
+        .cc-item:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .cc-item.selected { background: #e0f2fe; border-color: #3b82f6; color: #0369a1; font-weight: 600; }
+        .cc-checkmark { font-size: 14px; font-weight: bold; display: none; color: #2563eb; }
+        .cc-item.selected .cc-checkmark { display: block; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+        th, td { padding: 10px; border: 1px solid #cbd5e1; text-align: left; }
+        th { background: #e2e8f0; color: #334155; }
+        @media (max-width: 768px) { .row { flex-direction: column; gap: 0; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-bar">
+        <div>
+            <h1>Teleglobal NOC Tickets Operations Console</h1>
+            <div style="color: #64748b; font-size: 14px; margin-top: 4px;">Active Session: <strong style="color: #1e293b;">{{ user.full_name }}</strong></div>
+        </div>
+        <div class="nav-group">
+            <a href="/tickets" class="nav-link-btn">🎫 Managing Operational Tickets →</a>
+            {% if user.role == 'admin' %}
+            <a href="/circuits" class="nav-link-btn alt">⚙️ Manage Circuits DB →</a>
+            <a href="/admin/users" class="nav-link-btn" style="background:#0ea5e9;">👤 Manage Users →</a>
+            {% endif %}
+            <a href="/api/auth/logout" class="nav-link-btn logout">🔓 Logout</a>
+        </div>
+    </div>
+
+    <div class="kpi-row">
+        <div class="kpi-card total"><div>Total Displayed</div><div class="kpi-val" id="kpi_total">0</div></div>
+        <div class="kpi-card open"><div>Active Alarms (Open)</div><div class="kpi-val" id="kpi_open">0</div></div>
+        <div class="kpi-card monitoring"><div>In Monitoring</div><div class="kpi-val" id="kpi_monitor">0</div></div>
+        <div class="kpi-card closed"><div>Resolved Tickets</div><div class="kpi-val" id="kpi_closed">0</div></div>
+    </div>
+
+    <div class="card" style="position: relative;">
+        <h3>1. Lookup Network Circuit</h3>
+        <div class="form-group row" style="align-items: flex-end; margin-bottom: 0;">
+            <div style="flex: 3; position: relative;">
+                <input type="text" id="circuit_search" placeholder="Type Circuit ID, Customer Name, Company Name, or Phone..." autocomplete="off" style="width: 100%; height: 41px;">
+                
+                <div id="circuit_selection_dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 4px; max-height: 220px; overflow-y: auto; z-index: 10000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-top: 2px;">
+                </div>
+            </div>
+            <div style="flex: 1;">
+                <button type="button" class="search-btn" onclick="lookupNetworkCircuits()">Fetch Data</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>2. Customer Demographics</h3>
+        <div class="row">
+            <div class="form-group col"><label>Customer Name</label><input type="text" id="cust_name" readonly style="background: #f1f5f9;"></div>
+            <div class="form-group col"><label>Company Name</label><input type="text" id="comp_name" readonly style="background: #f1f5f9;"></div>
+        </div>
+        <div class="row">
+            <div class="form-group col"><label>Contact Phone</label><input type="text" id="cust_phone" readonly style="background: #f1f5f9;"></div>
+            <div class="form-group col"><label>Site Address</label><input type="text" id="cust_address" readonly style="background: #f1f5f9;"></div>
+        </div>
+    </div>
+
+    <form id="ticketForm" onsubmit="submitTicket(event)">
+        <input type="hidden" id="final_circuit_id" name="circuit_id">
+        <div class="card">
+            <h3>3. Ticket Parameters & Diagnostics</h3>
+            <div class="row">
+                <div class="form-group col">
+                    <label>NOC Operator Identity (Open BY)</label>
+                    <input type="text" value="{{ user.full_name }}" readonly style="background: #e2e8f0; font-weight: bold; color: #475569;">
+                </div>
+                <div class="form-group col">
+                    <label>Assigned Operator Team</label>
+                    <select name="assigned_team" required>
+                        <option value="NOC Team">NOC Team</option>
+                        <option value="INFRA Team">INFRA Team</option>
+                        <option value="Fiber vendor">Fiber vendor</option>
+                        <option value="Upstream Team">Upstream Team</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="signature-preview" id="sigPreview">Regards,<br>{{ user.full_name }}<br>Teleglobal Communications Pvt. Ltd.</div>
+
+            <div class="row" style="margin-top: 15px;">
+                <div class="form-group col">
+                    <label>Issue Subject / Alarm Category</label>
+                    <select name="issue_category" required>
+                        <option value="Link Down">Link Down</option>
+                        <option value="High Bandwidth Utilization">High Bandwidth Utilization</option>
+                        <option value="Switch Is Isolated">Switch Is Isolated</option>
+                        <option value="IP is Not Pingable">IP is Not Pingable</option>
+                        <option value="Fiber Down">Fiber Down</option>
+                        <option value="latency issue">latency issue</option>
+                        <option value="packet drop">packet drop</option>
+                        <option value="website issue">website issue</option>
+                        <option value="ip blacklist">ip blacklist</option>
+                    </select>
+                </div>
+                <div class="form-group col">
+                    <label>Fault Location / Segment</label>
+                    <select name="root_cause_segment" required>
+                        <option value="Fiber Down Segment">Fiber Down Segment</option>
+                        <option value="Link Down Segment">Link Down Segment</option>
+                        <option value="Customer End Issue">Customer End Issue</option>
+                        <option value="POP End Issue">POP End Issue</option>
+                        <option value="uplink down segment">uplink down segment</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Initial Status</label>
+                <select name="status" required>
+                    <option value="Open">Open</option>
+                    <option value="In Monitoring">In Monitoring</option>
+                    <option value="Closed">Closed</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="border-top:1px dashed #cbd5e1; padding-top:15px;">
+                <label>Incident Evidence Attachment (Screenshots, Trace Logs)</label>
+                <input type="file" name="attachment" id="ticketAttachment">
+            </div>
+        </div>
+
+        <div class="card">
+            <label style="font-weight: bold; color: #2c3e50; font-size: 14px; margin-bottom: 8px; display: block;">
+                Select Notification CC Recipients (Click rows to highlight & checkmark)
+            </label>
+            <div class="cc-container">
+                <div class="cc-item selected" style="cursor: not-allowed; background: #eff6ff; border-color: #bfdbfe;">
+                    <span style="color: #1e40af; font-weight: bold;">noc@teleglobal.in (Mandatory Office Desk Address - Locked)</span>
+                    <span class="cc-checkmark" style="display: block; color: #1e40af;">✓</span>
+                </div>
+                <div class="cc-item" onclick="toggleCcChoice(this, 'teleglobal2016@gmail.com')">
+                    <span>teleglobal2016@gmail.com (Backup Log Archiver)</span>
+                    <span class="cc-checkmark">✓</span>
+                </div>
+                <div class="cc-item" onclick="toggleCcChoice(this, 'operational-desk@domain.com')">
+                    <span>operational-desk@domain.com (Client Escalation Ops)</span>
+                    <span class="cc-checkmark">✓</span>
+                </div>
+                <div class="cc-item" onclick="toggleCcChoice(this, 'engineer@client.com')">
+                    <span>engineer@client.com (Client Field Representative)</span>
+                    <span class="cc-checkmark">✓</span>
+                </div>
+                <div class="cc-item" onclick="toggleCcChoice(this, 'management@teleglobal.in')">
+                    <span>management@teleglobal.in (NOC Management Desk)</span>
+                    <span class="cc-checkmark">✓</span>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="submit-btn">Raise Ticket & Dispatch Notification</button>
+    </form>
+    <div id="statusBox" class="status-msg"></div>
+
+    <div class="card" style="margin-top: 30px;">
+        <h3 style="border-bottom:1px solid #e2e8f0; padding-bottom:10px; margin:0 0 10px 0;">Recent Live Incident Feed (Last 10 Tickets Summary)</h3>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ticket #</th>
+                        <th>Circuit ID</th>
+                        <th>Alarm Subject</th>
+                        <th>Assigned Operator Team</th>
+                        <th>Open BY</th>
+                        <th>Closed BY</th>
+                        <th>Status</th>
+                        <th>Opened Time</th>
+                        <th>Closed Time</th>
+                        <th>Duration</th>
+                    </tr>
+                </thead>
+                <tbody id="logTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+let activeSelectedCcs = ['noc@teleglobal.in'];
+
+function toggleCcChoice(element, emailAddress) {
+    if (activeSelectedCcs.includes(emailAddress)) {
+        activeSelectedCcs = activeSelectedCcs.filter(item => item !== emailAddress);
+        element.classList.remove('selected');
+    } else {
+        activeSelectedCcs.push(emailAddress);
+        element.classList.add('selected');
+    }
+}
+
+async function lookupNetworkCircuits() {
+    const inputVal = document.getElementById('circuit_search').value.trim();
+    const dropdown = document.getElementById('circuit_selection_dropdown');
+    
+    if (!inputVal) {
+        dropdown.style.display = 'none';
+        alert('Please type a Circuit ID, Name, or Phone number.');
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/circuit/${encodeURIComponent(inputVal)}`);
+        if (!res.ok) {
+            dropdown.style.display = 'none';
+            throw new Error('No matching target parameters recognized inside Inventory.');
+        }
+        
+        const records = await res.json();
+
+        // Scenario A: Exactly 1 single match -> Auto-populate cleanly
+        if (records.length === 1) {
+            dropdown.style.display = 'none';
+            populateFormWithCircuit(records[0]);
+            return;
+        }
+
+        // Scenario B: Multiple records match (Duplicates) -> Open UI Choice Selection Dropdown Menu
+        dropdown.innerHTML = '';
+        records.forEach((circuit) => {
+            const rowItem = document.createElement('div');
+            rowItem.className = 'dropdown-selection-item';
+            
+            rowItem.onmouseover = () => rowItem.style.background = '#f1f5f9';
+            rowItem.onmouseout = () => rowItem.style.background = 'white';
+            
+            rowItem.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; font-weight:bold;">
+                    <span style="color: #2563eb;">${circuit.circuit_id}</span>
+                    <span style="color: #334155;">${circuit.customer_name}</span>
+                </div>
+                <small style="color: #64748b; display:block; margin-top:3px;">Company: ${circuit.company_name || 'N/A'} | Contact: ${circuit.phone_number}</small>
+            `;
+            
+            rowItem.onclick = () => {
+                populateFormWithCircuit(circuit);
+                dropdown.style.display = 'none';
+            };
+            
+            dropdown.appendChild(rowItem);
+        });
+
+        dropdown.style.display = 'block';
+
+    } catch (err) {
+        alert(err.message);
+    }
+}
+
+function populateFormWithCircuit(circuit) {
+    // Fill the selection input and update the accurate target variables
+    document.getElementById('circuit_search').value = circuit.circuit_id;
+    document.getElementById('final_circuit_id').value = circuit.circuit_id;
+    
+    // Correctly map fields using the specific layout Element IDs
+    document.getElementById('cust_name').value = circuit.customer_name || '';
+    document.getElementById('comp_name').value = circuit.company_name || '';
+    document.getElementById('cust_phone').value = circuit.phone_number || '';
+    document.getElementById('cust_address').value = circuit.address || '';
+}
+
+// Close selection container automatically if click occurs outside the frame area
+document.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('circuit_selection_dropdown');
+    if (dropdown && e.target.id !== 'circuit_search') {
+        dropdown.style.display = 'none';
+    }
+});
+
+async function submitTicket(e) {
+    e.preventDefault();
+    const box = document.getElementById('statusBox');
+    if(!document.getElementById('final_circuit_id').value) return alert('Verify records via lookup first.');
+    
+    const form = document.getElementById('ticketForm');
+    const payload = new FormData(form);
+    payload.append("cc_emails", activeSelectedCcs.join(","));
+
+    box.style.display = 'block'; box.style.background = '#e0f2fe'; box.style.color = '#0369a1';
+    box.textContent = 'Writing database log and routing notification email...';
+
+    try {
+        const target = await fetch('/api/ticket/raise', { method: 'POST', body: payload });
+        const res = await target.json();
+        
+        if (target.ok && res.status === 'success') {
+            box.style.background = '#d1fae5'; box.style.color = '#065f46';
+            box.textContent = `Success: Incident log committed cleanly to the network schema.`;
+            form.reset();
+            
+            // Wipe demographic metrics clean post submission
+            document.getElementById('final_circuit_id').value = '';
+            document.getElementById('circuit_search').value = '';
+            document.getElementById('cust_name').value = '';
+            document.getElementById('comp_name').value = '';
+            document.getElementById('cust_phone').value = '';
+            document.getElementById('cust_address').value = '';
+            
+            activeSelectedCcs = ['noc@teleglobal.in'];
+            document.querySelectorAll('.cc-item').forEach(el => {
+                if(!el.textContent.includes('noc@teleglobal.in')) el.classList.remove('selected');
+            });
+            refreshDashboardLogs();
+        } else { 
+            throw new Error(res.detail || 'Server processing error.'); 
+        }
+    } catch(err) {
+        box.style.background = '#fee2e2'; box.style.color = '#991b1b';
+        box.textContent = `Network Execution error: ${err.message}`;
+    }
+}
+
+async function refreshDashboardLogs() {
+    try {
+        const res = await fetch('/api/tickets/recent?limit=100');
+        const tickets = await res.json();
+        const body = document.getElementById('logTableBody');
+        body.innerHTML = '';
+        
+        let openCount = 0, monitorCount = 0, closedCount = 0;
+        
+        tickets.forEach((t, idx) => {
+            if (t.status === 'Open') openCount++;
+            else if (t.status === 'In Monitoring') monitorCount++;
+            else if (t.status === 'Closed') closedCount++;
+
+            if (idx < 10) {
+                const durationText = t.status === 'Closed' ? `${t.resolution_minutes} Mins` : '--';
+                body.innerHTML += `
+                <tr>
+                    <td style="font-weight:bold;">#${t.ticket_id}</td>
+                    <td style="font-family:monospace;">${t.circuit_id}</td>
+                    <td>${t.issue_category}</td>
+                    <td style="font-weight:600; color:#475569;">${t.assigned_team}</td>
+                    <td>${t.open_by_name}</td>
+                    <td>${t.closed_by_name}</td>
+                    <td><span style="padding:3px 8px; font-size:11px; border-radius:10px; font-weight:bold; background:${t.status==='Closed'?'#d1fae5;color:#065f46':t.status==='In Monitoring'?'#fef3c7;color:#d97706':'#fee2e2;color:#991b1b'}">${t.status}</span></td>
+                    <td style="color:#64748b;">${t.timestamp}</td>
+                    <td style="color:#64748b;">${t.closed_timestamp}</td>
+                    <td style="font-weight:bold; color:#1e293b;">${durationText}</td>
+                </tr>`;
+            }
+        });
+
+        document.getElementById('kpi_total').textContent = tickets.length;
+        document.getElementById('kpi_open').textContent = openCount;
+        document.getElementById('kpi_monitor').textContent = monitorCount;
+        document.getElementById('kpi_closed').textContent = closedCount;
+
+    } catch(err) { console.error(err); }
+}
+window.addEventListener('DOMContentLoaded', refreshDashboardLogs);
+</script>
+</body>
+</html>

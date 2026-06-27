@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Database Administration - Teleglobal NOC</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
+        .container { max-width: 1350px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .header-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 25px; }
+        h1 { color: #1e293b; margin: 0; font-size: 22px; font-weight: 700; }
+        .back-btn { background: #475569; color: white; padding: 10px 16px; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; cursor: pointer; }
+        .back-btn:hover { opacity: 0.9; }
+        .card { background: #fff; border: 1px solid #e2e8f0; padding: 25px; border-radius: 6px; margin-bottom: 25px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .card h3 { margin-top: 0; color: #1e293b; font-size: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 20px; }
+        .row { display: flex; gap: 20px; margin-bottom: 15px; }
+        .col { flex: 1; display: flex; flex-direction: column; }
+        label { font-weight: 600; margin-bottom: 6px; color: #475569; font-size: 13px; }
+        input { padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; box-sizing: border-box; width: 100%; }
+        input:focus { border-color: #3b82f6; outline: none; }
+        .submit-btn { background: #10b981; color: white; border: none; padding: 14px; width: 100%; cursor: pointer; border-radius: 6px; font-size: 15px; font-weight: bold; transition: background 0.2s; }
+        .submit-btn:hover { background: #059669; }
+        .alert-box { padding: 12px 15px; border-radius: 4px; font-weight: 600; font-size: 14px; margin-top: 15px; display: none; }
+        .alert-box.error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .alert-box.success { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 15px; }
+        th, td { padding: 12px; border: 1px solid #cbd5e1; text-align: left; }
+        th { background: #f1f5f9; color: #475569; font-weight: 600; }
+        tr:nth-child(even) { background-color: #f8fafc; }
+        .search-container { margin-bottom: 15px; position: relative; }
+        .search-input { padding: 12px 12px 12px 35px; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%2364748b" class="bi bi-search" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') no-repeat 12px center; background-size: 16px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-bar">
+        <h1>Client Database Administration (Add / Edit Circuits)</h1>
+        <a href="/" class="back-btn">&#8592; Back to Dashboard</a>
+    </div>
+
+    <!-- 1. Add / Update Form Section -->
+    <div class="card">
+        <h3>Add / Update Customer Circuit Record</h3>
+        <form id="circuitForm" onsubmit="handleFormSubmit(event)">
+            <div class="row">
+                <div class="col">
+                    <label>Circuit ID *</label>
+                    <input type="text" name="circuit_id" id="form_circuit_id" required placeholder="e.g., TCPLPUNE05988999">
+                </div>
+                <div class="col">
+                    <label>Customer Name *</label>
+                    <input type="text" name="customer_name" id="form_customer_name" required placeholder="e.g., Dhananjay Tupe">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label>Company Name</label>
+                    <input type="text" name="company_name" id="form_company_name" placeholder="e.g., My company">
+                </div>
+                <div class="col">
+                    <label>Customer Email Target *</label>
+                    <input type="email" name="customer_email" id="form_customer_email" required placeholder="e.g., noc@teleglobal.in">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label>Phone Number</label>
+                    <input type="text" name="phone_number" id="form_phone_number" placeholder="e.g., 88558111412">
+                </div>
+                <div class="col">
+                    <label>Site / POP Address</label>
+                    <input type="text" name="address" id="form_address" placeholder="e.g., pune">
+                </div>
+            </div>
+            <button type="submit" class="submit-btn">Save Circuit Record to DB</button>
+        </form>
+        <div id="alertBox" class="alert-box"></div>
+    </div>
+
+    <!-- 2. Circuit Matrix Table Section -->
+    <div class="card">
+        <h3>Registered Circuit Matrix View</h3>
+        <div class="search-container">
+            <input type="text" id="matrixSearch" class="search-input" placeholder="Search records dynamically by using Circuit ID, Customer Name, or Contact Number instantly..." onkeyup="filterMatrixTable()">
+        </div>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Circuit ID</th>
+                        <th>Customer Name</th>
+                        <th>Company</th>
+                        <th>Target Email</th>
+                        <th>Contact Phone</th>
+                        <th>Site Address</th>
+                    </tr>
+                </thead>
+                <tbody id="matrixTableBody">
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #64748b; padding: 20px;">Loading operational circuits dataset...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+let localMatrixCache = [];
+
+// Fetch every recorded circuit row dynamically on load
+async function fetchCircuitMatrix() {
+    const tbody = document.getElementById('matrixTableBody');
+    try {
+        const response = await fetch('/api/circuits/all');
+        if (!response.ok) throw new Error("Could not pull network matrix records.");
+        
+        localMatrixCache = await response.json();
+        renderTableRows(localMatrixCache);
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444; font-weight: bold;">Pipeline Failure: ${err.message}</td></tr>`;
+    }
+}
+
+// Render filtered or raw arrays to the DOM layout
+function renderTableRows(dataset) {
+    const tbody = document.getElementById('matrixTableBody');
+    tbody.innerHTML = '';
+    
+    if (dataset.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #64748b; padding: 25px;">No matching network circuits found.</td></tr>`;
+        return;
+    }
+
+    dataset.forEach(row => {
+        tbody.innerHTML += `
+            <tr style="cursor: pointer;" onclick="populateFormFields(${JSON.stringify(row).replace(/"/g, '&quot;')})">
+                <td style="font-weight: 700; color: #2563eb;">${row.circuit_id}</td>
+                <td>${row.customer_name}</td>
+                <td>${row.company_name || '--'}</td>
+                <td style="font-family: monospace;">${row.customer_email}</td>
+                <td>${row.phone_number || '--'}</td>
+                <td>${row.address || '--'}</td>
+            </tr>
+        `;
+    });
+}
+
+// Handle Form Data submissions safely
+async function handleFormSubmit(e) {
+    e.preventDefault();
+    const form = document.getElementById('circuitForm');
+    const alertBox = document.getElementById('alertBox');
+    const formData = new FormData(form);
+
+    alertBox.style.display = 'none';
+    
+    try {
+        const response = await fetch('/api/circuit/save', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            alertBox.className = "alert-box success";
+            alertBox.textContent = "Success: Circuit record committed cleanly to the network schema.";
+            alertBox.style.display = 'block';
+            form.reset();
+            fetchCircuitMatrix(); // Instantly refresh table matrix layout
+        } else {
+            throw new Error(result.detail || "Serialization transaction rejected.");
+        }
+    } catch (err) {
+        alertBox.className = "alert-box error";
+        alertBox.textContent = `Error: ${err.message}`;
+        alertBox.style.display = 'block';
+    }
+}
+
+// Local dynamic search engine for the Matrix View grid layout
+function filterMatrixTable() {
+    const query = document.getElementById('matrixSearch').value.toLowerCase().trim();
+    if (!query) {
+        renderTableRows(localMatrixCache);
+        return;
+    }
+
+    const filtered = localMatrixCache.filter(item => {
+        return (item.circuit_id && item.circuit_id.toLowerCase().includes(query)) ||
+               (item.customer_name && item.customer_name.toLowerCase().includes(query)) ||
+               (item.phone_number && item.phone_number.toLowerCase().includes(query)) ||
+               (item.company_name && item.company_name.toLowerCase().includes(query));
+    });
+    
+    renderTableRows(filtered);
+}
+
+// Optional helper to populate the update form when clicking table records
+function populateFormFields(row) {
+    document.getElementById('form_circuit_id').value = row.circuit_id || '';
+    document.getElementById('form_customer_name').value = row.customer_name || '';
+    document.getElementById('form_company_name').value = row.company_name || '';
+    document.getElementById('form_customer_email').value = row.customer_email || '';
+    document.getElementById('form_phone_number').value = row.phone_number || '';
+    document.getElementById('form_address').value = row.address || '';
+}
+
+// Self-initialize grid on view entry
+window.addEventListener('DOMContentLoaded', fetchCircuitMatrix);
+</script>
+</body>
+</html>
