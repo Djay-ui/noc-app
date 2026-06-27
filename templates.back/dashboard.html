@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teleglobal NOC Operations Engine</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
+        .container { max-width: 1350px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .header-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 25px; gap: 20px; flex-wrap: wrap; }
+        h1 { color: #1e293b; margin: 0; font-size: 24px; font-weight: 700; }
+        .nav-link-btn { background: #2563eb; color: white; padding: 10px 18px; border-radius: 6px; font-weight: 600; font-size: 14px; border: none; text-decoration: none; cursor: pointer; }
+        .nav-link-btn:hover { background: #1d4ed8; }
+        
+        .kpi-row { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
+        .kpi-card { flex: 1; min-width: 220px; padding: 20px; border-radius: 6px; border: 1px solid #e2e8f0; text-align: center; color: white; }
+        .kpi-card.total { background: #3b82f6; }
+        .kpi-card.open { background: #ef4444; }
+        .kpi-card.monitoring { background: #f59e0b; }
+        .kpi-card.closed { background: #10b981; }
+        .kpi-val { font-size: 28px; font-weight: bold; margin-top: 5px; }
+
+        .form-group { margin-bottom: 18px; }
+        label { display: block; font-weight: 600; margin-bottom: 6px; color: #475569; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 14px; background-color: #fff; }
+        .row { display: flex; gap: 15px; }
+        .col { flex: 1; }
+        .search-btn { background: #2563eb; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-weight: bold; width: 100%; height: 41px; }
+        .submit-btn { background: #10b981; color: white; border: none; padding: 14px; width: 100%; cursor: pointer; border-radius: 6px; font-size: 16px; font-weight: bold; margin-top: 15px; }
+        .card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 6px; margin-bottom: 20px; }
+        .status-msg { padding: 12px; margin-top: 15px; border-radius: 4px; font-weight: bold; display: none; }
+        .signature-preview { background: #f1f5f9; border: 1px dashed #cbd5e1; padding: 12px; font-family: monospace; font-size: 12px; white-space: pre-wrap; margin-top: 8px; border-radius: 4px; color: #334155; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+        th, td { padding: 10px; border: 1px solid #cbd5e1; text-align: left; }
+        th { background: #e2e8f0; color: #334155; }
+        .patch-btn { background: #475569; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; }
+        .patch-btn:hover { background: #334155; }
+        @media (max-width: 768px) { .row { flex-direction: column; gap: 0; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-bar">
+        <h1>Teleglobal NOC Tickets Operations Console</h1>
+        <a href="/circuits" class="nav-link-btn">⚙️ Manage Circuits DB →</a>
+    </div>
+
+    <div class="kpi-row">
+        <div class="kpi-card total"><div>Total Handled</div><div class="kpi-val" id="kpi_total">0</div></div>
+        <div class="kpi-card open"><div>Active Alarms (Open)</div><div class="kpi-val" id="kpi_open">0</div></div>
+        <div class="kpi-card monitoring"><div>In Monitoring</div><div class="kpi-val" id="kpi_monitor">0</div></div>
+        <div class="kpi-card closed"><div>Resolved Tickets</div><div class="kpi-val" id="kpi_closed">0</div></div>
+    </div>
+
+    <div class="card">
+        <h3>1. Lookup Network Circuit</h3>
+        <div class="form-group row" style="align-items: flex-end;">
+            <div style="flex: 3;"><input type="text" id="search_circuit" placeholder="Enter Circuit ID (e.g., CKT-MUM-0092)"></div>
+            <div style="flex: 1;"><button type="button" class="search-btn" onclick="lookupCircuit()">Fetch Data</button></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>2. Customer Demographics</h3>
+        <div class="row">
+            <div class="form-group col"><label>Customer Name</label><input type="text" id="cust_name" readonly></div>
+            <div class="form-group col"><label>Company Name</label><input type="text" id="comp_name" readonly></div>
+        </div>
+        <div class="row">
+            <div class="form-group col"><label>Contact Phone</label><input type="text" id="cust_phone" readonly></div>
+            <div class="form-group col"><label>Site Address</label><input type="text" id="cust_address" readonly></div>
+        </div>
+    </div>
+
+    <form id="ticketForm" onsubmit="submitTicket(event)">
+        <input type="hidden" id="final_circuit_id" name="circuit_id">
+        <div class="card">
+            <h3>3. Ticket Parameters & Diagnostics</h3>
+            <div class="row">
+                <div class="form-group col">
+                    <label>NOC Operator Identity (Open BY)</label>
+                    <select name="noc_user_id" id="noc_user_id" onchange="updateSignaturePreview()" required>
+                        <option value="">-- Select Opening Engineer --</option>
+                        <option value="1">Dhananjay Tupe | L2 support</option>
+                        <option value="2">Prashant Marathe | L2 support</option>
+                        <option value="3">Rahul Dev | Senior Engineer</option>
+                        <option value="4">Nihal Kamble | L3 support</option>
+                        <option value="5">Aniruddha N | L2 support</option>
+                        <option value="6">Amar B | L3 support</option>
+                        <option value="7">Nachiket B | L1 support</option>
+                        <option value="8">Murugendra Narwade | Manager</option>
+                    </select>
+                </div>
+                <div class="form-group col">
+                    <label>Assigned Operator Team</label>
+                    <select name="assigned_team" required>
+                        <option value="NOC Team">NOC Team</option>
+                        <option value="INFRA Team">INFRA Team</option>
+                        <option value="Fiber vendor">Fiber vendor</option>
+                        <option value="Upstream Team">Upstream Team</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="signature-preview" id="sigPreview">Select an engineer to view target mail signature.</div>
+
+            <div class="row" style="margin-top: 15px;">
+                <div class="form-group col">
+                    <label>Issue Subject / Alarm Category</label>
+                    <select name="issue_category" required>
+                        <option value="Link Down">Link Down</option>
+                        <option value="High Bandwidth Utilization">High Bandwidth Utilization</option>
+                        <option value="Switch Is Isolated">Switch Is Isolated</option>
+                        <option value="IP is Not Pingable">IP is Not Pingable</option>
+                        <option value="Fiber Down">Fiber Down</option>
+                        <option value="latency issue">latency issue</option>
+                        <option value="packet drop">packet drop</option>
+                        <option value="website issue">website issue</option>
+                        <option value="ip blacklist">ip blacklist</option>
+                    </select>
+                </div>
+                <div class="form-group col">
+                    <label>Fault Location / Segment</label>
+                    <select name="root_cause_segment" required>
+                        <option value="Fiber Down Segment">Fiber Down Segment</option>
+                        <option value="Link Down Segment">Link Down Segment</option>
+                        <option value="Customer End Issue">Customer End Issue</option>
+                        <option value="POP End Issue">POP End Issue</option>
+                        <option value="uplink down segment">uplink down segment</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Initial Status</label>
+                <select name="status" required>
+                    <option value="Open">Open</option>
+                    <option value="In Monitoring">In Monitoring</option>
+                    <option value="Closed">Closed</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="border-top:1px dashed #cbd5e1; padding-top:15px;">
+                <label>Attach Outage Log / Diagram</label>
+                <input type="file" name="attachment" id="ticketAttachment">
+            </div>
+        </div>
+        <button type="submit" class="submit-btn">1-Click Raise Ticket & Send Mail</button>
+    </form>
+    <div id="statusBox" class="status-msg"></div>
+
+    <div class="card" style="margin-top: 30px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">
+            <h3 style="margin:0;">Managing Operational Tickets</h3>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <input type="text" id="filter_search" onkeyup="refreshLogs()" placeholder="🔍 Search Ticket # / Circuit ID..." style="width:230px; height:38px;">
+                <select id="filter_status" onchange="refreshLogs()" style="width:140px; height:38px;">
+                    <option value="">All Statuses</option>
+                    <option value="Open">Open</option>
+                    <option value="In Monitoring">In Monitoring</option>
+                    <option value="Closed">Closed</option>
+                </select>
+                <select id="filter_limit" onchange="refreshLogs()" style="width:120px; height:38px;">
+                    <option value="10">Show Last 10</option>
+                    <option value="20">Show Last 20</option>
+                    <option value="50">Show Last 50</option>
+                </select>
+                <button onclick="downloadCSVReport()" class="search-btn" style="background:#4f46e5; height:38px; width:auto;">📥 Export</button>
+            </div>
+        </div>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ticket #</th>
+                        <th>Circuit ID</th>
+                        <th>Alarm Subject</th>
+                        <th>Assigned Operator Team</th>
+                        <th>Open BY</th>
+                        <th>Closed BY</th>
+                        <th>Status</th>
+                        <th>Opened Time</th>
+                        <th>Closed Time</th>
+                        <th>Duration</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="logTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="statusModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.4); justify-content:center; align-items:center;">
+    <div class="card" style="background:white; width:400px; padding:25px; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.15);">
+        <h4 style="margin-top:0;">Modify Ticket Operational Status</h4>
+        <input type="hidden" id="modal_ticket_id">
+        <div class="form-group">
+            <label>Target Status State</label>
+            <select id="modal_status">
+                <option value="Open">Open</option>
+                <option value="In Monitoring">In Monitoring</option>
+                <option value="Closed">Closed</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Actioning Operator Identity</label>
+            <select id="modal_operator">
+                <option value="1">Dhananjay Tupe | L2 support</option>
+                <option value="2">Prashant Marathe | L2 support</option>
+                <option value="3">Rahul Dev | Senior Engineer</option>
+                <option value="4">Nihal Kamble | L3 support</option>
+                <option value="5">Aniruddha N | L2 support</option>
+                <option value="6">Amar B | L3 support</option>
+                <option value="7">Nachiket B | L1 support</option>
+                <option value="8">Murugendra Narwade | Manager</option>
+            </select>
+        </div>
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+            <button type="button" onclick="closeModal()" style="background:#cbd5e1; color:#334155; border:none; padding:8px 15px; border-radius:4px; font-weight:bold; cursor:pointer;">Cancel</button>
+            <button type="button" onclick="commitStatusUpdate()" style="background:#10b981; color:white; border:none; padding:8px 15px; border-radius:4px; font-weight:bold; cursor:pointer;">Update Record</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateSignaturePreview() {
+    const val = document.getElementById("noc_user_id").value;
+    const box = document.getElementById("sigPreview");
+    const names = {"1":"Dhananjay Tupe","2":"Prashant Marathe","3":"Rahul Dev","4":"Nihal Kamble","5":"Aniruddha N","6":"Amar B","7":"Nachiket B","8":"Murugendra Narwade"};
+    if (val && names[val]) {
+        box.textContent = `Regards,\n${names[val]}\nTeleglobal Communications Pvt. Ltd.`;
+    } else { box.textContent = "Select an engineer to view target mail signature."; }
+}
+
+async function lookupCircuit() {
+    const val = document.getElementById('search_circuit').value.trim();
+    if(!val) return alert('Please enter a Circuit ID.');
+    try {
+        const res = await fetch(`/api/circuit/${encodeURIComponent(val)}`);
+        if (!res.ok) throw new Error('Circuit target string not recognized.');
+        const data = await res.json();
+        document.getElementById('cust_name').value = data.customer_name;
+        document.getElementById('comp_name').value = data.company_name;
+        document.getElementById('cust_phone').value = data.phone_number;
+        document.getElementById('cust_address').value = data.address;
+        document.getElementById('final_circuit_id').value = data.circuit_id;
+    } catch(e) { alert(e.message); }
+}
+
+async function submitTicket(e) {
+    e.preventDefault();
+    const box = document.getElementById('statusBox');
+    if(!document.getElementById('final_circuit_id').value) return alert('Verify records via lookup first.');
+    const form = document.getElementById('ticketForm');
+    const payload = new FormData(form);
+
+    box.style.display = 'block'; box.style.background = '#e0f2fe'; box.style.color = '#0369a1';
+    box.textContent = 'Writing database log and routing notification email...';
+
+    try {
+        const target = await fetch('/api/ticket/raise', { method: 'POST', body: payload });
+        if (target.ok) {
+            box.style.background = '#d1fae5'; box.style.color = '#065f46';
+            box.textContent = `Success: Incident log committed cleanly to the network schema.`;
+            form.reset();
+            document.getElementById('final_circuit_id').value = '';
+            refreshLogs();
+        } else { throw new Error('Server side processing error.'); }
+    } catch(err) {
+        box.style.background = '#fee2e2'; box.style.color = '#991b1b';
+        box.textContent = `Error: ${err.message}`;
+    }
+}
+
+function openStatusModal(id, currentStatus) {
+    document.getElementById('modal_ticket_id').value = id;
+    document.getElementById('modal_status').value = currentStatus;
+    document.getElementById('statusModal').style.display = 'flex';
+}
+
+function closeModal() { document.getElementById('statusModal').style.display = 'none'; }
+
+async function commitStatusUpdate() {
+    const ticketId = document.getElementById('modal_ticket_id').value;
+    const status = document.getElementById('modal_status').value;
+    const opId = document.getElementById('modal_operator').value;
+
+    try {
+        const res = await fetch('/api/ticket/update-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ticket_id: parseInt(ticketId), status: status, closed_by_id: opId })
+        });
+        if(res.ok) {
+            closeModal();
+            refreshLogs();
+        } else { throw new Error('Failed to patch record table status.'); }
+    } catch(e) { alert(e.message); }
+}
+
+function downloadCSVReport() {
+    const search = document.getElementById('filter_search').value;
+    const status = document.getElementById('filter_status').value;
+    window.location.href = `/api/reports/download?circuit_id=${encodeURIComponent(search)}&status=${status}`;
+}
+
+async function refreshLogs() {
+    try {
+        const search = document.getElementById('filter_search').value;
+        const status = document.getElementById('filter_status').value;
+        const limit = document.getElementById('filter_limit').value;
+        
+        const res = await fetch(`/api/tickets/recent?limit=${limit}&search=${encodeURIComponent(search)}&status=${status}`);
+        const tickets = await res.json();
+        const body = document.getElementById('logTableBody');
+        body.innerHTML = '';
+        
+        let openCount = 0, monitorCount = 0, closedCount = 0;
+        
+        tickets.forEach(t => {
+            if (t.status === 'Open') openCount++;
+            else if (t.status === 'In Monitoring') monitorCount++;
+            else if (t.status === 'Closed') closedCount++;
+
+            const durationText = t.status === 'Closed' ? `${t.resolution_minutes} Mins` : '--';
+
+            body.innerHTML += `
+            <tr>
+                <td style="font-weight:bold;">#${t.ticket_id}</td>
+                <td style="font-family:monospace;">${t.circuit_id}</td>
+                <td>${t.issue_category}</td>
+                <td style="font-weight:600; color:#475569;">${t.assigned_team}</td>
+                <td>${t.open_by_name}</td>
+                <td>${t.closed_by_name}</td>
+                <td><span style="padding:3px 8px; font-size:11px; border-radius:10px; font-weight:bold; background:${t.status==='Closed'?'#d1fae5;color:#065f46':t.status==='In Monitoring'?'#fef3c7;color:#d97706':'#fee2e2;color:#991b1b'}">${t.status}</span></td>
+                <td style="color:#64748b;">${t.timestamp}</td>
+                <td style="color:#64748b;">${t.closed_timestamp}</td>
+                <td style="font-weight:bold; color:#1e293b;">${durationText}</td>
+                <td><button type="button" class="patch-btn" onclick="openStatusModal(${t.ticket_id}, '${t.status}')">Modify State</button></td>
+            </tr>`;
+        });
+
+        document.getElementById('kpi_total').textContent = tickets.length;
+        document.getElementById('kpi_open').textContent = openCount;
+        document.getElementById('kpi_monitor').textContent = monitorCount;
+        document.getElementById('kpi_closed').textContent = closedCount;
+
+    } catch(err) { console.error(err); }
+}
+window.addEventListener('DOMContentLoaded', refreshLogs);
+</script>
+</body>
+</html>

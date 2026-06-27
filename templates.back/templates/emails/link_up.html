@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Ticket Closure Notification</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f7fa;font-family:Arial,Helvetica,sans-serif;">
+
+<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f7fa">
+<tr>
+<td align="center" style="padding:30px 15px;">
+
+<table width="650" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+
+<!-- Header -->
+<tr>
+    <td bgcolor="#28a745" style="padding:20px;text-align:center;">
+        <h2 style="margin:0;color:#ffffff;">
+            Ticket Closure Notification
+        </h2>
+    </td>
+</tr>
+
+<!-- Content -->
+<tr>
+    <td style="padding:25px;color:#333333;font-size:14px;line-height:1.7;">
+
+        <p>Dear Sir/Madam,</p>
+
+        <p>
+            We are pleased to inform you that the reported issue has been resolved
+            and the service is now operating normally.
+        </p>
+
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-top:20px;">
+            <tr>
+                <td colspan="2" bgcolor="#28a745" style="padding:10px;text-align:center;color:#ffffff;font-weight:bold;">
+                    TICKET DETAILS
+                </td>
+            </tr>
+
+            <tr bgcolor="#f7f9fc">
+                <td width="35%" style="padding:10px;border:1px solid #d9e2ec;font-weight:bold;">
+                    Customer Name
+                </td>
+                <td style="padding:10px;border:1px solid #d9e2ec;">
+                    {customer_name}
+                </td>
+            </tr>
+
+            <tr>
+                <td style="padding:10px;border:1px solid #d9e2ec;font-weight:bold;">
+                    Circuit ID
+                </td>
+                <td style="padding:10px;border:1px solid #d9e2ec;">
+                    {circuit_id}
+                </td>
+            </tr>
+
+            <tr bgcolor="#f7f9fc">
+                <td style="padding:10px;border:1px solid #d9e2ec;font-weight:bold;">
+                    Ticket Number
+                </td>
+                <td style="padding:10px;border:1px solid #d9e2ec;">
+                    {ticket_id}
+                </td>
+            </tr>
+
+            <tr>
+                <td style="padding:10px;border:1px solid #d9e2ec;font-weight:bold;">
+                    Status
+                </td>
+                <td style="padding:10px;border:1px solid #d9e2ec;color:#28a745;font-weight:bold;">
+                    Closed / Resolved
+                </td>
+            </tr>
+        </table>
+
+        <!-- Closure Remark -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;background:#f8f9fa;border-left:4px solid #28a745;">
+            <tr>
+                <td style="padding:15px;">
+                    <strong>Closure Remarks:</strong><br>
+                    {remark_note}
+                </td>
+            </tr>
+        </table>
+
+        <p style="margin-top:20px;">
+            If you continue to experience any issue, please contact our support team quoting the ticket number above.
+        </p>
+
+        <p>
+            Best Regards,<br>
+            <strong>{operator_name}</strong><br>
+            Network Operation Team
+        </p>
+
+    </td>
+</tr>
+
+<!-- Footer -->
+<tr>
+    <td bgcolor="#f7f9fc" style="padding:15px;border-top:1px solid #e1e8ed;font-size:12px;color:#555;">
+        <strong>Teleglobal Communications Pvt. Ltd.</strong><br>
+        Cerebrum IT Park B3, Office No. 4B, Kalyani Nagar, Pune - 411014, India
+    </td>
+</tr>
+
+
+</table>
+
+</td>
+</tr>
+</table>
+
+</body>
+</html>
