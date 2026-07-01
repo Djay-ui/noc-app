@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Animated Email Signature</title>
+<style>
+    body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background: #f4f4f4;
+        padding: 30px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .signature {
+        background: #fff;
+        border-left: 5px solid #1885d8;
+        padding: 20px 25px;
+        width: 480px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        border-radius: 8px;
+        opacity: 0;
+        transform: translateY(30px);
+        animation: fadeInUp 0.8s ease forwards;
+        animation-delay: 0.3s;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .signature:hover {
+        transform: scale(1.02);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+    }
+
+    .name {
+        font-size: 22px;
+        font-weight: bold;
+        color: #1885d8;
+        position: relative;
+        display: inline-block;
+        margin-bottom: 5px;
+    }
+
+    .name::after {
+        content: "";
+        position: absolute;
+        bottom: -5px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: #1885d8;
+        transition: width 0.4s ease;
+    }
+
+    .signature:hover .name::after {
+        width: 100%;
+    }
+
+    .designation {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 10px;
+        letter-spacing: 0.5px;
+    }
+
+    /* Animated Company Name */
+    .company {
+        font-weight: bold;
+        color: #333;
+        font-size: 15px;
+        margin-bottom: 4px;
+        display: inline-block;
+        overflow: hidden;
+        white-space: nowrap;
+        border-right: 3px solid #1885d8;
+        animation: typing 3s steps(35, end) 1s 1 normal both, blinkCursor 0.7s infinite;
+    }
+
+    @keyframes typing {
+        from { width: 0 }
+        to { width: 100% }
+    }
+
+    @keyframes blinkCursor {
+        0%, 100% { border-color: transparent }
+        50% { border-color: #1885d8 }
+    }
+
+    .address {
+        font-size: 13px;
+        color: #555;
+        margin-bottom: 12px;
+        line-height: 1.4;
+    }
+
+    .contact {
+        display: flex;
+        align-items: center;
+        margin-bottom: 6px;
+        font-size: 13px;
+        color: #444;
+    }
+
+    .contact i {
+        margin-right: 8px;
+        color: #1885d8;
+        transition: transform 0.3s ease;
+    }
+
+    .signature:hover .contact i {
+        transform: rotate(15deg);
+    }
+
+    a {
+        color: #1885d8;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    a:hover {
+        color: #126bb1;
+        text-decoration: underline;
+    }
+
+    /* Animation keyframes */
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<div class="signature">
+    <div class="name">Dhananjay Tupe</div>
+    <div class="designation">NOC Team</div>
+
+    <div class="company">Teleglobal Communications Pvt. Ltd.</div>
+    <div class="address">
+        Cerebrum IT Park B3, Office No 4B,<br>
+        Kalyaninagar, Pune 411014, India
+    </div>
+
+    <div class="contact"><i class="fas fa-phone"></i> <a href="tel:02048522500">020-48522500</a></div>
+    <div class="contact"><i class="fas fa-mobile-alt"></i> <a href="tel:+918855811141">+91 8855811141</a></div>
+    <div class="contact"><i class="fas fa-globe"></i> <a href="https://www.teleglobals.com" target="_blank">www.teleglobals.com</a></div>
+</div>
+
+</body>
+</html>

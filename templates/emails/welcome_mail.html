@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style type="text/css">
+    body, table, td, a { -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
+    table, td { mso-table-lspace:0pt; mso-table-rspace:0pt; }
+    img { -ms-interpolation-mode:bicubic; border:0; height:auto; line-height:100%; outline:none; text-decoration:none; }
+    body { height:100% !important; margin:0 !important; padding:0 !important; width:100% !important; background-color:#f4f7fa; font-family:Arial, Helvetica, sans-serif; }
+    table { border-collapse:collapse !important; }
+    @media screen and (max-width: 730px) {
+        .email-container { width: 100% !important; max-width: 100% !important; }
+        .responsive-padding { padding: 20px 15px !important; }
+        .label-cell { width: 40% !important; }
+    }
+</style>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f7fa;font-family:Arial,Helvetica,sans-serif;">
+
+<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f7fa" style="table-layout:fixed;">
+    <tr>
+        <td align="center" style="padding:30px 15px;" class="responsive-padding">
+
+            <table class="email-container" width="700" cellpadding="0" cellspacing="0" border="0" style="max-width:700px; background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                <tr>
+                    <td bgcolor="#0b4d91" align="center" style="padding:35px 25px; text-align:center;">
+                        <h2 style="margin:0; color:#ffffff; font-family:Arial,Helvetica,sans-serif; font-size:24px; font-weight:bold; letter-spacing:0.5px; line-height:30px;">
+                            Link Delivery Confirmation
+                        </h2>
+                        <p style="margin:8px 0 0 0; color:#d9e8f5; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:18px;">
+                            TeleGlobal Communications Pvt. Ltd.
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="padding:40px 35px; color:#333333; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:24px;" class="responsive-padding">
+                        <p style="font-size:15px; margin-top:0; margin-bottom:16px;"><strong>Dear Sir,</strong></p>
+                        <p style="margin-bottom:16px;">Thank you for choosing <strong>TeleGlobal Communications Pvt. Ltd.</strong> as your Internet Service Provider. It is a great pleasure at our end to serve you.</p>
+                        <p style="margin-bottom:24px;">In addition to this, we would like to inform you that your <strong>{bandwidth_speed} Internet Leased Line</strong> has been successfully installed, configured, and commissioned into active production.</p>
+
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:20px; margin-bottom:30px; background-color:#eef6ff; border-left:5px solid #0d6efd;">
+                            <tr>
+                                <td style="padding:15px 20px; font-size:14px; line-height:20px;">
+                                    <strong style="color:#0b4d91;">Link Provisioning Status:</strong>
+                                    <span style="font-size:15px; color:#2e7d32; font-weight:bold; margin-left:5px;">● Active &amp; Live</span>
+                                    <span style="font-size:13px; color:#666666; margin-left:12px;">(As of {commissioning_date})</span>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <table width="100%" cellpadding="12" cellspacing="0" border="1" bgcolor="#ffffff" style="border-collapse:collapse; margin-top:25px; border:2px solid #a0aec0;">
+                            <thead>
+                                <tr>
+                                    <th colspan="2" bgcolor="#0b4d91" style="padding:14px 12px; text-align:center; color:#ffffff; font-weight:bold; font-size:14px; text-transform:uppercase; border:2px solid #a0aec0;">
+                                        TECHNICAL COMMISSIONING DETAILS
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr bgcolor="#f7f9fc">
+                                    <td class="label-cell" width="35%" style="padding:12px; border:1px solid #cbd5e1; font-weight:bold; color:#4a5568;">Circuit ID</td>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; font-family:Courier New, Courier, monospace; font-size:15px; font-weight:bold; color:#0b4d91;">{circuit_id}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; font-weight:bold; color:#4a5568;">Customer Name</td>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; color:#1e293b;">{customer_name}</td>
+                                </tr>
+                                <tr bgcolor="#f7f9fc">
+                                    <td style="padding:12px; border:1px solid #cbd5e1; font-weight:bold; color:#4a5568;">Bandwidth Speed</td>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; color:#0d6efd; font-weight:bold;">{bandwidth_speed}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; font-weight:bold; color:#4a5568;">Commissioning Date</td>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; color:#1e293b;">{commissioning_date}</td>
+                                </tr>
+                                <tr bgcolor="#f7f9fc">
+                                    <td style="padding:12px; border:1px solid #cbd5e1; font-weight:bold; color:#4a5568;">WAN IP Details</td>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; color:#1e293b;">{wan_ip_details}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; font-weight:bold; color:#4a5568;">Usable IP addresses</td>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; font-family:Courier New, Courier, monospace; font-size:14px; color:#1e293b;">{usable_ips}</td>
+                                </tr>
+                                <tr bgcolor="#f7f9fc">
+                                    <td style="padding:12px; border:1px solid #cbd5e1; font-weight:bold; color:#4a5568;">Default Gateway</td>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; font-family:Courier New, Courier, monospace; font-size:14px; color:#1e293b;">{default_gateway}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; font-weight:bold; color:#4a5568;">Subnet Mask</td>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; font-family:Courier New, Courier, monospace; font-size:14px; color:#1e293b;">{subnet_mask}</td>
+                                </tr>
+                                <tr bgcolor="#f7f9fc">
+                                    <td style="padding:12px; border:1px solid #cbd5e1; font-weight:bold; color:#4a5568;">DNS Server 1</td>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; font-family:Courier New, Courier, monospace; font-size:14px; color:#1e293b;">103.68.9.252</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; font-weight:bold; color:#4a5568;">DNS Server 2</td>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; font-family:Courier New, Courier, monospace; font-size:14px; color:#1e293b;">103.68.9.253</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <p style="margin-top:30px; margin-bottom:16px;">Please find the <strong>testing logs snap</strong> along with our official <strong>customer support escalation matrix guide</strong> attached with this email for your structural reference and records.</p>
+                        <p style="margin-bottom:16px;">For any technical support queries or configuration guidance, please send a mail directly to <a href="mailto:noc@teleglobal.in" style="color:#0d6efd; text-decoration:none; font-weight:bold;">noc@teleglobal.in</a> or speak with our engineers using the contact information detailed below.</p>
+
+                        <p style="margin-top:30px; margin-bottom:0; padding-top:15px; border-top:1px dashed #cbd5e1;">
+                            Best Regards,<br>
+                            <span style="font-size:15px; color:#0b4d91;"><strong>{operator_name}</strong></span><br>
+                            <span style="color:#64748b; font-weight:bold; font-size:13px;">NOC Team Helpdesk</span>
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td bgcolor="#f7f9fc" style="padding:30px 35px; border-top:1px solid #e1e8ed;">
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td style="font-family:Arial,Helvetica,sans-serif; font-size:13px; color:#555555; line-height:22px;">
+                                    <strong style="color:#333333; font-size:14px;">Teleglobal Communications Pvt. Ltd.</strong><br>
+                                    Cerebrum IT Park B3, Office No. 4B, Kalyani Nagar, Pune - 411014, Maharashtra, India<br>
+                                    <span>📞 Office No:</span> 020-48522500 | <span>📱 Support Line:</span> +91 8855811141<br>
+                                    <span>🌐 Web:</span> <a href="https://www.teleglobals.com" target="_blank" style="color:#0b4d91; text-decoration:none; font-weight:bold;">www.teleglobals.com</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+
+        </td>
+    </tr>
+</table>
+</body>
+</html>

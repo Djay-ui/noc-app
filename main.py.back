@@ -4,6 +4,7 @@ import csv
 import hashlib
 import hmac
 import json
+import os
 from datetime import datetime, timezone, timedelta
 from fastapi import FastAPI, Request, Form, HTTPException, UploadFile, File, Depends, BackgroundTasks
 from fastapi.responses import HTMLResponse, StreamingResponse, RedirectResponse
@@ -15,6 +16,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
+from email.mime.application import MIMEApplication
 
 app = FastAPI(title="Teleglobal NOC Automation Platform")
 templates = Jinja2Templates(directory="templates")
@@ -47,6 +49,33 @@ def send_smtp_email_background(msg_string: str, all_recipients: list):
         server.quit()
     except Exception as smtp_err:
         print(f"Background SMTP Dispatch Failure: {str(smtp_err)}")
+
+# SCALABLE ALARM CONFIGURATION MATRIX
+def determine_email_template(issue_category: str, status: str) -> str:
+    """
+    Centralized router mapping alert rules to target email templates.
+    To add a new custom alarm in the future, simply append a new 'elif' branch here.
+    """
+    if not issue_category:
+        cat = ""
+    else:
+        cat = issue_category.strip().lower()
+
+    # 1. Configuration rule for "IP is not pingable"
+    if cat == "ip is not pingable":
+        return "ip_up.html" if status == "Closed" else "ip_down.html"
+
+    # 2. Configuration rule for "Switch Isolated"
+    elif cat in ["switch isolated", "switch is isolated"]:
+        return "switch_up.html" if status == "Closed" else "switch_down.html"
+
+    # Default Fallback for generic/other link incidents
+    if status == "Closed":
+        return "link_up.html"
+    elif status == "In Monitoring":
+        return "link_monitoring.html"
+    else:
+        return "link_down.html"
 
 # Security & Crypto Helpers
 def hash_password(password: str) -> str:
@@ -172,7 +201,149 @@ async def api_logout():
 async def api_get_me(user=Depends(get_current_user)):
     return user
 
-# Logic Operations Flow
+
+# =========================================================================
+# FIXED CIRCUITS MANAGEMENT PIPELINE
+# =========================================================================
+
+@app.post("/api/tools/send-welcome-mail")
+async def api_send_provisioning_welcome_mail(
+    background_tasks: BackgroundTasks,
+    circuit_id: str = Form(...),
+    customer_name: str = Form(...),
+    bandwidth_speed: str = Form(...),
+    commissioning_date: str = Form(...),
+    wan_ip_details: str = Form(...),
+    usable_ips: str = Form(...),
+    default_gateway: str = Form(...),
+    subnet_mask: str = Form(...),
+    customer_email: str = Form(...),
+    cc_emails: str = Form(""),
+    testing_snap: UploadFile = File(...),
+    user=Depends(get_current_user)
+):
+    engineer_identity = user.get("full_name", user.get("username", "NOC Specialist"))
+
+    try:
+        with open("/opt/noc-app/templates/emails/welcome_mail.html", "r", encoding="utf-8") as f:
+            html_content = f.read()
+    except Exception as io_err:
+        raise HTTPException(status_code=500, detail=f"Failed to access layout template: {str(io_err)}")
+
+    hydrated_body = html_content \
+        .replace("{circuit_id}", str(circuit_id).strip()) \
+        .replace("{customer_name}", str(customer_name).strip()) \
+        .replace("{bandwidth_speed}", str(bandwidth_speed).strip()) \
+        .replace("{commissioning_date}", str(commissioning_date).strip()) \
+        .replace("{wan_ip_details}", str(wan_ip_details).strip()) \
+        .replace("{usable_ips}", str(usable_ips).strip()) \
+        .replace("{default_gateway}", str(default_gateway).strip()) \
+        .replace("{subnet_mask}", str(subnet_mask).strip()) \
+        .replace("{operator_name}", str(engineer_identity))
+
+    msg = MIMEMultipart()
+    msg['From'] = SMTP_USER
+    msg['To'] = customer_email.strip()
+    msg['Subject'] = f"Welcome to TeleGlobal Communications Pvt. Ltd || {customer_name.strip()} || {circuit_id.strip()}"[cite: 4]
+    
+    recipients = [customer_email.strip()]
+    cc_list = list(GLOBAL_MANDATORY_CC)
+    if cc_emails.strip():
+        for addr in cc_emails.split(","):
+            if addr.strip():
+                cc_list.append(addr.strip())
+    if cc_list:
+        msg['Cc'] = ", ".join(cc_list)
+        recipients.extend(cc_list)
+
+    msg.attach(MIMEText(hydrated_body, 'html'))
+
+    try:
+        with open("/opt/noc-app/templates/emails/escalation_matrix.html", "r", encoding="utf-8") as esc_file:
+            matrix_data = esc_file.read()
+        matrix_part = MIMEText(matrix_data, 'html')
+        matrix_part.add_header('Content-Disposition', 'attachment', filename="TeleGlobal_Customer_Escalation_Matrix.html")[cite: 4]
+        msg.attach(matrix_part)
+    except Exception as exc_err:
+        print(f"Warning: Escalation matrix tracking file not accessible: {str(exc_err)}")
+
+    try:
+        file_bytes = await testing_snap.read()
+        snap_part = MIMEApplication(file_bytes, Name=testing_snap.filename)
+        snap_part['Content-Disposition'] = f'attachment; filename="{testing_snap.filename}"'
+        msg.attach(snap_part)
+    except Exception as img_err:
+         raise HTTPException(status_code=500, detail=f"Failed compiling network log attachments: {str(img_err)}")
+
+    # Fixed worker parameter execution mapping bug smoothly
+    background_tasks.add_task(send_smtp_email_background, msg.as_string(), recipients)
+
+    return {"status": "success", "message": "Provisioning welcome package distributed cleanly via background task layers."}
+
+
+@app.get("/api/circuits/all")
+async def get_all_circuits_fixed(user=Depends(get_current_user)):
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        cursor.execute("""
+            SELECT circuit_id, customer_name, company_name, customer_email, phone_number, address 
+            FROM customers 
+            ORDER BY circuit_id ASC
+        """)
+        records = cursor.fetchall()
+        return records
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to fetch matrix rows: {str(e)}")
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.post("/api/circuit/save")
+async def api_save_or_update_circuit(
+    circuit_id: str = Form(...),
+    customer_name: str = Form(...),
+    company_name: str = Form(""),
+    customer_email: str = Form(...),
+    phone_number: str = Form(""),
+    address: str = Form(""),
+    user=Depends(get_current_user)
+):
+    c_id = circuit_id.strip()
+    c_name = customer_name.strip()
+    comp_name = company_name.strip() if company_name else ""
+    c_email = customer_email.strip()
+    phone = phone_number.strip() if phone_number else ""
+    addr = address.strip() if address else ""
+
+    if not c_id or not c_name or not c_email:
+        raise HTTPException(status_code=400, detail="Required fields (*) cannot be empty.")
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        query = """
+            INSERT INTO customers (circuit_id, customer_name, company_name, customer_email, phone_number, address)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            ON CONFLICT (circuit_id) 
+            DO UPDATE SET 
+                customer_name = EXCLUDED.customer_name,
+                company_name = EXCLUDED.company_name,
+                customer_email = EXCLUDED.customer_email,
+                phone_number = EXCLUDED.phone_number,
+                address = EXCLUDED.address;
+        """
+        cursor.execute(query, (c_id, c_name, comp_name, c_email, phone, addr))
+        conn.commit()
+        return {"status": "success", "detail": f"Circuit {c_id} saved successfully."}
+    except Exception as e:
+        conn.rollback()  
+        raise HTTPException(status_code=500, detail=f"Database execution error: {str(e)}")
+    finally:
+        cursor.close()
+        conn.close()
+
 
 @app.get("/api/circuit/{circuit_id}")
 async def get_circuit_details(circuit_id: str, user=Depends(get_current_user)):
@@ -180,7 +351,6 @@ async def get_circuit_details(circuit_id: str, user=Depends(get_current_user)):
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     
-    # Dynamic search across all columns in the customers table
     query = """
         SELECT circuit_id, customer_name, company_name, customer_email, phone_number, address 
         FROM customers 
@@ -193,21 +363,99 @@ async def get_circuit_details(circuit_id: str, user=Depends(get_current_user)):
         ORDER BY (LOWER(circuit_id) = LOWER(%s)) DESC
     """
     wildcard_term = f"%{search_term}%"
-    
     cursor.execute(query, (
         wildcard_term, wildcard_term, wildcard_term, 
         wildcard_term, wildcard_term, wildcard_term, search_term
     ))
-    
-    circuit_records = cursor.fetchall()  # Changed to fetchall to return multiple matching records
+    circuit_records = cursor.fetchall()
     cursor.close(); conn.close()
     
     if not circuit_records:
         raise HTTPException(status_code=404, detail="No matching customer profile or circuit was found.")
-        
-    return circuit_records  # Returns the array of matching records to the front-end dropdown
+    return circuit_records
 
+# --- REGISTERED CIRCUITS MATRIX DATA VIEW ---
+@app.get("/api/circuit/all")
+@app.get("/api/circuits/all")
+@app.get("/api/circuits")
+async def api_get_all_circuits(search: str = "", user=Depends(get_current_user)):
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        if search:
+            term = f"%{search.strip()}%"
+            cursor.execute("""
+                SELECT circuit_id, customer_name, company_name, customer_email, phone_number, address 
+                FROM customers 
+                WHERE LOWER(circuit_id) LIKE LOWER(%s)
+                   OR LOWER(customer_name) LIKE LOWER(%s)
+                   OR LOWER(company_name) LIKE LOWER(%s)
+                   OR phone_number LIKE %s
+                ORDER BY circuit_id ASC
+            """, (term, term, term, term))
+        else:
+            cursor.execute("""
+                SELECT circuit_id, customer_name, company_name, customer_email, phone_number, address 
+                FROM customers 
+                ORDER BY circuit_id ASC
+            """)
+        return cursor.fetchall()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database fetch failure: {str(e)}")
+    finally:
+        cursor.close(); conn.close()
 
+# --- CONFLICT-FREE CIRCUIT UPSERT ENGINE ---
+@app.post("/api/circuit/save")
+@app.post("/api/circuit/add")
+@app.post("/api/circuits/save")
+@app.post("/api/circuits")
+async def api_save_circuit(request: Request, user=Depends(get_current_user)):
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin authorization required.")
+    
+    content_type = request.headers.get("content-type", "")
+    data = {}
+    if "application/json" in content_type:
+        try: data = await request.json()
+        except: pass
+    else:
+        try:
+            form_data = await request.form()
+            data = dict(form_data)
+        except: pass
+
+    circuit_id = data.get("circuit_id") or data.get("Circuit ID")
+    customer_name = data.get("customer_name") or data.get("Customer Name")
+    company_name = data.get("company_name") or data.get("Company Name") or ""
+    customer_email = data.get("customer_email") or data.get("customer_email_target") or data.get("Customer Email Target") or ""
+    phone_number = data.get("phone_number") or data.get("Phone Number") or ""
+    address = data.get("address") or data.get("site_address") or data.get("Site / POP Address") or ""
+
+    if not circuit_id or not customer_name:
+        raise HTTPException(status_code=400, detail="Circuit ID and Customer Name are mandatory fields.")
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        query = """
+            INSERT INTO customers (circuit_id, customer_name, company_name, customer_email, phone_number, address)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            ON CONFLICT (circuit_id) DO UPDATE SET
+                customer_name = EXCLUDED.customer_name,
+                company_name = EXCLUDED.company_name,
+                customer_email = EXCLUDED.customer_email,
+                phone_number = EXCLUDED.phone_number,
+                address = EXCLUDED.address
+        """
+        cursor.execute(query, (circuit_id.strip(), customer_name.strip(), company_name.strip(), customer_email.strip(), phone_number.strip(), address.strip()))
+        conn.commit()
+        return {"status": "success", "message": "Circuit pipeline record synced cleanly."}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Database pipeline transactional break: {str(e)}")
+    finally:
+        cursor.close(); conn.close()
 
 @app.get("/api/admin/users/all")
 async def api_get_all_users(user=Depends(get_current_user)):
@@ -250,6 +498,123 @@ async def api_update_user_profile(payload: UserUpdateModel, user=Depends(get_cur
         raise HTTPException(status_code=400, detail=f"Database constraint violation: {str(e)}")
     finally:
         cursor.close(); conn.close()
+
+
+@app.post("/api/provision/welcome-handover")
+async def api_welcome_handover(
+    background_tasks: BackgroundTasks,
+    customer_name: str = Form(...),
+    circuit_id: str = Form(...),
+    bandwidth_speed: str = Form(...),
+    commissioning_date: str = Form(...),
+    wan_ip_details: str = Form(...),
+    usable_ips: str = Form(...),
+    default_gateway: str = Form(...),
+    subnet_mask: str = Form(...),
+    customer_email: str = Form(...),
+    cc_emails: str = Form(""),
+    testing_snap: UploadFile = File(...),
+    escalation_file: UploadFile = File(...), 
+    user=Depends(get_current_user)
+):
+    msg = MIMEMultipart()
+    msg['From'] = SMTP_USER
+    msg['To'] = customer_email.strip()
+    
+    recipients_cc = list(GLOBAL_MANDATORY_CC)
+    if cc_emails:
+        custom_emails = [email.strip() for email in cc_emails.split(",") if email.strip()]
+        for c_email in custom_emails:
+            if c_email not in recipients_cc:
+                recipients_cc.append(c_email)
+    msg['Cc'] = ", ".join(recipients_cc)
+    
+    msg['Subject'] = f"Welcome to TeleGlobal Communications || Link Delivery Handover - {circuit_id}"
+    
+    html_template = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Welcome to TeleGlobal Communications || Link Delivery Handover</title>
+<style type="text/css">
+    body, table, td, a {{ -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }}
+    table, td {{ mso-table-lspace:0pt; mso-table-rspace:0pt; }}
+    img {{ -ms-interpolation-mode:bicubic; border:0; height:auto; line-height:100%; outline:none; text-decoration:none; }}
+    body {{ height:100% !important; margin:0 !important; padding:0 !important; width:100% !important; background-color:#f4f7fa; font-family:Arial, Helvetica, sans-serif; }}
+    table {{ border-collapse:collapse !important; }}
+</style>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f7fa;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f7fa" style="table-layout:fixed;">
+    <tr>
+        <td align="center" style="padding:30px 15px;">
+            <table class="email-container" width="700" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                <tr>
+                    <td bgcolor="#0b4d91" align="center" style="padding:35px 25px; text-align:center;">
+                        <h2 style="margin:0; color:#ffffff; font-size:24px; font-weight:bold;">Link Delivery Confirmation</h2>
+                        <p style="margin:8px 0 0 0; color:#d9e8f5; font-size:14px;">TeleGlobal Communications Pvt. Ltd.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:40px 35px; color:#333333; font-size:14px; line-height:24px;">
+                        <p><strong>Dear Sir,</strong></p>
+                        <p>Thank you for choosing <strong>TeleGlobal Communications Pvt. Ltd.</strong> as your Internet Service Provider.</p>
+                        <p>Your <strong>{bandwidth_speed} Internet Leased Line</strong> has been successfully installed, configured, and commissioned.</p>
+                        <table width="100%" cellpadding="12" cellspacing="0" border="1" style="border-collapse:collapse; margin-top:25px; border:2px solid #a0aec0;">
+                            <thead>
+                                <tr><th colspan="2" bgcolor="#0b4d91" style="color:#ffffff; text-align:center;">TECHNICAL COMMISSIONING DETAILS</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr bgcolor="#f7f9fc"><td>Circuit ID</td><td><strong>{circuit_id}</strong></td></tr>
+                                <tr><td>Customer Name</td><td>{customer_name}</td></tr>
+                                <tr bgcolor="#f7f9fc"><td>Bandwidth Speed</td><td>{bandwidth_speed}</td></tr>
+                                <tr><td>Commissioning Date</td><td>{commissioning_date}</td></tr>
+                                <tr bgcolor="#f7f9fc"><td>WAN IP Details</td><td>Usable Range: <strong>{usable_ips}</strong> ({wan_ip_details})</td></tr>
+                                <tr><td>Default Gateway</td><td>{default_gateway}</td></tr>
+                                <tr bgcolor="#f7f9fc"><td>Subnet Mask</td><td>{subnet_mask}</td></tr>
+                            </tbody>
+                        </table>
+                        <p style="margin-top:30px;">Please find the logs and customer escalation matrix attached.</p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>"""
+    
+    msg.attach(MIMEText(html_template, 'html'))
+    
+    if testing_snap and testing_snap.filename:
+        try:
+            snap_bytes = await testing_snap.read()
+            if len(snap_bytes) > 0:
+                part1 = MIMEBase('application', 'octet-stream')
+                part1.set_payload(snap_bytes)
+                encoders.encode_base64(part1)
+                part1.add_header('Content-Disposition', f'attachment; filename="{testing_snap.filename}"')
+                msg.attach(part1)
+        except Exception as e:
+            print(f"Testing Snap processing error: {str(e)}")
+
+    if escalation_file and escalation_file.filename:
+        try:
+            esc_bytes = await escalation_file.read()
+            if len(esc_bytes) > 0:
+                part2 = MIMEBase('application', 'octet-stream')
+                part2.set_payload(esc_bytes)
+                encoders.encode_base64(part2)
+                part2.add_header('Content-Disposition', f'attachment; filename="{escalation_file.filename}"')
+                msg.attach(part2)
+        except Exception as e:
+            print(f"Escalation Matrix File processing error: {str(e)}")
+
+    all_recipients = [customer_email.strip()] + recipients_cc
+    background_tasks.add_task(send_smtp_email_background, msg.as_string(), all_recipients)
+    
+    return {"status": "success", "message": "Welcome Onboarding Pack with Multi-Logs dispatched successfully."}
+
 
 @app.post("/api/ticket/raise")
 async def process_raise_ticket(
@@ -315,11 +680,8 @@ async def process_raise_ticket(
     formatted_ticket_id = f"TCPL{inserted_row['created_at'].strftime('%d%m%y')}{ticket_id:02d}"
     msg['Subject'] = f"[NOC Ticket #{formatted_ticket_id}] {issue_category} | Circuit ID: {circuit_id}"
     
-    template_file = "link_down.html"
-    if status == "Closed":
-        template_file = "link_up.html"
-    elif status == "In Monitoring":
-        template_file = "link_monitoring.html"
+    # Dynamically maps template targets using the scalable routing engine function
+    template_file = determine_email_template(issue_category, status)
 
     try:
         with open(f"/opt/noc-app/templates/emails/{template_file}", "r", encoding="utf-8") as html_file:
@@ -329,6 +691,7 @@ async def process_raise_ticket(
         final_body = html_template_data\
             .replace("{customer_name}", str(resolved_customer_name))\
             .replace("{circuit_id}", str(circuit_id))\
+            .replace("{{IP_ADDRESS}}", str(circuit_id))\
             .replace("{ticket_id}", str(formatted_ticket_id))\
             .replace("{operator_name}", str(engineer_identity))\
             .replace("{status}", str(status))\
@@ -365,11 +728,11 @@ async def process_raise_ticket(
         except Exception as attachment_err:
             print(f"Attachment processing bypassed: {str(attachment_err)}")
 
-    # Offload to Background Worker Array (Speeds up execution instantly)
     all_recipients = [customer['customer_email']] + recipients_cc
     background_tasks.add_task(send_smtp_email_background, msg.as_string(), all_recipients)
 
     return {"status": "success", "ticket_id": formatted_ticket_id}
+
 
 @app.post("/api/ticket/update-status")
 async def update_ticket_status(payload: dict, background_tasks: BackgroundTasks, user=Depends(get_current_user)):
@@ -377,14 +740,15 @@ async def update_ticket_status(payload: dict, background_tasks: BackgroundTasks,
     target_status = payload.get("status")
     remark_note = payload.get("remark_note", "")
 
-    # Clean display fallback if remarks field is left blank
+    # Seamlessly makes engineering remarks non-mandatory by using an elegant fallback text
     clean_remark = remark_note.strip() if remark_note.strip() else "No additional engineering comments provided."
 
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     
     try:
-        cursor.execute("SELECT circuit_id, assigned_team, open_by_name, created_at FROM tickets WHERE ticket_id = %s", (ticket_id,))
+        # Added issue_category to the SELECT parameters list to identify the alarm type
+        cursor.execute("SELECT circuit_id, assigned_team, open_by_name, created_at, issue_category FROM tickets WHERE ticket_id = %s", (ticket_id,))
         ticket_meta = cursor.fetchone()
         if not ticket_meta:
             raise HTTPException(status_code=404, detail="Ticket record not found.")
@@ -418,11 +782,8 @@ async def update_ticket_status(payload: dict, background_tasks: BackgroundTasks,
     finally:
         cursor.close(); conn.close()
 
-    template_file = "link_down.html"
-    if target_status == "Closed":
-        template_file = "link_up.html"
-    elif target_status == "In Monitoring":
-        template_file = "link_monitoring.html"
+    # Dynamic template routing for status transitions using the matrix helper
+    template_file = determine_email_template(ticket_meta.get("issue_category"), target_status)
 
     try:
         with open(f"/opt/noc-app/templates/emails/{template_file}", "r", encoding="utf-8") as html_file:
@@ -434,10 +795,10 @@ async def update_ticket_status(payload: dict, background_tasks: BackgroundTasks,
     formatted_ticket_id = f"TCPL{ticket_meta['created_at'].strftime('%d%m%y')}{ticket_id:02d}"
     resolved_customer_name = customer_meta["customer_name"] if customer_meta else "Valued Client"
 
-    # FIXED: Added explicit '.replace("{remark_note}", ...)' mapping context here
     final_html_body = html_template_data\
         .replace("{customer_name}", str(resolved_customer_name))\
         .replace("{circuit_id}", str(ticket_meta["circuit_id"]))\
+        .replace("{{IP_ADDRESS}}", str(ticket_meta["circuit_id"]))\
         .replace("{ticket_id}", str(formatted_ticket_id))\
         .replace("{operator_name}", str(engineer_identity))\
         .replace("{status}", str(target_status))\
@@ -453,11 +814,11 @@ async def update_ticket_status(payload: dict, background_tasks: BackgroundTasks,
         msg['Subject'] = email_subject
         msg.attach(MIMEText(final_html_body, 'html'))
 
-        # Queue the blocking operations to run out-of-band (Zero UI lag)
         all_recipients = [customer_meta["customer_email"]] + recipients_cc
         background_tasks.add_task(send_smtp_email_background, msg.as_string(), all_recipients)
 
     return {"status": "success"}
+
 
 @app.get("/api/tickets/recent")
 async def read_recent_tickets(limit: int = 10, search: str = "", status: str = "", user=Depends(get_current_user)):
@@ -506,6 +867,7 @@ async def read_recent_tickets(limit: int = 10, search: str = "", status: str = "
             "resolution_minutes": row['resolution_minutes']
         })
     return formatted_records
+
 
 @app.get("/api/reports/download")
 async def export_tickets_report(circuit_id: str = "", status: str = "", date_range: str = "all", user=Depends(get_current_user)):

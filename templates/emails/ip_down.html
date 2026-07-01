@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP Is Not Pingable Alert</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f5f7fb;font-family:Segoe UI,Arial,sans-serif;">
+
+<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f5f7fb">
+<tr>
+<td align="center" style="padding:30px 15px;">
+
+<table width="700" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #d9e2ec;">
+
+    <!-- Header -->
+    <tr>
+        <td style="background:#dc3545;padding:25px 35px;">
+            <table width="100%">
+                <tr>
+                    <td>
+                        <h2 style="margin:0;color:#ffffff;font-size:24px;">
+                            Critical Alert: Host Unreachable
+                        </h2>
+                        <p style="margin:8px 0 0;color:#fbe3e4;font-size:14px;">
+                            Automated Monitoring Notification
+                        </p>
+                    </td>
+                    <td align="right">
+                        <span style="background:#ffffff;color:#dc3545;padding:8px 15px;border-radius:20px;font-size:13px;font-weight:bold;">
+                            CRITICAL
+                        </span>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+    <!-- Body Content -->
+    <tr>
+        <td style="padding:35px;">
+
+            <p style="font-size:15px;color:#333333;margin-top:0;">
+                Dear Sir/Madam,
+            </p>
+
+            <p style="font-size:15px;line-height:26px;color:#555555;">
+                During our routine network monitoring, we observed that the following monitored IP address is currently
+                <strong style="color:#dc3545;">not responding to ICMP (Ping)</strong>.
+            </p>
+
+            <div style="margin:25px 0;padding:18px;background:#fff5f5;border-left:5px solid #dc3545;border-radius:4px;">
+                <p style="margin:0;font-size:16px;color:#333333;">
+                    <strong>Affected IP Address:</strong>
+                    <span style="color:#dc3545;font-size:18px;font-weight:bold;">
+                        {{IP_ADDRESS}}
+                    </span>
+                </p>
+            </div>
+
+            <p style="font-size:15px;line-height:26px;color:#555555;">
+                We request you to kindly verify the connectivity and network equipment at your end. Please investigate the issue and update us with the current status at your earliest convenience.
+            </p>
+
+            <!-- Recommended Checks -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
+                <tr>
+                    <td style="background:#fff8e5;border-left:5px solid #ffc107;padding:20px;">
+                        <h4 style="margin-top:0;color:#8a6d3b;font-size:16px;">
+                            Recommended Checks
+                        </h4>
+                        <ul style="margin:0;padding-left:20px;color:#555555;line-height:28px;font-size:14px;">
+                            <li>Verify the power status of the router/firewall.</li>
+                            <li>Check WAN/Internet circuit connectivity.</li>
+                            <li>Ensure the monitored IP is reachable from your internal network.</li>
+                            <li>Verify that no scheduled maintenance activity is in progress.</li>
+                            <li>Review interface status and recent configuration changes.</li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+
+            <p style="margin-top:30px;font-size:15px;color:#555555;line-height:26px;">
+                Kindly investigate the issue from your end and revert with an update. If the issue has already been resolved, please ignore this notification.
+            </p>
+
+            <p style="font-size:15px;color:#555555;">
+                For any questions or assistance, please feel free to contact our Network Operations Center.
+            </p>
+
+            <hr style="margin:35px 0;border:none;border-top:1px solid #e5e5e5;">
+
+            <!-- Signature -->
+            <table width="100%">
+                <tr>
+                    <td style="font-size:14px;color:#555555;line-height:24px;">
+                        <strong style="font-size:16px;color:#003366;">
+                            {operator_name}
+                        </strong><br>
+                        Network Operation Team (NOC)<br>
+                        <strong>Teleglobal Communications Pvt. Ltd.</strong><br>
+                        Cerebrum IT Park B3, Office No. 4B<br>
+                        Kalyani Nagar, Pune - 411014, India<br><br>
+                        📞 020-48522500 / 020-41230741<br>
+                        📱 +91 8855811141<br>
+                        🌐 <a href="https://www.teleglobals.com" style="color:#0056b3;text-decoration:none;">www.teleglobals.com</a>
+                    </td>
+                </tr>
+            </table>
+
+        </td>
+    </tr>
+
+    <!-- Footer -->
+    <tr>
+        <td style="background:#dc3545;padding:15px;text-align:center;color:#ffffff;font-size:12px;">
+            This is an automated notification generated by the Network Monitoring System.
+            Please do not reply directly to this email.
+        </td>
+    </tr>
+
+</table>
+
+</td>
+</tr>
+</table>
+
+</body>
+</html>

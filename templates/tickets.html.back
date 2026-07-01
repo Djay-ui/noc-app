@@ -126,7 +126,7 @@
                 Engineering Update Remarks / Closure Notes
             </label>
             <textarea id="modalRemarkNote" rows="3" 
-              placeholder="Provide status update details..." 
+              placeholder="Provide status update details (Optional)..." 
               style="width: 100%; border: 1px solid #cbd5e1; border-radius: 4px; padding: 10px; font-size: 13px; font-family: inherit; box-sizing: border-box; resize: vertical;"></textarea>
         </div>
 
@@ -168,11 +168,18 @@ async function commitStatusUpdate() {
                 remark_note: remarkNote
             })
         });
+        
         if(res.ok) {
             closeModal();
             refreshLogs();
-        } else { throw new Error('Failed to patch record table status.'); }
-    } catch(e) { alert(e.message); }
+        } else { 
+            // Extracts explicit exception details from FastAPI background handlers
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.detail || 'Failed to patch record table status.'); 
+        }
+    } catch(e) { 
+        alert('Operational Error: ' + e.message); 
+    }
 }
 
 function downloadCSVReport() {
@@ -224,7 +231,7 @@ async function refreshLogs() {
         document.getElementById('kpi_monitor').textContent = monitorCount;
         document.getElementById('kpi_closed').textContent = closedCount;
 
-    } catch(err) { console.error(err); }
+    } catch(err) { console.error('Failed to pull system event streams:', err); }
 }
 window.addEventListener('DOMContentLoaded', refreshLogs);
 </script>
