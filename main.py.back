@@ -244,7 +244,7 @@ async def api_send_provisioning_welcome_mail(
     msg = MIMEMultipart()
     msg['From'] = SMTP_USER
     msg['To'] = customer_email.strip()
-    msg['Subject'] = f"Welcome to TeleGlobal Communications Pvt. Ltd || {customer_name.strip()} || {circuit_id.strip()}"[cite: 4]
+    msg['Subject'] = f"Welcome to TeleGlobal Communications Pvt. Ltd || {customer_name.strip()} || {circuit_id.strip()}"
     
     recipients = [customer_email.strip()]
     cc_list = list(GLOBAL_MANDATORY_CC)
@@ -262,7 +262,7 @@ async def api_send_provisioning_welcome_mail(
         with open("/opt/noc-app/templates/emails/escalation_matrix.html", "r", encoding="utf-8") as esc_file:
             matrix_data = esc_file.read()
         matrix_part = MIMEText(matrix_data, 'html')
-        matrix_part.add_header('Content-Disposition', 'attachment', filename="TeleGlobal_Customer_Escalation_Matrix.html")[cite: 4]
+        matrix_part.add_header('Content-Disposition', 'attachment', filename="TeleGlobal_Customer_Escalation_Matrix.html")
         msg.attach(matrix_part)
     except Exception as exc_err:
         print(f"Warning: Escalation matrix tracking file not accessible: {str(exc_err)}")
@@ -624,6 +624,7 @@ async def process_raise_ticket(
     root_cause_segment: str = Form(...),
     status: str = Form(...),
     assigned_team: str = Form(...),
+    generate_ticket: str = Form("true"),
     cc_emails: str = Form(""),
     attachment: UploadFile = File(None),
     user=Depends(get_current_user)
@@ -641,23 +642,27 @@ async def process_raise_ticket(
         if "|" in engineer_identity:
             engineer_identity = engineer_identity.split("|")[0].strip()
 
-        closed_at_timestamp = datetime.now() if status == "Closed" else None
-        closed_by_identity = engineer_identity if status == "Closed" else None
+        if generate_ticket == "true":
+            closed_at_timestamp = datetime.now() if status == "Closed" else None
+            closed_by_identity = engineer_identity if status == "Closed" else None
 
-        cursor.execute(
-            """INSERT INTO tickets (circuit_id, issue_category, root_cause_segment, status, assigned_team, open_by_name, closed_by_name, created_at, closed_at, resolution_minutes)
-               VALUES (%s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, %s, 0) RETURNING ticket_id, created_at""",
-            (circuit_id.strip(), issue_category, root_cause_segment, status, assigned_team, engineer_identity, closed_by_identity, closed_at_timestamp)
-        )
-        inserted_row = cursor.fetchone()
-        ticket_id = inserted_row['ticket_id']
-        
-        if status == "Closed":
-            time_delta = closed_at_timestamp - inserted_row['created_at'].replace(tzinfo=None)
-            duration_minutes = max(1, int(time_delta.total_seconds() / 60))
-            cursor.execute("UPDATE tickets SET resolution_minutes = %s WHERE ticket_id = %s", (duration_minutes, ticket_id))
+            cursor.execute(
+                """INSERT INTO tickets (circuit_id, issue_category, root_cause_segment, status, assigned_team, open_by_name, closed_by_name, created_at, closed_at, resolution_minutes)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, %s, 0) RETURNING ticket_id, created_at""",
+                (circuit_id.strip(), issue_category, root_cause_segment, status, assigned_team, engineer_identity, closed_by_identity, closed_at_timestamp)
+            )
+            inserted_row = cursor.fetchone()
+            ticket_id = inserted_row['ticket_id']
             
-        conn.commit()
+            if status == "Closed":
+                time_delta = closed_at_timestamp - inserted_row['created_at'].replace(tzinfo=None)
+                duration_minutes = max(1, int(time_delta.total_seconds() / 60))
+                cursor.execute("UPDATE tickets SET resolution_minutes = %s WHERE ticket_id = %s", (duration_minutes, ticket_id))
+                
+            conn.commit()
+            formatted_ticket_id = f"TCPL{inserted_row['created_at'].strftime('%d%m%y')}{ticket_id:02d}"
+        else:
+            formatted_ticket_id = f"DIRECT-{datetime.now().strftime('%d%m%y%H%M%S')}"
     except Exception as db_err:
         conn.rollback()
         raise HTTPException(status_code=500, detail=f"Database Logging Error: {str(db_err)}")
@@ -677,7 +682,6 @@ async def process_raise_ticket(
                 
     msg['Cc'] = ", ".join(recipients_cc)
     
-    formatted_ticket_id = f"TCPL{inserted_row['created_at'].strftime('%d%m%y')}{ticket_id:02d}"
     msg['Subject'] = f"[NOC Ticket #{formatted_ticket_id}] {issue_category} | Circuit ID: {circuit_id}"
     
     # Dynamically maps template targets using the scalable routing engine function

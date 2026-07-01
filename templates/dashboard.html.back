@@ -109,13 +109,13 @@
                     <input type="text" value="{{ user.full_name }}" readonly style="background: #e2e8f0; font-weight: bold; color: #475569;">
                 </div>
 
-                <div class="form-group col">
-                    <label>Operational Processing Mode</label>
-                    <select name="generate_ticket" id="generate_ticket" required>
-                        <option value="true">Log Ticket to Database & Send Email Notification</option>
-                        <option value="false">Bypass Database Logging (Send Direct Email Only)</option>
-                    </select>
-                </div>
+		<div class="form-group col">
+            		<label>Operational Processing Mode</label>
+            		<select name="generate_ticket" id="generate_ticket" required>
+                		<option value="true">Log Ticket to Database & Send Email Notification</option>
+                		<option value="false">Bypass Database Logging (Send Direct Email Only)</option>
+            		</select>
+        	</div>
 
                 <div class="form-group col">
                     <label>Assigned Operator Team</label>
@@ -133,24 +133,25 @@
             <div class="row" style="margin-top: 15px;">
                 <div class="form-group col">
                     <label>Issue Subject / Alarm Category</label>
-                    <select name="issue_category" id="issue_category" onchange="evaluateOperationalCategory()" required>
-                        <option value="" disabled selected>-- Select Alarm Category --</option>
-                        <optgroup label="Standard Ticket Types">
-                            <option value="Link Down">Link Down</option>
-                            <option value="packet drop">packet drop</option>
-                            <option value="High Bandwidth Utilization">High Bandwidth Utilization</option>
-                            <option value="Fiber Down">Fiber Down</option>
-                            <option value="latency issue">latency issue</option>
-                            <option value="ip blacklist">ip blacklist</option>
-                        </optgroup>
-                        <optgroup label="Direct Mail Notification Categories">
-                            <option value="Switch Is Isolated">Switch Is Isolated</option>
-                            <option value="IP is Not Pingable">IP is Not Pingable</option>
-                            <option value="website issue">website issue</option>
-                            <option value="Media Device Down">Media Device Down</option>
-                            <option value="Port is Down">Port is Down</option>
-                        </optgroup>
-                     </select> 
+		    <select name="issue_category" id="issue_category" onchange="evaluateOperationalCategory()" required>
+        		<option value="" disabled selected>-- Select Alarm Category --</option>
+        			<optgroup label="Standard Ticket Types">
+            			<option value="Link Down">Link Down</option>
+            			<option value="packet drop">packet drop</option>
+            			<option value="High Bandwidth Utilization">High Bandwidth Utilization</option>
+            			<option value="Fiber Down">Fiber Down</option>
+            			<option value="latency issue">latency issue</option>
+            			<option value="ip blacklist">ip blacklist</option>
+        		</optgroup>
+        		<optgroup label="Direct Mail Notification Categories">
+            			<option value="Switch Is Isolated">Switch Is Isolated</option>
+            			<option value="IP is Not Pingable">IP is Not Pingable</option>
+            			<option value="website issue">website issue</option>
+           			<option value="Media Device Down">Media Device Down</option>
+            			<option value="Port is Down">Port is Down</option>
+        		</optgroup>
+    		     </select>	
+
                 </div>
                 <div class="form-group col">
                     <label>Fault Location / Segment</label>
@@ -174,7 +175,7 @@
             </div>
 
             <div class="form-group" style="border-top:1px dashed #cbd5e1; padding-top:15px;">
-                <label>Incident Evidence Attachment (Mandatory only when closing Isolated Switches)</label>
+                <label>Incident Evidence Attachment (Screenshots, Trace Logs)</label>
                 <input type="file" name="attachment" id="ticketAttachment">
             </div>
         </div>
@@ -322,21 +323,22 @@ async function submitTicket(e) {
 
     // === Mandatory Attachment Enforcement Hook ===
     const selectedCategory = form.elements['issue_category'].value;
-    const selectedStatus = form.elements['status'].value;
     const attachmentInput = document.getElementById('ticketAttachment');
     
-    // Updated operational rule validation: Enforce snapshot strictly when category is isolated AND closing out the case.
-    if (selectedCategory === "Switch Is Isolated" && selectedStatus === "Closed") {
+    if (selectedCategory === "Switch Is Isolated") {
         if (!attachmentInput.files || attachmentInput.files.length === 0) {
             box.style.display = 'block'; 
             box.style.background = '#fee2e2'; 
             box.style.color = '#991b1b';
-            box.textContent = "Validation Failure: A switch reboot proof snapshot is strictly mandatory when closing a 'Switch Is Isolated' ticket.";
-            alert("Error: Attachment proof is required to close isolated switch tickets.");
+            box.textContent = "Validation Failure: An incident evidence screenshot or trace log is strictly mandatory when raising a 'Switch Is Isolated' alert.";
+            alert("Error: Attachment is required for isolated switches.");
             return;
         }
     }
     // ==============================================    
+
+
+
 
     const payload = new FormData(form);
     payload.append("cc_emails", activeSelectedCcs.join(","));
@@ -417,13 +419,9 @@ window.addEventListener('DOMContentLoaded', refreshDashboardLogs);
 <script>
 function evaluateOperationalCategory() {
     const categorySelector = document.getElementById("issue_category");
-    if (!categorySelector) return;
-    
     const selectedOption = categorySelector.options[categorySelector.selectedIndex];
     const parentGroup = selectedOption.parentNode.label;
     const processingMode = document.getElementById("generate_ticket");
-
-    if (!processingMode) return;
 
     // Automatically flip switch to bypass database if chosen category falls into direct notifications
     if (parentGroup === "Direct Mail Notification Categories") {

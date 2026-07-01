@@ -174,6 +174,9 @@ async function commitStatusUpdate() {
     }
 }
 
+// Global variable to keep track of the background refresh timer
+let autoRefreshInterval = null;
+
 async function refreshLogs() {
     try {
         const search = document.getElementById('filter_search').value;
@@ -184,30 +187,80 @@ async function refreshLogs() {
         body.innerHTML = '';
         
         let openCount = 0, monitorCount = 0, closedCount = 0;
+        const now = new Date();
+
         tickets.forEach(t => {
             if (t.status === 'Open') openCount++;
             else if (t.status === 'In Monitoring') monitorCount++;
             else if (t.status === 'Closed') closedCount++;
 
+            // --- SLA AGING CALCULATION ---
+            let ageDisplay = '--';
+            let rowStyle = '';
+            
+            if (t.status !== 'Closed' && t.created_at) {
+                const createdTime = new Date(t.created_at);
+                const ageMinutes = Math.floor((now - createdTime) / 60000);
+                
+                if (ageMinutes < 60) {
+                    ageDisplay = `${ageMinutes} Mins`;
+                } else {
+                    const hours = Math.floor(ageMinutes / 60);
+                    const mins = ageMinutes % 60;
+                    ageDisplay = `${hours}h ${mins}m`;
+                }
+
+                // If an open ticket sits for more than 45 minutes, highlight it subtly in red
+                if (t.status === 'Open' && ageMinutes >= 45) {
+                    rowStyle = 'style="background-color: #fff5f5; border-left: 4px solid #ef4444;"';
+                }
+            } else if (t.status === 'Closed') {
+                ageDisplay = `${t.resolution_minutes || 0} Mins`;
+            }
+
             body.innerHTML += `
-            <tr>
+            <tr ${rowStyle}>
                 <td style="font-weight:bold;">${t.ticket_id}</td>
                 <td>${t.circuit_id}</td>
                 <td>${t.issue_category}</td>
                 <td>${t.open_by_name}</td>
                 <td>${t.closed_by_name}</td>
                 <td><span style="padding:3px 8px; font-size:11px; border-radius:10px; font-weight:bold; background:${t.status==='Closed'?'#d1fae5;color:#065f46':t.status==='In Monitoring'?'#fef3c7;color:#d97706':'#fee2e2;color:#991b1b'}">${t.status}</span></td>
-                <td>${t.status === 'Closed' ? `${t.resolution_minutes} Mins` : '--'}</td>
+                <td>${ageDisplay}</td>
                 <td><button type="button" class="patch-btn" onclick="openStatusModal('${t.raw_ticket_id}', '${t.status}')">Modify</button></td>
             </tr>`;
         });
+
         document.getElementById('kpi_total').textContent = tickets.length;
         document.getElementById('kpi_open').textContent = openCount;
         document.getElementById('kpi_monitor').textContent = monitorCount;
         document.getElementById('kpi_closed').textContent = closedCount;
-    } catch(err) { console.error(err); }
+    } catch(err) { 
+        console.error("Dashboard Polling Error:", err); 
+    }
 }
-window.addEventListener('DOMContentLoaded', refreshLogs);
+
+// Initialize application and establish the 30-second live loop
+function startDashboardEngine() {
+    refreshLogs(); // Run immediately on load
+    
+    // Clear any existing intervals to prevent memory leaks or racing requests
+    if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+    
+    // Poll the backend API every 30 seconds quietly
+    autoRefreshInterval = setInterval(() => {
+        // Only auto-refresh if the engineer isn't actively typing a search query
+        const searchInput = document.getElementById('filter_search');
+        if (document.activeElement !== searchInput || searchInput.value.trim() === "") {
+            refreshLogs();
+        }
+    }, 30000); 
+}
+
+window.addEventListener('DOMContentLoaded', startDashboardEngine);
+
+
+
 </script>
 </body>
 </html>
