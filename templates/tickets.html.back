@@ -73,7 +73,6 @@
     </div>
 </div>
 
-<!-- Modal Layer with Snapshot Integration -->
 <div id="statusModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.4); justify-content:center; align-items:center;">
     <div class="card" style="background:white; width:410px; padding:25px; border-radius:8px;">
         <h4 style="margin-top:0;">Modify Ticket Operational Status</h4>
@@ -119,7 +118,6 @@ async function commitStatusUpdate() {
     const remarkNote = document.getElementById('modalRemarkNote').value.trim();
     const fileSelector = document.getElementById('modal_status_file');
 
-    // Create a plain object payload to match backend dictionary expectations
     const payload = {
         ticket_id: parseInt(ticketId) || ticketId,
         status: status,
@@ -127,7 +125,6 @@ async function commitStatusUpdate() {
         attachment: null
     };
 
-    // Encode file to Base64 data string if an attachment is provided
     if (fileSelector.files.length > 0) {
         try {
             payload.attachment = await new Promise((resolve, reject) => {

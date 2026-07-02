@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style type="text/css">
+    body, table, td, a { -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
+    table, td { mso-table-lspace:0pt; mso-table-rspace:0pt; }
+    img { -ms-interpolation-mode:bicubic; border:0; height:auto; line-height:100%; outline:none; text-decoration:none; }
+    body { height:100% !important; margin:0 !important; padding:0 !important; width:100% !important; background-color:#f4f7fa; font-family:Arial, Helvetica, sans-serif; }
+    table { border-collapse:collapse !important; }
+    @media screen and (max-width: 730px) {
+        .email-container { width: 100% !important; max-width: 100% !important; }
+        .responsive-padding { padding: 20px 15px !important; }
+        .label-cell { width: 40% !important; }
+    }
+</style>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f7fa;font-family:Arial,Helvetica,sans-serif;">
+
+<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f7fa" style="table-layout:fixed;">
+    <tr>
+        <td align="center" style="padding:30px 15px;" class="responsive-padding">
+
+            <table class="email-container" width="700" cellpadding="0" cellspacing="0" border="0" style="max-width:700px; background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                <tr>
+                    <td bgcolor="#0b4d91" align="center" style="padding:35px 25px; text-align:center;">
+                        <h2 style="margin:0; color:#ffffff; font-family:Arial,Helvetica,sans-serif; font-size:24px; font-weight:bold; letter-spacing:0.5px; line-height:30px;">
+                            Link Bandwidth {{ action_title }} Confirmation
+                        </h2>
+                        <p style="margin:8px 0 0 0; color:#d9e8f5; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:18px;">
+                            TeleGlobal Communications Pvt. Ltd.
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="padding:40px 35px; color:#333333; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:24px;" class="responsive-padding">
+                        <p style="font-size:15px; margin-top:0; margin-bottom:16px;"><strong>Dear Sir,</strong></p>
+                        <p style="margin-bottom:16px;">Greeting from <strong>TeleGlobal Communications Pvt. Ltd.</strong> It is an absolute pleasure serving your organization's mission-critical connectivity requirements.</p>
+                        <p style="margin-bottom:24px;">This is to formally confirm that your Internet Leased Line service bandwidth profile has been successfully <strong>{{ action_verb }}</strong> from <strong>{{ old_bandwidth_speed }}</strong> to a stable <strong>{{ new_bandwidth_speed }}</strong> rating in production.</p>
+
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:20px; margin-bottom:30px; background-color:#eef6ff; border-left:5px solid #0d6efd;">
+                            <tr>
+                                <td style="padding:15px 20px; font-size:14px; line-height:20px;">
+                                    <strong style="color:#0b4d91;">Profile Operation Tracking:</strong>
+                                    <span style="font-size:15px; color:#2e7d32; font-weight:bold; margin-left:5px;">● Modified Profile Live</span>
+                                    <span style="font-size:13px; color:#666666; margin-left:12px;">(Effective Execution Date: {{ effective_date }})</span>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <table width="100%" cellpadding="12" cellspacing="0" border="1" bgcolor="#ffffff" style="border-collapse:collapse; margin-top:25px; border:2px solid #a0aec0;">
+                            <thead>
+                                <tr>
+                                    <th colspan="2" bgcolor="#0b4d91" style="padding:14px 12px; text-align:center; color:#ffffff; font-weight:bold; font-size:14px; text-transform:uppercase; border:2px solid #a0aec0;">
+                                        MODIFIED TECHNICAL DETAILS
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr bgcolor="#f7f9fc">
+                                    <td class="label-cell" width="35%" style="padding:12px; border:1px solid #cbd5e1; font-weight:bold; color:#4a5568;">Circuit ID</td>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; font-family:Courier New, Courier, monospace; font-size:15px; font-weight:bold; color:#0b4d91;">{{ circuit_id }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; font-weight:bold; color:#4a5568;">Company Name</td>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; color:#1e293b;">{{ company_name }}</td>
+                                </tr>
+                                <tr bgcolor="#f7f9fc">
+                                    <td style="padding:12px; border:1px solid #cbd5e1; font-weight:bold; color:#4a5568;">Previous Bandwidth</td>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; color:#ea580c; font-weight:bold; text-decoration: line-through;">{{ old_bandwidth_speed }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; font-weight:bold; color:#4a5568;">Modified Target Bandwidth</td>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; color:#16a34a; font-weight:bold; font-size: 15px;">{{ new_bandwidth_speed }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <p style="margin-top:30px; margin-bottom:16px;">For immediate structural engineering support or network configurations adjustments, update your trouble logs at <a href="mailto:noc@teleglobal.in" style="color:#0d6efd; text-decoration:none; font-weight:bold;">noc@teleglobal.in</a> or reference the engineering response contact metrics below.</p>
+
+                        <p style="margin-top:30px; margin-bottom:0; padding-top:15px; border-top:1px dashed #cbd5e1;">
+                            Best Regards,<br>
+                            <span style="font-size:15px; color:#0b4d91;"><strong>{{ operator_name }}</strong></span><br>
+                            <span style="color:#64748b; font-weight:bold; font-size:13px;">NOC Team Helpdesk</span>
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td bgcolor="#f7f9fc" style="padding:30px 35px; border-top:1px solid #e1e8ed;">
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td style="font-family:Arial,Helvetica,sans-serif; font-size:13px; color:#555555; line-height:22px;">
+                                    <strong style="color:#333333; font-size:14px;">Teleglobal Communications Pvt. Ltd.</strong><br>
+                                    Cerebrum IT Park B3, Office No. 4B, Kalyani Nagar, Pune - 411014, Maharashtra, India<br>
+                                    <span>📞 Office No:</span> 020-48522500 | <span>📱 Support Line:</span> +91 8855811141<br>
+                                    <span>🌐 Web:</span> <a href="https://www.teleglobals.com" target="_blank" style="color:#0b4d91; text-decoration:none; font-weight:bold;">www.teleglobals.com</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+
+        </td>
+    </tr>
+</table>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style type="text/css">
+    body, table, td, a { -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
+    table, td { mso-table-lspace:0pt; mso-table-rspace:0pt; }
+    img { -ms-interpolation-mode:bicubic; border:0; height:auto; line-height:100%; outline:none; text-decoration:none; }
+    body { height:100% !important; margin:0 !important; padding:0 !important; width:100% !important; background-color:#f4f7fa; font-family:Arial, Helvetica, sans-serif; }
+    table { border-collapse:collapse !important; }
+    @media screen and (max-width: 730px) {
+        .email-container { width: 100% !important; max-width: 100% !important; }
+        .responsive-padding { padding: 20px 15px !important; }
+        .label-cell { width: 40% !important; }
+    }
+</style>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f7fa;font-family:Arial,Helvetica,sans-serif;">
+
+<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f7fa" style="table-layout:fixed;">
+    <tr>
+        <td align="center" style="padding:30px 15px;" class="responsive-padding">
+
+            <table class="email-container" width="700" cellpadding="0" cellspacing="0" border="0" style="max-width:700px; background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                <tr>
+                    <td bgcolor="#0b4d91" align="center" style="padding:35px 25px; text-align:center;">
+                        <h2 style="margin:0; color:#ffffff; font-family:Arial,Helvetica,sans-serif; font-size:24px; font-weight:bold; letter-spacing:0.5px; line-height:30px;">
+                            Link Bandwidth {{ action_title }} Confirmation
+                        </h2>
+                        <p style="margin:8px 0 0 0; color:#d9e8f5; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:18px;">
+                            TeleGlobal Communications Pvt. Ltd.
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="padding:40px 35px; color:#333333; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:24px;" class="responsive-padding">
+                        <p style="font-size:15px; margin-top:0; margin-bottom:16px;"><strong>Dear Sir,</strong></p>
+                        <p style="margin-bottom:16px;">Greeting from <strong>TeleGlobal Communications Pvt. Ltd.</strong> It is an absolute pleasure serving your organization's mission-critical connectivity requirements.</p>
+                        <p style="margin-bottom:24px;">This is to formally confirm that your Internet Leased Line service bandwidth profile has been successfully <strong>{{ action_verb }}</strong> from <strong>{{ old_bandwidth_speed }}</strong> to a stable <strong>{{ new_bandwidth_speed }}</strong> rating in production.</p>
+
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:20px; margin-bottom:30px; background-color:#eef6ff; border-left:5px solid #0d6efd;">
+                            <tr>
+                                <td style="padding:15px 20px; font-size:14px; line-height:20px;">
+                                    <strong style="color:#0b4d91;">Profile Operation Tracking:</strong>
+                                    <span style="font-size:15px; color:#2e7d32; font-weight:bold; margin-left:5px;">● Modified Profile Live</span>
+                                    <span style="font-size:13px; color:#666666; margin-left:12px;">(Effective Execution Date: {{ effective_date }})</span>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <table width="100%" cellpadding="12" cellspacing="0" border="1" bgcolor="#ffffff" style="border-collapse:collapse; margin-top:25px; border:2px solid #a0aec0;">
+                            <thead>
+                                <tr>
+                                    <th colspan="2" bgcolor="#0b4d91" style="padding:14px 12px; text-align:center; color:#ffffff; font-weight:bold; font-size:14px; text-transform:uppercase; border:2px solid #a0aec0;">
+                                        MODIFIED TECHNICAL DETAILS
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr bgcolor="#f7f9fc">
+                                    <td class="label-cell" width="35%" style="padding:12px; border:1px solid #cbd5e1; font-weight:bold; color:#4a5568;">Circuit ID</td>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; font-family:Courier New, Courier, monospace; font-size:15px; font-weight:bold; color:#0b4d91;">{{ circuit_id }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; font-weight:bold; color:#4a5568;">Company Name</td>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; color:#1e293b;">{{ company_name }}</td>
+                                </tr>
+                                <tr bgcolor="#f7f9fc">
+                                    <td style="padding:12px; border:1px solid #cbd5e1; font-weight:bold; color:#4a5568;">Previous Bandwidth</td>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; color:#ea580c; font-weight:bold; text-decoration: line-through;">{{ old_bandwidth_speed }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; font-weight:bold; color:#4a5568;">Modified Target Bandwidth</td>
+                                    <td style="padding:12px; border:1px solid #cbd5e1; color:#16a34a; font-weight:bold; font-size: 15px;">{{ new_bandwidth_speed }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <p style="margin-top:30px; margin-bottom:16px;">For immediate structural engineering support or network configurations adjustments, update your trouble logs at <a href="mailto:noc@teleglobal.in" style="color:#0d6efd; text-decoration:none; font-weight:bold;">noc@teleglobal.in</a> or reference the engineering response contact metrics below.</p>
+
+                        <p style="margin-top:30px; margin-bottom:0; padding-top:15px; border-top:1px dashed #cbd5e1;">
+                            Best Regards,<br>
+                            <span style="font-size:15px; color:#0b4d91;"><strong>{{ operator_name }}</strong></span><br>
+                            <span style="color:#64748b; font-weight:bold; font-size:13px;">NOC Team Helpdesk</span>
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td bgcolor="#f7f9fc" style="padding:30px 35px; border-top:1px solid #e1e8ed;">
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td style="font-family:Arial,Helvetica,sans-serif; font-size:13px; color:#555555; line-height:22px;">
+                                    <strong style="color:#333333; font-size:14px;">Teleglobal Communications Pvt. Ltd.</strong><br>
+                                    Cerebrum IT Park B3, Office No. 4B, Kalyani Nagar, Pune - 411014, Maharashtra, India<br>
+                                    <span>📞 Office No:</span> 020-48522500 | <span>📱 Support Line:</span> +91 8855811141<br>
+                                    <span>🌐 Web:</span> <a href="https://www.teleglobals.com" target="_blank" style="color:#0b4d91; text-decoration:none; font-weight:bold;">www.teleglobals.com</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+
+        </td>
+    </tr>
+</table>
+</body>
+</html>

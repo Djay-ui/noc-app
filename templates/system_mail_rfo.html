@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Send RFO - Teleglobal NOC</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f6f9; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .row { display: flex; gap: 20px; margin-bottom: 15px; }
+        .col { flex: 1; }
+        label { font-weight: bold; font-size: 13px; color: #475569; display: block; margin-bottom: 5px; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
+        .btn-fetch { background: #2563eb; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-submit { background: #10b981; color: white; padding: 15px; width: 100%; border: none; border-radius: 6px; font-weight: bold; margin-top: 20px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Generate RFO (Reason for Outage)</h2>
+    <div class="row" style="background: #f8fafc; padding: 15px; border-radius: 6px;">
+        <div class="col"><input type="text" id="lookup_id" placeholder="Enter Circuit ID or Ticket ID..."></div>
+        <div class="col"><button class="btn-fetch" onclick="fetchTicketData()">Fetch Data</button></div>
+    </div>
+    
+    <form id="rfoForm">
+        <div class="row">
+            <div class="col"><label>Customer Name</label><input type="text" name="customer_name" id="customer_name"></div>
+            <div class="col"><label>Circuit ID</label><input type="text" name="circuit_id" id="circuit_id"></div>
+        </div>
+        <div class="row">
+            <div class="col"><label>Circuit Location</label><input type="text" name="circuit_location" id="circuit_location"></div>
+            <div class="col"><label>Circuit Bandwidth</label><input type="text" name="bandwidth" id="bandwidth"></div>
+        </div>
+        <div class="row">
+            <div class="col"><label>SR Number / Ticket ID</label><input type="text" name="ticket_id" id="ticket_id"></div>
+            <div class="col"><label>SR Type / Category</label><input type="text" name="er_type" id="er_type"></div>
+        </div>
+        <div class="row">
+            <div class="col"><label>Reference Ticket ID</label><input type="text" name="reference_ticket_id"></div>
+            <div class="col"><label>SR Priority</label><input type="text" name="priority"></div>
+        </div>
+        <div class="row">
+            <div class="col"><label>SR Creation Time</label><input type="text" name="creation_time" id="creation_time"></div>
+            <div class="col"><label>SR Resolution Time</label><input type="text" name="resolution_time" id="resolution_time"></div>
+        </div>
+        <div class="row">
+            <div class="col"><label>Total Resolution Time</label><input type="text" name="total_resolution_time" id="total_resolution_time"></div>
+            <div class="col"><label>Circuit Up Time</label><input type="text" name="circuit_up_time"></div>
+        </div>
+        <div class="row">
+            <div class="col"><label>'On-hold' Duration</label><input type="text" name="on_hold_duration"></div>
+            <div class="col"><label>SR Reopen Case (Y/N)</label><input type="text" name="roopen_case"></div>
+        </div>
+        <div class="row">
+            <div class="col"><label>Nature of Fault</label><input type="text" name="nature_of_fault"></div>
+            <div class="col"><label>Reason for Outage</label><input type="text" name="reason_for_outage"></div>
+        </div>
+        <div class="row">
+            <div class="col"><label>Issue Location</label><input type="text" name="issue_location"></div>
+            <div class="col"><label>Resolution</label><input type="text" name="resolution"></div>
+        </div>
+        <div class="row">
+            <div class="col"><label>Remarks / Additional Information</label><textarea name="remarks"></textarea></div>
+        </div>
+        <button type="submit" class="btn-submit">Send RFO Email</button>
+    </form>
+</div>
+
+<!--script>
+async function fetchTicketData() {
+    const id = document.getElementById('lookup_id').value;
+    // This assumes an endpoint exists that returns ticket/circuit details
+    const res = await fetch(`/api/ticket/details/${id}`);
+    const data = await res.json();
+    if(data) {
+        document.getElementById('customer_name').value = data.customer_name || '';
+        document.getElementById('circuit_id').value = data.circuit_id || '';
+        document.getElementById('ticket_id').value = data.ticket_id || '';
+        document.getElementById('er_type').value = data.issue_category || '';
+        document.getElementById('creation_time').value = data.timestamp || '';
+        document.getElementById('resolution_time').value = data.closed_timestamp || '';
+        // Map other fields accordingly
+    }
+}
+</script-->
+
+<script>
+document.getElementById('rfoForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    
+    const res = await fetch('/api/send-rfo', { // Ensure this route exists in main.py
+        method: 'POST',
+        body: formData
+    });
+    
+    const result = await res.json();
+    if(res.ok) {
+        alert("RFO Email Sent Successfully");
+    } else {
+        alert("Error: " + result.detail);
+    }
+});
+</script>
+</body>
+</html>

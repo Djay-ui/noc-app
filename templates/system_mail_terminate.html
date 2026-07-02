@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Termination Management Hub</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7fa; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 750px; background: #fff; margin: 0 auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h2 { color: #b71c1c; border-bottom: 2px solid #b71c1c; padding-bottom: 10px; margin-top: 0; }
+        .search-section { background: #fdf2f2; padding: 15px; border-radius: 6px; margin-bottom: 25px; display: flex; gap: 10px; align-items: center; border: 1px solid #fee2e2; }
+        .search-section input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; }
+        .btn { background: #b71c1c; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; transition: background 0.2s; }
+        .btn:hover { background: #961515; }
+        .btn-secondary { background: #64748b; }
+        .btn-secondary:hover { background: #475569; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group.full-width { grid-column: span 2; }
+        label { font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #475569; }
+        input[type="text"], input[type="date"] { padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; box-sizing: border-box; width: 100%; }
+        input:focus { outline: none; border-color: #b71c1c; box-shadow: 0 0 0 3px rgba(183,28,28,0.1); }
+        .status-msg { margin-top: 15px; padding: 12px; border-radius: 4px; display: none; font-weight: 500; }
+        .success { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Link Termination Processing Hub</h2>
+
+    <div class="search-section">
+        <input type="text" id="lookup_circuit_id" placeholder="Enter Circuit ID to fetch matching customer details...">
+        <button type="button" class="btn btn-secondary" onclick="fetchCircuitData()">Fetch Details</button>
+    </div>
+
+    <form id="terminationMailForm">
+        <div class="grid">
+            <div class="form-group">
+                <label for="circuit_id">Circuit ID *</label>
+                <input type="text" id="circuit_id" name="circuit_id" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="company_name">Company Name *</label>
+                <input type="text" id="company_name" name="company_name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="termination_date">Official Termination Date *</label>
+                <input type="date" id="termination_date" name="termination_date" required>
+            </div>
+
+            <div class="form-group">
+                <label for="cc_emails">Mail CC Options (Comma Separated)</label>
+                <input type="text" id="cc_emails" name="cc_emails" placeholder="noc-alerts@teleglobal.in">
+            </div>
+
+            <div class="form-group full-width">
+                <label for="customer_email">Customer Destination Emails (Comma Separated) *</label>
+                <input type="text" id="customer_email" name="customer_email" placeholder="client-it@company.com" required>
+            </div>
+        </div>
+
+        <button type="submit" class="btn" style="width: 100%; padding: 13px; font-size: 16px;">Process Link Termination Package</button>
+    </form>
+
+    <div id="statusBox" class="status-msg"></div>
+</div>
+
+<script>
+    async function fetchCircuitData() {
+        const searchId = document.getElementById('lookup_circuit_id').value.trim();
+        const statusBox = document.getElementById('statusBox');
+        if (!searchId) {
+            alert('Please specify a valid Circuit ID.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/circuit/${encodeURIComponent(searchId)}`);
+            if (!response.ok) throw new Error('No matching client record located in system inventory registers.');
+            
+            const data = await response.json();
+            const record = Array.isArray(data) ? data[0] : data;
+
+            document.getElementById('circuit_id').value = record.circuit_id || '';
+            document.getElementById('company_name').value = record.customer_name || '';
+            document.getElementById('customer_email').value = record.customer_email || '';
+            
+            statusBox.style.display = 'block';
+            statusBox.className = 'status-msg success';
+            statusBox.innerText = 'Circuit properties synchronized directly from database.';
+        } catch (err) {
+            statusBox.style.display = 'block';
+            statusBox.className = 'status-msg error';
+            statusBox.innerText = err.message;
+        }
+    }
+
+    document.getElementById('terminationMailForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const statusBox = document.getElementById('statusBox');
+        statusBox.style.display = 'block';
+        statusBox.className = 'status-msg';
+        statusBox.style.backgroundColor = '#f1f5f9';
+        statusBox.style.color = '#334155';
+        statusBox.innerText = 'Transmitting execution changes across network engines...';
+
+        const formData = new FormData(e.target);
+
+        try {
+            const response = await fetch('/api/tools/send-termination-mail', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.detail || 'Processing breakdown on system mail pipeline.');
+
+            statusBox.className = 'status-msg success';
+            statusBox.innerText = result.message;
+            e.target.reset();
+        } catch (err) {
+            statusBox.className = 'status-msg error';
+            statusBox.innerText = err.message;
+        }
+    });
+</script>
+</body>
+</html>

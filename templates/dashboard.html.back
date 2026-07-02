@@ -47,6 +47,12 @@
         th, td { padding: 10px; border: 1px solid #cbd5e1; text-align: left; }
         th { background: #e2e8f0; color: #334155; }
         @media (max-width: 768px) { .row { flex-direction: column; gap: 0; } }
+
+        .nav-dropdown { position: relative; display: inline-block; }
+        .nav-dropdown-content { display: none; position: absolute; background-color: white; min-width: 220px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1); z-index: 20000; border-radius: 6px; border: 1px solid #e2e8f0; top: 100%; right: 0; margin-top: 4px; overflow: hidden; }
+        .nav-dropdown-content a { color: #334155; padding: 12px 16px; text-decoration: none; display: block; font-size: 14px; font-weight: 600; text-align: left; transition: background 0.1s ease; }
+        .nav-dropdown-content a:hover { background-color: #f1f5f9; color: #2563eb; }
+        .nav-dropdown:hover .nav-dropdown-content { display: block; }
     </style>
 </head>
 <body>
@@ -57,12 +63,26 @@
             <h1>Teleglobal NOC Tickets Operations Console</h1>
             <div style="color: #64748b; font-size: 14px; margin-top: 4px;">Active Session: <strong style="color: #1e293b;">{{ user.full_name }}</strong></div>
         </div>
-        <div class="nav-group">
-            <a href="/tickets" class="nav-link-btn">🎟️ Managing Operational Tickets →</a>
+      <div class="nav-group">
+            <a href="/tickets" class="nav-link-btn">🎟️ Managing Operational Tickets </a>
+            
             {% if user.role == 'admin' %}
-            <a href="/circuits" class="nav-link-btn alt">⚙️ Manage Circuits DB →</a>
-            <a href="/admin/users" class="nav-link-btn" style="background:#0ea5e9;">👥 Manage Users →</a>
+            <a href="/circuits" class="nav-link-btn alt">⚙️ Manage Circuits DB </a>
+            <a href="/admin/users" class="nav-link-btn" style="background:#0ea5e9;">👥 Manage Users </a>
             {% endif %}
+            
+            <!-- Updated Dropdown Menu: Now includes the Operational Reports Download Link -->
+            <div class="nav-dropdown">
+                <button type="button" class="nav-link-btn" style="background: #0ea5e9; display: flex; align-items: center; gap: 4px;">📩 System Mail & Reports ▼</button>
+                <div class="nav-dropdown-content">
+                    <a href="/system-mail/welcome">📄 Welcome Mail</a>
+                    <a href="/system-mail/bandwidth">⚡ Bandwidth Upgradation/Downgradion</a>
+                    <a href="/system-mail/terminate">❌ Link Termination</a>
+                    <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 4px 0;">
+                    <a href="/reports" style="background: #f0fdf4; color: #16a34a; font-weight: bold;">📊 Download Operational Reports</a>
+                </div>
+            </div>
+
             <a href="/api/auth/logout" class="nav-link-btn logout">🔒 Logout</a>
         </div>
     </div>
@@ -109,13 +129,13 @@
                     <input type="text" value="{{ user.full_name }}" readonly style="background: #e2e8f0; font-weight: bold; color: #475569;">
                 </div>
 
-		<div class="form-group col">
-            		<label>Operational Processing Mode</label>
-            		<select name="generate_ticket" id="generate_ticket" required>
-                		<option value="true">Log Ticket to Database & Send Email Notification</option>
-                		<option value="false">Bypass Database Logging (Send Direct Email Only)</option>
-            		</select>
-        	</div>
+                <div class="form-group col">
+                    <label>Operational Processing Mode</label>
+                    <select name="generate_ticket" id="generate_ticket" required>
+                        <option value="true">Log Ticket to Database & Send Email Notification</option>
+                        <option value="false">Bypass Database Logging (Send Direct Email Only)</option>
+                    </select>
+                </div>
 
                 <div class="form-group col">
                     <label>Assigned Operator Team</label>
@@ -133,25 +153,24 @@
             <div class="row" style="margin-top: 15px;">
                 <div class="form-group col">
                     <label>Issue Subject / Alarm Category</label>
-		    <select name="issue_category" id="issue_category" onchange="evaluateOperationalCategory()" required>
-        		<option value="" disabled selected>-- Select Alarm Category --</option>
-        			<optgroup label="Standard Ticket Types">
-            			<option value="Link Down">Link Down</option>
-            			<option value="packet drop">packet drop</option>
-            			<option value="High Bandwidth Utilization">High Bandwidth Utilization</option>
-            			<option value="Fiber Down">Fiber Down</option>
-            			<option value="latency issue">latency issue</option>
-            			<option value="ip blacklist">ip blacklist</option>
-        		</optgroup>
-        		<optgroup label="Direct Mail Notification Categories">
-            			<option value="Switch Is Isolated">Switch Is Isolated</option>
-            			<option value="IP is Not Pingable">IP is Not Pingable</option>
-            			<option value="website issue">website issue</option>
-           			<option value="Media Device Down">Media Device Down</option>
-            			<option value="Port is Down">Port is Down</option>
-        		</optgroup>
-    		     </select>	
-
+                    <select name="issue_category" id="issue_category" onchange="evaluateOperationalCategory()" required>
+                        <option value="" disabled selected>-- Select Alarm Category --</option>
+                        <optgroup label="Standard Ticket Types">
+                            <option value="Link Down">Link Down</option>
+                            <option value="packet drop">packet drop</option>
+                            <option value="High Bandwidth Utilization">High Bandwidth Utilization</option>
+                            <option value="Fiber Down">Fiber Down</option>
+                            <option value="latency issue">latency issue</option>
+                            <option value="ip blacklist">ip blacklist</option>
+                        </optgroup>
+                        <optgroup label="Direct Mail Notification Categories">
+                            <option value="Switch Is Isolated">Switch Is Isolated</option>
+                            <option value="IP is Not Pingable">IP is Not Pingable</option>
+                            <option value="website issue">website issue</option>
+                            <option value="Media Device Down">Media Device Down</option>
+                            <option value="Port is Down">Port is Down</option>
+                        </optgroup>
+                     </select> 
                 </div>
                 <div class="form-group col">
                     <label>Fault Location / Segment</label>
@@ -321,7 +340,6 @@ async function submitTicket(e) {
     
     const form = document.getElementById('ticketForm');
 
-    // === Mandatory Attachment Enforcement Hook ===
     const selectedCategory = form.elements['issue_category'].value;
     const attachmentInput = document.getElementById('ticketAttachment');
     
@@ -335,10 +353,6 @@ async function submitTicket(e) {
             return;
         }
     }
-    // ==============================================    
-
-
-
 
     const payload = new FormData(form);
     payload.append("cc_emails", activeSelectedCcs.join(","));
@@ -414,16 +428,13 @@ async function refreshDashboardLogs() {
     } catch(err) { console.error(err); }
 }
 window.addEventListener('DOMContentLoaded', refreshDashboardLogs);
-</script>
 
-<script>
 function evaluateOperationalCategory() {
     const categorySelector = document.getElementById("issue_category");
     const selectedOption = categorySelector.options[categorySelector.selectedIndex];
     const parentGroup = selectedOption.parentNode.label;
     const processingMode = document.getElementById("generate_ticket");
 
-    // Automatically flip switch to bypass database if chosen category falls into direct notifications
     if (parentGroup === "Direct Mail Notification Categories") {
         processingMode.value = "false";
         processingMode.style.border = "2px solid #3b82f6";
@@ -433,6 +444,5 @@ function evaluateOperationalCategory() {
     }
 }
 </script>
-
 </body>
 </html>

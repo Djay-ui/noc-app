@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NOC Platform - Generate Welcome Mail</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; margin: 0; padding: 40px; color: #333; }
+        .form-container { max-width: 650px; background: #fff; margin: 0 auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        h2 { color: #0b4d91; margin-top: 0; border-bottom: 2px solid #eef2f6; padding-bottom: 10px; }
+        .form-group { margin-bottom: 18px; }
+        label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; color: #4a5568; }
+        input[type="text"], input[type="date"], input[type="file"] { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+        .file-box { background: #f8fafc; border: 1px dashed #cbd5e1; padding: 12px; border-radius: 4px; }
+        .submit-btn { width: 100%; background: #0b4d91; color: white; border: none; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: background 0.2s; }
+        .submit-btn:hover { background: #083b70; }
+        .row { display: flex; gap: 15px; }
+        .row .form-group { flex: 1; }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>📩 Disptach Welcome Mail & Sync Inventory</h2>
+    
+    <!-- enctype="multipart/form-data" is mandatory for uploading documents -->
+    <form action="/api/system-mail/send-welcome" method="POST" enctype="multipart/form-data">
+        
+        <div class="row">
+            <div class="form-group">
+                <label>Circuit ID *</label>
+                <input type="text" name="circuit_id" placeholder="e.g. TG-ILL-MUM-1024" required>
+            </div>
+            <div class="form-group">
+                <label>Customer Name *</label>
+                <input type="text" name="customer_name" placeholder="Client Legal Entity Name" required>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>Bandwidth Speed *</label>
+                <input type="text" name="bandwidth_speed" placeholder="e.g. 50 Mbps / 100 Mbps" required>
+            </div>
+            <div class="form-group">
+                <label>Commissioning Date *</label>
+                <input type="date" name="commissioning_date" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>WAN IP Details *</label>
+            <input type="text" name="wan_ip_details" placeholder="e.g. 103.X.X.X /30" required>
+        </div>
+
+        <div class="form-group">
+            <label>Usable IP Addresses *</label>
+            <input type="text" name="usable_ips" placeholder="e.g. 103.X.X.Y" required>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>Default Gateway *</label>
+                <input type="text" name="default_gateway" placeholder="e.g. 103.X.X.Z" required>
+            </div>
+            <div class="form-group">
+                <label>Subnet Mask *</label>
+                <input type="text" name="subnet_mask" placeholder="e.g. 255.255.255.252" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Escalation Matrix (Strictly PDF) *</label>
+            <div class="file-box">
+                <input type="file" name="escalation_matrix" accept=".pdf" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Bandwidth Testing Snapshot (Image) *</label>
+            <div class="file-box">
+                <input type="file" name="bandwidth_snap" accept="image/*" required>
+            </div>
+        </div>
+
+        <button type="submit" class="submit-btn">Verify Details & Send Mail</button>
+    </form>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bandwidth Upgrade Notification</title>
+</head>
+<body style="margin:0;padding:0;background:#f3f5f7;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" bgcolor="#f3f5f7">
+<tr>
+<td align="center" style="padding:30px 15px;">
+<table width="650" cellpadding="0" cellspacing="0" style="max-width:650px;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 5px 15px rgba(0,0,0,.08);">
+    <!-- Header -->
+    <tr>
+        <td align="center" bgcolor="#0b5cab" style="padding:30px;">
+            <h2 style="color:#ffffff;margin:15px 0 0;font-weight:normal;">
+                Bandwidth Upgrade Confirmation
+            </h2>
+        </td>
+    </tr>
+    <!-- Greeting -->
+    <tr>
+        <td style="padding:35px 40px 10px;color:#444444;font-size:15px;line-height:28px;">
+            Dear Sir/Madam,
+            <br><br>
+            Greetings from <strong>TeleGlobal Communications Pvt. Ltd.</strong>
+            <br><br>
+            Thank you for choosing TeleGlobal as your Internet Service Provider. We sincerely appreciate your trust and are committed to delivering reliable connectivity and exceptional service.
+            <br><br>
+            <div style="background:#eaf7ed;border-left:5px solid #28a745;padding:18px;border-radius:4px;color:#2e6b3b;">
+                We are pleased to inform you that your Internet bandwidth has been
+                <strong>successfully upgraded</strong>
+                from
+                <strong>{{ old_bandwidth }}</strong>
+                to
+                <strong>{{ new_bandwidth }}</strong>.
+            </div>
+        </td>
+    </tr>
+    <!-- Information Table -->
+    <tr>
+        <td style="padding:10px 40px 30px;">
+            <table width="100%" cellpadding="12" cellspacing="0" style="border-collapse:collapse;border:1px solid #e4e4e4;">
+                <tr bgcolor="#f7f7f7">
+                    <td width="40%"><strong>Circuit ID</strong></td>
+                    <td>{{ circuit_id }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Customer Name</strong></td>
+                    <td>{{ customer_name }}</td>
+                </tr>
+                <tr bgcolor="#f7f7f7">
+                    <td><strong>Bandwidth</strong></td>
+                    <td>{{ new_bandwidth }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Upgrade Date</strong></td>
+                    <td>{{ upgrade_date }}</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <!-- Footer Text -->
+    <tr>
+        <td style="padding:0 40px 30px;font-size:15px;color:#555555;line-height:26px;">
+            If you have any questions or require any assistance, please feel free to contact our NOC team.
+            <br><br>
+            Regards,<br><br>
+            <strong>{{ engineer_name }}</strong><br>
+            Sr. Network Engineer – NOC Team<br>
+            ☎ 020-48522500 &nbsp; | &nbsp; 📱 +91 8855811141
+        </td>
+    </tr>
+    <!-- Company Footer -->
+    <tr>
+        <td bgcolor="#0b5cab" align="center" style="padding:25px;color:#ffffff;font-size:13px;line-height:24px;">
+            <strong>TeleGlobal Communications Pvt. Ltd.</strong><br>
+            Cerebrum IT Park B3, Office No. 4B,<br>
+            Kalyani Nagar, Pune – 411014, India<br><br>
+            🌐 <a href="https://www.teleglobals.com" style="color:#ffffff;text-decoration:none;">www.teleglobals.com</a>
+        </td>
+    </tr>
+</table>
+</td>
+</tr>
+</table>
+</body>
+</html>

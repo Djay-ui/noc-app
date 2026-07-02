@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Provisioning Welcome Mailer</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7fa; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 800px; background: #fff; margin: 0 auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h2 { color: #0b4d91; border-bottom: 2px solid #0b4d91; padding-bottom: 10px; margin-top: 0; }
+        .search-section { background: #eef4fa; padding: 15px; border-radius: 6px; margin-bottom: 25px; display: flex; gap: 10px; align-items: center; }
+        .search-section input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; }
+        .btn { background: #0b4d91; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; transition: background 0.2s; }
+        .btn:hover { background: #08386b; }
+        .btn-secondary { background: #64748b; }
+        .btn-secondary:hover { background: #475569; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group.full-width { grid-column: span 2; }
+        label { font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #475569; }
+        input[type="text"], input[type="email"], input[type="date"] { padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; }
+        input:focus { outline: none; border-color: #0b4d91; box-shadow: 0 0 0 3px rgba(11,77,145,0.1); }
+        .file-box { background: #f8fafc; border: 1px dashed #cbd5e1; padding: 12px; border-radius: 6px; margin-top: 5px; }
+        .status-msg { margin-top: 15px; padding: 12px; border-radius: 4px; display: none; font-weight: 500; }
+        .success { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Provisioning Welcome Package Engine</h2>
+    
+    <!-- Database Search Lookup Row -->
+    <div class="search-section">
+        <input type="text" id="lookup_circuit_id" placeholder="Enter Circuit ID to fetch existing inventory data...">
+        <button type="button" class="btn btn-secondary" onclick="fetchCircuitData()">Fetch Details</button>
+    </div>
+
+    <!-- Submission Form UI -->
+    <form id="welcomeMailForm" enctype="multipart/form-data">
+        <div class="grid">
+            <div class="form-group">
+                <label for="circuit_id">Circuit ID *</label>
+                <input type="text" id="circuit_id" name="circuit_id" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="customer_name">Customer Name *</label>
+                <input type="text" id="customer_name" name="customer_name" required>
+            </div>
+	
+	    <div class="form-group">
+    		<label for="company_name">Company Name *</label>
+    		<input type="text" id="company_name" name="company_name" placeholder="e.g., TeleGlobal Pvt Ltd" required>
+	    </div>
+
+            <div class="form-group">
+                <label for="bandwidth_speed">Bandwidth Speed (e.g., 100 Mbps) *</label>
+                <input type="text" id="bandwidth_speed" name="bandwidth_speed" required>
+            </div>
+
+            <div class="form-group">
+                <label for="commissioning_date">Commissioning Date *</label>
+                <input type="date" id="commissioning_date" name="commissioning_date" required>
+            </div>
+
+            <div class="form-group">
+                <label for="wan_ip_details">WAN IP Details *</label>
+                <input type="text" id="wan_ip_details" name="wan_ip_details" required>
+            </div>
+
+            <div class="form-group">
+                <label for="usable_ips">Usable IPs Range *</label>
+                <input type="text" id="usable_ips" name="usable_ips" required>
+            </div>
+
+            <div class="form-group">
+                <label for="default_gateway">Default Gateway *</label>
+                <input type="text" id="default_gateway" name="default_gateway" required>
+            </div>
+
+            <div class="form-group">
+                <label for="subnet_mask">Subnet Mask *</label>
+                <input type="text" id="subnet_mask" name="subnet_mask" required>
+            </div>
+
+            <div class="form-group">
+                <label for="customer_email">Customer Destination Email *</label>
+                <input type="email" id="customer_email" name="customer_email" required>
+            </div>
+
+	    <div class="form-group">
+   		 <label for="customer_email">Customer Destination Emails (Comma Separated) *</label>
+    		 <input type="text" id="customer_email" name="customer_email" placeholder="client1@company.com, client2@company.com" required>
+		</div>
+
+
+            <!-- Escalation Matrix Upload -->
+            <div class="form-group">
+                <label for="escalation_matrix">Upload Escalation Matrix (Strictly PDF) *</label>
+                <div class="file-box">
+                    <input type="file" id="escalation_matrix" name="escalation_matrix" accept=".pdf" required>
+                </div>
+            </div>
+
+            <!-- Bandwidth Testing Snapshot Upload -->
+            <div class="form-group">
+                <label for="testing_snap">Upload Bandwidth Testing File *</label>
+                <div class="file-box">
+                    <input type="file" id="testing_snap" name="testing_snap" accept="image/*, application/pdf" required>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn" style="width: 100%; padding: 12px; font-size: 16px;">Send Welcome Mail & Sync DB</button>
+    </form>
+
+    <div id="statusBox" class="status-msg"></div>
+</div>
+
+<script>
+    async function fetchCircuitData() {
+        const searchId = document.getElementById('lookup_circuit_id').value.trim();
+        const statusBox = document.getElementById('statusBox');
+        if (!searchId) {
+            alert('Please specify an operational Circuit ID string.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/circuit/${encodeURIComponent(searchId)}`);
+            if (!response.ok) throw new Error('No matching client record located in system inventory registers.');
+            
+            const data = await response.json();
+            const record = Array.isArray(data) ? data[0] : data;
+
+            document.getElementById('circuit_id').value = record.circuit_id || '';
+            document.getElementById('customer_name').value = record.customer_name || '';
+            document.getElementById('customer_email').value = record.customer_email || '';
+            
+            statusBox.style.display = 'block';
+            statusBox.className = 'status-msg success';
+            statusBox.innerText = 'Profile configurations retrieved and mapped successfully.';
+        } catch (err) {
+            statusBox.style.display = 'block';
+            statusBox.className = 'status-msg error';
+            statusBox.innerText = err.message;
+        }
+    }
+
+    document.getElementById('welcomeMailForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const statusBox = document.getElementById('statusBox');
+        statusBox.style.display = 'block';
+        statusBox.className = 'status-msg';
+        statusBox.style.backgroundColor = '#f1f5f9';
+        statusBox.style.color = '#334155';
+        statusBox.innerText = 'Synchronizing client tables and transmitting secure routing packets...';
+
+        const formData = new FormData(e.target);
+
+        try {
+            const response = await fetch('/api/tools/send-welcome-mail', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.detail || 'Processing breakdown on system mail dispatch pipeline.');
+
+            statusBox.className = 'status-msg success';
+            statusBox.innerText = result.message;
+            e.target.reset();
+        } catch (err) {
+            statusBox.className = 'status-msg error';
+            statusBox.innerText = err.message;
+        }
+    });
+</script>
+</body>
+</html>
