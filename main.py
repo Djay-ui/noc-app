@@ -19,7 +19,6 @@ from email.mime.base import MIMEBase
 from email import encoders
 from email.mime.application import MIMEApplication
 from typing import Optional
-from fastapi import Request, HTTPException
 
 app = FastAPI(title="Teleglobal NOC Automation Platform")
 templates = Jinja2Templates(directory="templates")
@@ -55,24 +54,16 @@ def send_smtp_email_background(msg_string: str, all_recipients: list):
 
 # SCALABLE ALARM CONFIGURATION MATRIX
 def determine_email_template(issue_category: str, status: str) -> str:
-    """
-    Centralized router mapping alert rules to target email templates.
-    To add a new custom alarm in the future, simply append a new 'elif' branch here.
-    """
     if not issue_category:
         cat = ""
     else:
         cat = issue_category.strip().lower()
 
-    # 1. Configuration rule for "IP is not pingable"
     if cat == "ip is not pingable":
         return "ip_up.html" if status == "Closed" else "ip_down.html"
-
-    # 2. Configuration rule for "Switch Isolated"
     elif cat in ["switch isolated", "switch is isolated"]:
         return "switch_up.html" if status == "Closed" else "switch_down.html"
 
-    # Default Fallback for generic/other link incidents
     if status == "Closed":
         return "link_up.html"
     elif status == "In Monitoring":
@@ -114,7 +105,6 @@ def verify_session_token(token: str) -> dict:
         return payload
     except Exception:
         return None
-
 
 # Dependency Providers
 async def get_current_user(request: Request):
@@ -173,7 +163,7 @@ async def route_circuits_page(request: Request, user=Depends(get_optional_user))
     if not user:
         return RedirectResponse(url="/login", status_code=303)
     if user["role"] != "admin":
-        return HTMLResponse("<html><body><h3>Access Denied: Administrative Clearance Required</h3><a href='/'>Return to Dashboard</a></body></html>", status_code=403)
+        return HTMLResponse("<html><body><h3>Access Denied: Clearance Required</h3><a href='/'>Return Dashboard</a></body></html>", status_code=403)
     return templates.TemplateResponse(request=request, name="circuits.html", context={"user": user})
 
 @app.get("/system-mail/welcome", response_class=HTMLResponse)
@@ -194,12 +184,14 @@ async def route_link_termination_page(request: Request, user=Depends(get_optiona
         return RedirectResponse(url="/login", status_code=303)
     return templates.TemplateResponse(request=request, name="system_mail_terminate.html", context={"user": user})
 
-@app.get("/system-mail/rfo")
-async def rfo_page(request: Request):
-    # Ensure the second argument is a flat dictionary containing the 'request' object
+@app.get("/system-mail/rfo", response_class=HTMLResponse)
+async def route_system_mail_rfo_page(request: Request, user=Depends(get_optional_user)):
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
     return templates.TemplateResponse(
-        "system_mail_rfo.html", 
-        {"request": request}
+        request=request, 
+        name="system_mail_rfo.html", 
+        context={"user": user}
     )
 
 @app.get("/admin/users", response_class=HTMLResponse)
@@ -207,21 +199,15 @@ async def route_user_management_page(request: Request, user=Depends(get_optional
     if not user:
         return RedirectResponse(url="/login", status_code=303)
     if user["role"] != "admin":
-        return HTMLResponse("<html><body><h3>Access Denied: Administrative Clearance Required</h3><a href='/'>Return to Dashboard</a></body></html>", status_code=403)
+        return HTMLResponse("<html><body><h3>Access Denied</h3></body></html>", status_code=403)
     return templates.TemplateResponse(request=request, name="users.html", context={"user": user})
 
 @app.get("/reports", response_class=HTMLResponse)
 async def get_reports_page(request: Request, user=Depends(get_optional_user)):
-    # 1. Enforce session security (redirect to login if session token is missing/invalid)
     if not user:
         return RedirectResponse(url="/login", status_code=303)
-    
-    # 2. Render safely using explicit keyword arguments matching your environment
-    return templates.TemplateResponse(
-        request=request, 
-        name="reports.html", 
-        context={"user": user}
-    )
+    return templates.TemplateResponse(request=request, name="reports.html", context={"user": user})
+
 # Auth Actions
 @app.post("/api/auth/login")
 async def api_login(username: str = Form(...), password: str = Form(...)):
@@ -250,9 +236,8 @@ async def api_get_me(user=Depends(get_current_user)):
     return user
 
 # =========================================================================
-# FIXED CIRCUITS MANAGEMENT PIPELINE (COMPANY REFACTOR & MULTI-EMAIL)
+# WELCOME MAIL PIPELINE 
 # =========================================================================
-
 @app.post("/api/tools/send-welcome-mail")
 async def api_send_provisioning_welcome_mail(
     background_tasks: BackgroundTasks,
@@ -296,8 +281,7 @@ async def api_send_provisioning_welcome_mail(
         conn.rollback()
         raise HTTPException(status_code=500, detail=f"Database synchronization failed: {str(db_err)}")
     finally:
-        cursor.close()
-        conn.close()
+        cursor.close(); conn.close()
 
     try:
         template = templates.get_template("emails/welcome_mail.html")
@@ -317,7 +301,6 @@ async def api_send_provisioning_welcome_mail(
 
     msg = MIMEMultipart()
     msg['From'] = SMTP_USER
-    
     to_recipients = [addr.strip() for addr in customer_email.split(",") if addr.strip()]
     msg['To'] = ", ".join(to_recipients)
     msg['Subject'] = f"Welcome to TeleGlobal Communications Pvt. Ltd || {company_name.strip()} || {circuit_id.strip()}"
@@ -354,12 +337,11 @@ async def api_send_provisioning_welcome_mail(
          raise HTTPException(status_code=500, detail=f"Failed compiling network snapshot logs: {str(img_err)}")
 
     background_tasks.add_task(send_smtp_email_background, msg.as_string(), recipients)
-    return {"status": "success", "message": "Database synchronized perfectly. Onboarding welcome pack sent successfully."}
+    return {"status": "success", "message": "Welcome onboarding welcome pack sent successfully."}
 
 # =========================================================================
-# BANDWIDTH ALTERATION MANAGEMENT PIPELINE (UPGRADE / DOWNGRADE)
+# BANDWIDTH ALTERATION MANAGEMENT PIPELINE 
 # =========================================================================
-
 @app.post("/api/tools/send-bandwidth-change-mail")
 async def api_send_bandwidth_change_mail(
     background_tasks: BackgroundTasks,
@@ -402,8 +384,7 @@ async def api_send_bandwidth_change_mail(
         conn.rollback()
         raise HTTPException(status_code=500, detail=f"Database synchronization failed: {str(db_err)}")
     finally:
-        cursor.close()
-        conn.close()
+        cursor.close(); conn.close()
 
     try:
         template = templates.get_template("emails/bandwidth_change_mail.html")
@@ -422,7 +403,6 @@ async def api_send_bandwidth_change_mail(
 
     msg = MIMEMultipart()
     msg['From'] = SMTP_USER
-    
     to_recipients = [addr.strip() for addr in customer_email.split(",") if addr.strip()]
     msg['To'] = ", ".join(to_recipients)
     msg['Subject'] = f"Link Bandwidth {action_title} Confirmation || {company_name.strip()} || {circuit_id.strip()}"
@@ -439,14 +419,12 @@ async def api_send_bandwidth_change_mail(
 
     msg.attach(MIMEText(hydrated_body, 'html'))
     background_tasks.add_task(send_smtp_email_background, msg.as_string(), recipients)
-   # --- ADDED LOGGING TRIGGER ---
     log_operational_event("bandwidth_upgrade_logs", circuit_id.strip(), old_bandwidth_speed.strip(), new_bandwidth_speed.strip())
-    
-    return {"status": "success", "message": f"Bandwidth {action_title} notifications queued cleanly without file attachments."}
+    return {"status": "success", "message": f"Bandwidth {action_title} notifications queued cleanly."}
+
 # =========================================================================
 # LINK TERMINATION MANAGEMENT PIPELINE
 # =========================================================================
-
 @app.post("/api/tools/send-termination-mail")
 async def api_send_termination_mail(
     background_tasks: BackgroundTasks,
@@ -480,7 +458,6 @@ async def api_send_termination_mail(
 
     msg = MIMEMultipart()
     msg['From'] = SMTP_USER
-    
     to_recipients = [addr.strip() for addr in customer_email.split(",") if addr.strip()]
     msg['To'] = ", ".join(to_recipients)
     msg['Subject'] = f"Link Termination Notification || {company_name.strip()} || {circuit_id.strip()}"
@@ -497,31 +474,12 @@ async def api_send_termination_mail(
 
     msg.attach(MIMEText(hydrated_body, 'html'))
     background_tasks.add_task(send_smtp_email_background, msg.as_string(), recipients)
-    
-    # --- ADDED LOGGING TRIGGER ---
     log_operational_event("link_termination_logs", circuit_id.strip(), "Termination requested by client", None)
-    
     return {"status": "success", "message": "Link termination announcement queued cleanly via background layers."}
 
-@app.get("/api/ticket/details/{id}")
-async def get_ticket_details(id: str, user=Depends(get_current_user)):
-    conn = get_db_connection()
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
-    # Adjust this query to match your actual database schema
-    cursor.execute("""
-        SELECT t.circuit_id, t.issue_category, t.created_at as timestamp, 
-               t.closed_at as closed_timestamp, c.customer_name 
-        FROM tickets t 
-        JOIN customers c ON t.circuit_id = c.circuit_id 
-        WHERE t.ticket_id::text = %s OR t.circuit_id = %s
-    """, (id, id))
-    data = cursor.fetchone()
-    cursor.close(); conn.close()
-    
-    if not data:
-        raise HTTPException(status_code=404, detail="Ticket not found")
-    return data
-
+# =========================================================================
+# CORE DATA MANAGEMENT LAYER & API METRICS ENGINE
+# =========================================================================
 @app.get("/api/circuit/{circuit_id}")
 async def get_circuit_details(circuit_id: str, user=Depends(get_current_user)):
     search_term = circuit_id.strip()
@@ -551,10 +509,7 @@ async def get_circuit_details(circuit_id: str, user=Depends(get_current_user)):
         raise HTTPException(status_code=404, detail="No matching customer profile or circuit was found.")
     return circuit_records
 
-# --- REGISTERED CIRCUITS MATRIX DATA VIEW ---
-@app.get("/api/circuit/all")
 @app.get("/api/circuits/all")
-@app.get("/api/circuits")
 async def api_get_all_circuits(search: str = "", user=Depends(get_current_user)):
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
@@ -571,22 +526,14 @@ async def api_get_all_circuits(search: str = "", user=Depends(get_current_user))
                 ORDER BY circuit_id ASC
             """, (term, term, term, term))
         else:
-            cursor.execute("""
-                SELECT circuit_id, customer_name, company_name, customer_email, phone_number, address 
-                FROM customers 
-                ORDER BY circuit_id ASC
-            """)
+            cursor.execute("SELECT circuit_id, customer_name, company_name, customer_email, phone_number, address FROM customers ORDER BY circuit_id ASC")
         return cursor.fetchall()
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database fetch failure: {str(e)}")
     finally:
         cursor.close(); conn.close()
 
-# --- CONFLICT-FREE CIRCUIT UPSERT ENGINE ---
-@app.post("/api/circuit/save")
-@app.post("/api/circuit/add")
 @app.post("/api/circuits/save")
-@app.post("/api/circuits")
 async def api_save_circuit(request: Request, user=Depends(get_current_user)):
     if user["role"] != "admin":
         raise HTTPException(status_code=403, detail="Admin authorization required.")
@@ -605,9 +552,9 @@ async def api_save_circuit(request: Request, user=Depends(get_current_user)):
     circuit_id = data.get("circuit_id") or data.get("Circuit ID")
     customer_name = data.get("customer_name") or data.get("Customer Name")
     company_name = data.get("company_name") or data.get("Company Name") or ""
-    customer_email = data.get("customer_email") or data.get("customer_email_target") or data.get("Customer Email Target") or ""
+    customer_email = data.get("customer_email") or data.get("Customer Email Target") or ""
     phone_number = data.get("phone_number") or data.get("Phone Number") or ""
-    address = data.get("address") or data.get("site_address") or data.get("Site / POP Address") or ""
+    address = data.get("address") or data.get("Site / POP Address") or ""
 
     if not circuit_id or not customer_name:
         raise HTTPException(status_code=400, detail="Circuit ID and Customer Name are mandatory fields.")
@@ -656,16 +603,12 @@ async def api_update_user_profile(payload: UserUpdateModel, user=Depends(get_cur
         if payload.password and payload.password.strip():
             new_hash = hash_password(payload.password.strip())
             cursor.execute(
-                """UPDATE users 
-                   SET username = %s, full_name = %s, role = %s, password_hash = %s 
-                   WHERE id = %s""",
+                "UPDATE users SET username = %s, full_name = %s, role = %s, password_hash = %s WHERE id = %s",
                 (payload.username.strip().lower(), payload.full_name.strip(), payload.role, new_hash, payload.user_id)
             )
         else:
             cursor.execute(
-                """UPDATE users 
-                   SET username = %s, full_name = %s, role = %s 
-                   WHERE id = %s""",
+                "UPDATE users SET username = %s, full_name = %s, role = %s WHERE id = %s",
                 (payload.username.strip().lower(), payload.full_name.strip(), payload.role, payload.user_id)
             )
         conn.commit()
@@ -708,41 +651,29 @@ async def api_welcome_handover(
     
     html_template = f"""<!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Welcome to TeleGlobal Communications || Link Delivery Handover</title>
-</head>
-<body style="margin:0;padding:0;background-color:#f4f7fa;font-family:Arial,Helvetica,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f7fa" style="table-layout:fixed;">
+<body style="background-color:#f4f7fa;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f7fa">
     <tr>
         <td align="center" style="padding:30px 15px;">
-            <table class="email-container" width="700" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+            <table width="700" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff; border-radius:8px;">
                 <tr>
-                    <td bgcolor="#0b4d91" align="center" style="padding:35px 25px; text-align:center;">
-                        <h2 style="margin:0; color:#ffffff; font-size:24px; font-weight:bold;">Link Delivery Confirmation</h2>
-                        <p style="margin:8px 0 0 0; color:#d9e8f5; font-size:14px;">TeleGlobal Communications Pvt. Ltd.</p>
+                    <td bgcolor="#0b4d91" align="center" style="padding:35px 25px;">
+                        <h2 style="margin:0; color:#ffffff;">Link Delivery Confirmation</h2>
                     </td>
                 </tr>
                 <tr>
                     <td style="padding:40px 35px; color:#333333; font-size:14px; line-height:24px;">
                         <p><strong>Dear Sir,</strong></p>
-                        <p>Thank you for choosing <strong>TeleGlobal Communications Pvt. Ltd.</strong> as your Internet Service Provider.</p>
-                        <p>Your <strong>{bandwidth_speed} Internet Leased Line</strong> has been successfully installed, configured, and commissioned.</p>
-                        <table width="100%" cellpadding="12" cellspacing="0" border="1" style="border-collapse:collapse; margin-top:25px; border:2px solid #a0aec0;">
-                            <thead>
-                                <tr><th colspan="2" bgcolor="#0b4d91" style="color:#ffffff; text-align:center;">TECHNICAL COMMISSIONING DETAILS</th></tr>
-                            </thead>
-                            <tbody>
-                                <tr bgcolor="#f7f9fc"><td>Circuit ID</td><td><strong>{circuit_id}</strong></td></tr>
-                                <tr><td>Customer Name</td><td>{customer_name}</td></tr>
-                                <tr bgcolor="#f7f9fc"><td>Bandwidth Speed</td><td>{bandwidth_speed}</td></tr>
-                                <tr><td>Commissioning Date</td><td>{commissioning_date}</td></tr>
-                                <tr bgcolor="#f7f9fc"><td>WAN IP Details</td><td>Usable Range: <strong>{usable_ips}</strong> ({wan_ip_details})</td></tr>
-                                <tr><td>Default Gateway</td><td>{default_gateway}</td></tr>
-                                <tr bgcolor="#f7f9fc"><td>Subnet Mask</td><td>{subnet_mask}</td></tr>
-                            </tbody>
+                        <p>Your <strong>{bandwidth_speed} Internet Leased Line</strong> has been successfully commissioned.</p>
+                        <table width="100%" cellpadding="12" cellspacing="0" border="1" style="border-collapse:collapse; margin-top:25px;">
+                            <tr bgcolor="#f7f9fc"><td>Circuit ID</td><td><strong>{circuit_id}</strong></td></tr>
+                            <tr><td>Customer Name</td><td>{customer_name}</td></tr>
+                            <tr bgcolor="#f7f9fc"><td>Bandwidth Speed</td><td>{bandwidth_speed}</td></tr>
+                            <tr><td>Commissioning Date</td><td>{commissioning_date}</td></tr>
+                            <tr bgcolor="#f7f9fc"><td>WAN IP Details</td><td>Usable Range: <strong>{usable_ips}</strong> ({wan_ip_details})</td></tr>
+                            <tr><td>Default Gateway</td><td>{default_gateway}</td></tr>
+                            <tr bgcolor="#f7f9fc"><td>Subnet Mask</td><td>{subnet_mask}</td></tr>
                         </table>
-                        <p style="margin-top:30px;">Please find the logs and customer escalation matrix attached.</p>
                     </td>
                 </tr>
             </table>
@@ -780,7 +711,7 @@ async def api_welcome_handover(
 
     all_recipients = [customer_email.strip()] + recipients_cc
     background_tasks.add_task(send_smtp_email_background, msg.as_string(), all_recipients)
-    return {"status": "success", "message": "Welcome Onboarding Pack with Multi-Logs dispatched successfully."}
+    return {"status": "success", "message": "Welcome Onboarding Pack dispatched successfully."}
 
 @app.post("/api/ticket/raise")
 async def process_raise_ticket(
@@ -870,18 +801,8 @@ async def process_raise_ticket(
         
         msg.attach(MIMEText(final_body, 'html'))
     except Exception as io_err:
-        print(f"Fallback text triggered: {str(io_err)}")
         mail_signature = f"Regards,\n{engineer_identity}\nTeleglobal Communications Pvt. Ltd."
-        mail_body = (
-            f"Dear Operations Team,\n\n"
-            f"An active infrastructural incident notice has changed profile state status to [{status}].\n\n"
-            f"■ Incident System Ticket Reference: #{formatted_ticket_id}\n"
-            f"■ Link Circuit Core Reference: {circuit_id}\n"
-            f"■ Core Alarm Event Profile: {issue_category}\n"
-            f"■ Fault Topology Path Segment: {root_cause_segment}\n"
-            f"■ Assigned Team Work Group: {assigned_team}\n\n"
-            f"{mail_signature}"
-        )
+        mail_body = f"Dear Operations Team,\n\nIncident Reference: #{formatted_ticket_id}\nCircuit Reference: {circuit_id}\n{mail_signature}"
         msg.attach(MIMEText(mail_body, 'plain'))
 
     if attachment and attachment.filename:
@@ -905,8 +826,7 @@ async def update_ticket_status(payload: dict, background_tasks: BackgroundTasks,
     ticket_id = payload.get("ticket_id")
     target_status = payload.get("status")
     remark_note = payload.get("remark_note", "")
-
-    clean_remark = remark_note.strip() if remark_note.strip() else "No additional engineering comments provided."
+    clean_remark = remark_note.strip() if remark_note.strip() else "No additional comments provided."
 
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
@@ -927,15 +847,11 @@ async def update_ticket_status(payload: dict, background_tasks: BackgroundTasks,
             time_delta = closed_at - created_at_tz
             duration_minutes = max(1, int(time_delta.total_seconds() / 60))
             cursor.execute(
-                """UPDATE tickets SET status = %s, closed_by_name = %s, closed_at = %s, resolution_minutes = %s 
-                   WHERE ticket_id = %s""",
+                "UPDATE tickets SET status = %s, closed_by_name = %s, closed_at = %s, resolution_minutes = %s WHERE ticket_id = %s",
                 (target_status, engineer_identity, closed_at, duration_minutes, ticket_id)
             )
         else:
-            cursor.execute(
-                "UPDATE tickets SET status = %s, closed_by_name = NULL, closed_at = NULL, resolution_minutes = 0 WHERE ticket_id = %s",
-                (target_status, ticket_id)
-            )
+            cursor.execute("UPDATE tickets SET status = %s, closed_by_name = NULL, closed_at = NULL, resolution_minutes = 0 WHERE ticket_id = %s", (target_status, ticket_id))
             
         cursor.execute("SELECT customer_name, customer_email FROM customers WHERE LOWER(TRIM(circuit_id)) = LOWER(TRIM(%s))", (ticket_meta["circuit_id"],))
         customer_meta = cursor.fetchone()
@@ -952,7 +868,7 @@ async def update_ticket_status(payload: dict, background_tasks: BackgroundTasks,
         with open(f"/opt/noc-app/templates/emails/{template_file}", "r", encoding="utf-8") as html_file:
             html_template_data = html_file.read()
     except Exception as io_err:
-        raise HTTPException(status_code=500, detail=f"Failed loading HTML template from file path: {str(io_err)}")
+        raise HTTPException(status_code=500, detail=f"Failed loading HTML template: {str(io_err)}")
 
     recipients_cc = list(GLOBAL_MANDATORY_CC)
     formatted_ticket_id = f"TCPL{ticket_meta['created_at'].strftime('%d%m%y')}{ticket_id:02d}"
@@ -967,18 +883,14 @@ async def update_ticket_status(payload: dict, background_tasks: BackgroundTasks,
         .replace("{status}", str(target_status))\
         .replace("{remark_note}", str(clean_remark))
 
-    email_subject = f"CRITICAL: Internet Link Status Notice [{target_status}] - Circuit ID: {ticket_meta['circuit_id']}"
-
     if customer_meta and customer_meta.get("customer_email"):
         msg = MIMEMultipart()
         msg['From'] = SMTP_USER
         msg['To'] = customer_meta["customer_email"]
         msg['Cc'] = ", ".join(recipients_cc)
-        msg['Subject'] = email_subject
+        msg['Subject'] = f"Internet Link Status Notice [{target_status}] - Circuit ID: {ticket_meta['circuit_id']}"
         msg.attach(MIMEText(final_html_body, 'html'))
-
-        all_recipients = [customer_meta["customer_email"]] + recipients_cc
-        background_tasks.add_task(send_smtp_email_background, msg.as_string(), all_recipients)
+        background_tasks.add_task(send_smtp_email_background, msg.as_string(), [customer_meta["customer_email"]] + recipients_cc)
     return {"status": "success"}
 
 @app.get("/api/tickets/recent")
@@ -987,11 +899,9 @@ async def read_recent_tickets(limit: int = 10, search: str = "", status: str = "
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     query = """
         SELECT ticket_id, circuit_id, issue_category, status, assigned_team, open_by_name,
-               COALESCE(closed_by_name, '--') as closed_by_name, 
-               created_at,
+               COALESCE(closed_by_name, '--') as closed_by_name, created_at,
                TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI') as timestamp,
-               COALESCE(TO_CHAR(closed_at, 'YYYY-MM-DD HH24:MI'), '--') as closed_timestamp,
-               resolution_minutes
+               COALESCE(TO_CHAR(closed_at, 'YYYY-MM-DD HH24:MI'), '--') as closed_timestamp, resolution_minutes
         FROM tickets WHERE 1=1
     """
     params = []
@@ -1013,32 +923,19 @@ async def read_recent_tickets(limit: int = 10, search: str = "", status: str = "
     for row in records:
         ticket_date = row['created_at']
         custom_ticket_id = f"TCPL{ticket_date.strftime('%d%m%y')}{row['ticket_id']:02d}"
-        
         formatted_records.append({
-            "ticket_id": custom_ticket_id,
-            "raw_ticket_id": row['ticket_id'],
-            "circuit_id": row['circuit_id'],
-            "issue_category": row['issue_category'],
-            "status": row['status'],
-            "assigned_team": row['assigned_team'],
-            "open_by_name": row['open_by_name'],
-            "closed_by_name": row['closed_by_name'],
-            "timestamp": row['timestamp'],
-            "closed_timestamp": row['closed_timestamp'],
-            "resolution_minutes": row['resolution_minutes']
+            "ticket_id": custom_ticket_id, "raw_ticket_id": row['ticket_id'], "circuit_id": row['circuit_id'],
+            "issue_category": row['issue_category'], "status": row['status'], "assigned_team": row['assigned_team'],
+            "open_by_name": row['open_by_name'], "closed_by_name": row['closed_by_name'], "timestamp": row['timestamp'],
+            "closed_timestamp": row['closed_timestamp'], "resolution_minutes": row['resolution_minutes']
         })
     return formatted_records
 
-################################################################################################
-####################DOWNLOAD_REPORTs_FILES########################################
-####################################################################################################
-
+# =========================================================================
+# OPERATIONAL COMPLIANCE EXPORT DATA AUDIT ENGINE
+# =========================================================================
 @app.post("/api/reports/download")
-async def stream_csv_report_dataset(
-    payload: ReportPayload,
-    user: dict = Depends(get_current_user)
-):
-    """ Dynamically executes raw PostgreSQL queries using psycopg2 and streams CSV datasets """
+async def stream_csv_report_dataset(payload: ReportPayload, user: dict = Depends(get_current_user)):
     report_type = payload.report_type
     start_date = payload.start_date
     end_date = payload.end_date
@@ -1046,70 +943,49 @@ async def stream_csv_report_dataset(
 
     csv_buffer = io.StringIO()
     writer = csv.writer(csv_buffer)
-    
-    timestamp_suffix = datetime.now().strftime("%Y%m%d_%H%M%S")
-    computed_filename = f"teleglobal_{report_type}_{timestamp_suffix}.csv"
+    computed_filename = f"teleglobal_{report_type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
     
     writer.writerow(["TELEGLOBAL COMMUNICATIONS PVT. LTD."])
     writer.writerow(["NOC AUTOMATION ENGINE - COMPLIANCE EXPORT DATA AUDIT"])
-    
-    operator_name = user.full_name if hasattr(user, 'full_name') else user.get('full_name', 'System Desk')
+    operator_name = user.get('full_name', 'System Desk')
     writer.writerow([f"Generated By: {operator_name}", f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"])
     writer.writerow([]) 
 
     try:
-        conn = psycopg2.connect(
-            dbname="noc_ticketing", 
-            user="noc_admin", 
-            password="SecureNocPassword2026!", 
-            host="localhost"
-        )
-        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
     except Exception as e:
-        print(f"Database connection failure during report export: {str(e)}")
-        raise HTTPException(status_code=500, detail="Unable to connect to the backend database engine.")
+        raise HTTPException(status_code=500, detail="Unable to connect to database engine.")
 
     try:
         if report_type == "tickets":
             writer.writerow(["Ticket ID", "Circuit ID", "Alarm Category", "Assigned Team", "Fault Location Segment", "Status", "Opened By", "Closed By", "Opened Time", "Closed Time", "Duration Log"])
-            
             query = "SELECT * FROM tickets WHERE 1=1"
             params = []
             if start_date:
-                query += " AND created_at >= %s"
-                params.append(f"{start_date} 00:00:00")
+                query += " AND created_at >= %s"; params.append(f"{start_date} 00:00:00")
             if end_date:
-                query += " AND created_at <= %s"
-                params.append(f"{end_date} 23:59:59")
+                query += " AND created_at <= %s"; params.append(f"{end_date} 23:59:59")
             if team and team != "All":
-                query += " AND assigned_team = %s"
-                params.append(team)
+                query += " AND assigned_team = %s"; params.append(team)
             query += " ORDER BY ticket_id DESC"
-            
             cursor.execute(query, tuple(params))
-            records = cursor.fetchall()
-            
-            for item in records:
+            for item in cursor.fetchall():
                 res_mins = item.get('resolution_minutes')
                 duration = f"{res_mins} Mins" if item.get('status') == 'Closed' and res_mins else 'Active'
                 writer.writerow([f"#{item.get('ticket_id')}", item.get('circuit_id', ''), item.get('issue_category', ''), item.get('assigned_team', ''), item.get('root_cause_segment', ''), item.get('status', ''), item.get('open_by_name', ''), item.get('closed_by_name', ''), str(item.get('created_at', '')), str(item.get('closed_at', '') or ''), duration])
 
         elif report_type == "welcome_links":
             writer.writerow(["Circuit ID", "Customer Name", "Company Name", "Contact Phone / Email", "Site Location Address", "Dispatched Timestamp"])
-            
             query = "SELECT c.circuit_id, c.customer_name, c.company_name, c.customer_email, c.address, wl.dispatched_at FROM customers c INNER JOIN welcome_mail_logs wl ON c.circuit_id = wl.circuit_id WHERE 1=1"
             params = []
             if start_date:
-                query += " AND wl.dispatched_at >= %s"
-                params.append(f"{start_date} 00:00:00")
+                query += " AND wl.dispatched_at >= %s"; params.append(f"{start_date} 00:00:00")
             if end_date:
-                query += " AND wl.dispatched_at <= %s"
-                params.append(f"{end_date} 23:59:59")
+                query += " AND wl.dispatched_at <= %s"; params.append(f"{end_date} 23:59:59")
             query += " ORDER BY wl.dispatched_at DESC"
-            
             cursor.execute(query, tuple(params))
-            records = cursor.fetchall()
-            for item in records:
+            for item in cursor.fetchall():
                 writer.writerow([item.get('circuit_id', ''), item.get('customer_name', ''), item.get('company_name', 'Teleglobal Client'), item.get('customer_email', ''), item.get('address', 'NOC Managed Location'), str(item.get('dispatched_at', ''))])
 
         elif report_type == "bandwidth_changes":
@@ -1117,11 +993,9 @@ async def stream_csv_report_dataset(
             query = "SELECT c.customer_name, c.company_name, bl.circuit_id, bl.old_bandwidth, bl.new_bandwidth, bl.upgraded_at FROM bandwidth_upgrade_logs bl LEFT JOIN customers c ON bl.circuit_id = c.circuit_id WHERE 1=1"
             params = []
             if start_date:
-                query += " AND bl.upgraded_at >= %s"
-                params.append(f"{start_date} 00:00:00")
+                query += " AND bl.upgraded_at >= %s"; params.append(f"{start_date} 00:00:00")
             if end_date:
-                query += " AND bl.upgraded_at <= %s"
-                params.append(f"{end_date} 23:59:59")
+                query += " AND bl.upgraded_at <= %s"; params.append(f"{end_date} 23:59:59")
             query += " ORDER BY bl.upgraded_at DESC"
             cursor.execute(query, tuple(params))
             records = cursor.fetchall()
@@ -1130,12 +1004,9 @@ async def stream_csv_report_dataset(
                 fb_query = "SELECT c.customer_name, c.company_name, t.circuit_id, 'Current/Standard' as old_bandwidth, t.root_cause_segment as new_bandwidth, t.created_at as upgraded_at FROM tickets t INNER JOIN customers c ON t.circuit_id = c.circuit_id WHERE t.issue_category ILIKE %s"
                 fb_params = ["%bandwidth%"]
                 if start_date:
-                    fb_query += " AND t.created_at >= %s"
-                    fb_params.append(f"{start_date} 00:00:00")
+                    fb_query += " AND t.created_at >= %s"; fb_params.append(f"{start_date} 00:00:00")
                 if end_date:
-                    fb_query += " AND t.created_at <= %s"
-                    fb_params.append(f"{end_date} 23:59:59")
-                fb_query += " ORDER BY t.created_at DESC"
+                    fb_query += " AND t.created_at <= %s"; fb_params.append(f"{end_date} 23:59:59")
                 cursor.execute(fb_query, tuple(fb_params))
                 records = cursor.fetchall()
             
@@ -1147,11 +1018,9 @@ async def stream_csv_report_dataset(
             query = "SELECT c.customer_name, c.company_name, tl.circuit_id, tl.reason, tl.terminated_at FROM link_termination_logs tl LEFT JOIN customers c ON tl.circuit_id = c.circuit_id WHERE 1=1"
             params = []
             if start_date:
-                query += " AND tl.terminated_at >= %s"
-                params.append(f"{start_date} 00:00:00")
+                query += " AND tl.terminated_at >= %s"; params.append(f"{start_date} 00:00:00")
             if end_date:
-                query += " AND tl.terminated_at <= %s"
-                params.append(f"{end_date} 23:59:59")
+                query += " AND tl.terminated_at <= %s"; params.append(f"{end_date} 23:59:59")
             query += " ORDER BY tl.terminated_at DESC"
             cursor.execute(query, tuple(params))
             records = cursor.fetchall()
@@ -1160,66 +1029,181 @@ async def stream_csv_report_dataset(
                 fb_query = "SELECT c.customer_name, c.company_name, t.circuit_id, t.root_cause_segment as reason, t.created_at as terminated_at FROM tickets t INNER JOIN customers c ON t.circuit_id = c.circuit_id WHERE (t.issue_category ILIKE %s OR t.issue_category ILIKE %s)"
                 fb_params = ["%terminat%", "%decommission%"]
                 if start_date:
-                    fb_query += " AND t.created_at >= %s"
-                    fb_params.append(f"{start_date} 00:00:00")
+                    fb_query += " AND t.created_at >= %s"; fb_params.append(f"{start_date} 00:00:00")
                 if end_date:
-                    fb_query += " AND t.created_at <= %s"
-                    fb_params.append(f"{end_date} 23:59:59")
-                fb_query += " ORDER BY t.created_at DESC"
+                    fb_query += " AND t.created_at <= %s"; fb_params.append(f"{end_date} 23:59:59")
                 cursor.execute(fb_query, tuple(fb_params))
                 records = cursor.fetchall()
             
             for item in records:
                 writer.writerow([item.get('circuit_id'), item.get('customer_name'), item.get('company_name', 'Teleglobal Client'), item.get('reason', 'Decommission Request Issued'), str(item.get('terminated_at', ''))])
-        else:
-            raise HTTPException(status_code=400, detail="Requested operational metrics category mapping does not exist.")
     except Exception as err:
-        print(f"Execution handling error during query parsing: {str(err)}")
-        raise HTTPException(status_code=500, detail=f"Database data extraction fault: {str(err)}")
+        raise HTTPException(status_code=500, detail=f"Database extraction fault: {str(err)}")
+    finally:
+        cursor.close(); conn.close()
+
+    csv_buffer.seek(0)
+    return StreamingResponse(
+        iter([csv_buffer.getvalue()]), media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=\"{computed_filename}\"", "Cache-Control": "no-cache"}
+    )
+
+def log_operational_event(table_name, circuit_id, field1, field2):
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        if table_name == "bandwidth_upgrade_logs":
+            cur.execute("INSERT INTO bandwidth_upgrade_logs (circuit_id, old_bandwidth, new_bandwidth, upgraded_at) VALUES (%s, %s, %s, CURRENT_TIMESTAMP)", (circuit_id, field1, field2))
+        elif table_name == "link_termination_logs":
+            cur.execute("INSERT INTO link_termination_logs (circuit_id, reason, terminated_at) VALUES (%s, %s, CURRENT_TIMESTAMP)", (circuit_id, field1))
+        conn.commit(); cur.close(); conn.close()
+    except Exception as e:
+        print(f"Logging error: {e}")
+
+# =========================================================================
+# APPEND THESE ENDPOINTS TO THE BOTTOM OF MAIN.PY
+# =========================================================================
+
+from datetime import datetime
+
+@app.get("/api/ticket/search-details/{query_str}")
+async def api_search_ticket_details(query_str: str, user=Depends(get_current_user)):
+    """ Queries operational logs by formatted ticket reference numbers, raw IDs, or circuit IDs accurately """
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    term = query_str.strip()
+    wildcard_term = f"%{term}%"
+    
+    # SQL query dynamically reconstructs standard ticket format 'TCPL' + 'DDMMYY' + 'XX' for comparison
+    query = """
+        SELECT ticket_id, circuit_id, issue_category, root_cause_segment, status, assigned_team, open_by_name,
+               created_at,
+               COALESCE(closed_by_name, '--') as closed_by_name,
+               TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') as opened_at,
+               COALESCE(TO_CHAR(closed_at, 'YYYY-MM-DD HH24:MI:SS'), '--') as closed_at,
+               resolution_minutes
+        FROM tickets 
+        WHERE LOWER('TCPL' || TO_CHAR(created_at, 'DDMMYY') || LPAD(CAST(ticket_id AS TEXT), 2, '0')) LIKE LOWER(%s)
+           OR CAST(ticket_id AS TEXT) = %s
+           OR LOWER(circuit_id) LIKE LOWER(%s)
+        ORDER BY ticket_id DESC 
+        LIMIT 5
+    """
+    
+    try:
+        cursor.execute(query, (wildcard_term, term, wildcard_term))
+        records = cursor.fetchall()
+        
+        formatted = []
+        for row in records:
+            # Structurally generate standardized ticket tracking sequence matching read_recent_tickets
+            ticket_date = row['created_at']
+            custom_ticket_id = f"TCPL{ticket_date.strftime('%d%m%y')}{row['ticket_id']:02d}"
+            
+            formatted.append({
+                "ticket_id": custom_ticket_id,
+                "raw_ticket_id": row['ticket_id'],
+                "circuit_id": row['circuit_id'],
+                "issue_category": row['issue_category'],
+                "root_cause_segment": row['root_cause_segment'],
+                "status": row['status'],
+                "opened_at": row['opened_at'],
+                "closed_at": row['closed_at'],
+                "resolution_minutes": row['resolution_minutes']
+            })
+        return formatted
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database operational failure: {str(e)}")
     finally:
         cursor.close()
         conn.close()
 
-    csv_buffer.seek(0)
-    return StreamingResponse(
-        iter([csv_buffer.getvalue()]),
-        media_type="text/csv",
-        headers={
-            "Content-Disposition": f"attachment; filename=\"{computed_filename}\"",
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            "Access-Control-Expose-Headers": "Content-Disposition"
-        }
-    )
 
+import os
+from jinja2 import Template
 
+# =========================================================================
+# REASON FOR OUTAGE (RFO) AUTOMATION EMAIL DISPATCH PIPELINE
+# =========================================================================
 
-
-import psycopg2
-
-def log_operational_event(table_name, circuit_id, field1, field2):
-    """
-    Standardized logger to ensure data hits the tables.
-    table_name: 'bandwidth_upgrade_logs' or 'link_termination_logs'
-    field1: 'old_bandwidth' or 'reason'
-    field2: 'new_bandwidth' (None for termination)
-    """
+@app.post("/api/tools/send-rfo-mail")
+async def api_send_rfo_mail(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    user=Depends(get_current_user)
+):
+    """ Dynamically extracts all web form parameters and bridges them into templates/emails/RFO.html """
     try:
-        conn = psycopg2.connect(dbname="noc_ticketing", user="noc_admin", password="SecureNocPassword2026!", host="localhost")
-        cur = conn.cursor()
-        
-        if table_name == "bandwidth_upgrade_logs":
-            cur.execute(
-                "INSERT INTO bandwidth_upgrade_logs (circuit_id, old_bandwidth, new_bandwidth, upgraded_at) VALUES (%s, %s, %s, CURRENT_TIMESTAMP)",
-                (circuit_id, field1, field2)
-            )
-        elif table_name == "link_termination_logs":
-            cur.execute(
-                "INSERT INTO link_termination_logs (circuit_id, reason, terminated_at) VALUES (%s, %s, CURRENT_TIMESTAMP)",
-                (circuit_id, field1)
-            )
-        
-        conn.commit()
-        cur.close()
-        conn.close()
+        form_data = await request.form()
+        payload = dict(form_data)
     except Exception as e:
-        print(f"Logging error: {e}")
+        raise HTTPException(status_code=400, detail=f"Failed to parse form parameters: {str(e)}")
+
+    # Extract required target email parameters
+    customer_email = payload.get("customer_email", "").strip()
+    cc_emails = payload.get("cc_emails", "").strip()
+    
+    if not customer_email:
+        raise HTTPException(status_code=400, detail="Missing required field: Client Target Email Address.")
+
+    # Parse and structure recipient arrays
+    to_recipients = [addr.strip() for addr in customer_email.split(",") if addr.strip()]
+    recipients_cc = list(GLOBAL_MANDATORY_CC)
+    if cc_emails:
+        for addr in cc_emails.split(","):
+            if addr.strip():
+                recipients_cc.append(addr.strip())
+
+    # Map the exact absolute path to your file structure
+    template_path = os.path.join("templates", "emails", "RFO.html")
+    if not os.path.exists(template_path):
+        raise HTTPException(status_code=500, detail=f"Template file not found at path: {template_path}")
+
+    with open(template_path, "r", encoding="utf-8") as f:
+        raw_html_content = f.read()
+
+    # Create the context dictionary mapping the web form fields directly to the RFO.html tokens
+    email_context = {
+        "customer_name": payload.get("customer_name", "").strip(),
+        "circuit_id": payload.get("circuit_id", "").strip(),
+        "circuit_location": payload.get("circuit_location", "").strip(),
+        "bandwidth": payload.get("bandwidth", "").strip(),
+        "ticket_id": payload.get("ticket_id", "").strip(),
+        "er_type": payload.get("er_type", "").strip(),
+        "reference_ticket_id": payload.get("reference_ticket_id", "").strip(),
+        "priority": payload.get("priority", "").strip(),
+        "creation_time": payload.get("creation_time", "").strip(),
+        "resolution_time": payload.get("resolution_time", "").strip(),
+        "total_resolution_time": payload.get("total_resolution_time", "").strip(),
+        "circuit_up_time": payload.get("circuit_up_time", "").strip(),
+        "on_hold_duration": payload.get("on_hold_duration", "").strip(),
+        "roopen_case": payload.get("roopen_case", "").strip(),
+        "nature_of_fault": payload.get("nature_of_fault", "").strip(),
+        "reason_for_outage": payload.get("reason_for_outage", "").strip(),
+        "issue_location": payload.get("issue_location", "").strip(),
+        "resolution": payload.get("resolution", "").strip(),
+        "remarks": payload.get("remarks", "").strip(),
+        "current_year": "2026"  # Handled dynamically for your signature footer
+    }
+
+    # Render your custom RFO.html file layout using the context above
+    jinja_template = Template(raw_html_content)
+    html_body = jinja_template.render(**email_context)
+
+    # Compile the final multi-part email envelope configuration
+    msg = MIMEMultipart()
+    msg['From'] = SMTP_USER
+    msg['To'] = ", ".join(to_recipients)
+    msg['Cc'] = ", ".join(recipients_cc)
+    
+    company_name = email_context["customer_name"] or "Valued Client"
+    circuit_ref = email_context["circuit_id"] or "N/A"
+    msg['Subject'] = f"Reason for Outage (RFO) Report || {company_name} || Circuit ID: {circuit_ref}"
+    
+    msg.attach(MIMEText(html_body, 'html'))
+    all_recipients = to_recipients + recipients_cc
+
+    # Hand off to non-blocking background queue task loop to prevent browser page freeze
+    background_tasks.add_task(send_smtp_email_background, msg.as_string(), all_recipients)
+
+    return {"status": "success", "message": f"RFO email compiled and dispatched for ticket {email_context['ticket_id']}"}

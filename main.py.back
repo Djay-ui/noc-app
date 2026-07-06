@@ -19,6 +19,7 @@ from email.mime.base import MIMEBase
 from email import encoders
 from email.mime.application import MIMEApplication
 from typing import Optional
+from fastapi import Request, HTTPException
 
 app = FastAPI(title="Teleglobal NOC Automation Platform")
 templates = Jinja2Templates(directory="templates")
@@ -114,6 +115,7 @@ def verify_session_token(token: str) -> dict:
     except Exception:
         return None
 
+
 # Dependency Providers
 async def get_current_user(request: Request):
     token = request.cookies.get(COOKIE_NAME)
@@ -191,6 +193,14 @@ async def route_link_termination_page(request: Request, user=Depends(get_optiona
     if not user:
         return RedirectResponse(url="/login", status_code=303)
     return templates.TemplateResponse(request=request, name="system_mail_terminate.html", context={"user": user})
+
+@app.get("/system-mail/rfo")
+async def rfo_page(request: Request):
+    # Ensure the second argument is a flat dictionary containing the 'request' object
+    return templates.TemplateResponse(
+        "system_mail_rfo.html", 
+        {"request": request}
+    )
 
 @app.get("/admin/users", response_class=HTMLResponse)
 async def route_user_management_page(request: Request, user=Depends(get_optional_user)):
@@ -493,7 +503,24 @@ async def api_send_termination_mail(
     
     return {"status": "success", "message": "Link termination announcement queued cleanly via background layers."}
 
-
+@app.get("/api/ticket/details/{id}")
+async def get_ticket_details(id: str, user=Depends(get_current_user)):
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    # Adjust this query to match your actual database schema
+    cursor.execute("""
+        SELECT t.circuit_id, t.issue_category, t.created_at as timestamp, 
+               t.closed_at as closed_timestamp, c.customer_name 
+        FROM tickets t 
+        JOIN customers c ON t.circuit_id = c.circuit_id 
+        WHERE t.ticket_id::text = %s OR t.circuit_id = %s
+    """, (id, id))
+    data = cursor.fetchone()
+    cursor.close(); conn.close()
+    
+    if not data:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    return data
 
 @app.get("/api/circuit/{circuit_id}")
 async def get_circuit_details(circuit_id: str, user=Depends(get_current_user)):

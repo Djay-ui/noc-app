@@ -2,105 +2,314 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Send RFO - Teleglobal NOC</title>
+    <title>Send RFO Report - Teleglobal NOC</title>
     <style>
-        body { font-family: sans-serif; background: #f4f6f9; padding: 20px; }
-        .container { max-width: 1000px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .header-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 25px; }
+        h1 { color: #1e293b; margin: 0; font-size: 22px; font-weight: 700; }
+        .card { background: #fff; border: 1px solid #e2e8f0; padding: 25px; border-radius: 6px; margin-bottom: 25px; position: relative; }
+        .search-engine-row { display: flex; gap: 15px; }
         .row { display: flex; gap: 20px; margin-bottom: 15px; }
-        .col { flex: 1; }
-        label { font-weight: bold; font-size: 13px; color: #475569; display: block; margin-bottom: 5px; }
-        input, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
-        .btn-fetch { background: #2563eb; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; }
-        .btn-submit { background: #10b981; color: white; padding: 15px; width: 100%; border: none; border-radius: 6px; font-weight: bold; margin-top: 20px; }
+        .col { flex: 1; display: flex; flex-direction: column; }
+        label { font-weight: 600; margin-bottom: 6px; color: #475569; font-size: 13px; }
+        input, textarea { padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; box-sizing: border-box; width: 100%; }
+        .search-btn { background: #2563eb; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-weight: bold; height: 41px; }
+        .submit-btn { background: #10b981; color: white; border: none; padding: 14px; width: 100%; cursor: pointer; border-radius: 6px; font-size: 15px; font-weight: bold; }
+        .alert-box { padding: 12px 15px; border-radius: 4px; font-weight: 600; font-size: 14px; margin-top: 15px; display: none; }
+        .alert-box.error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .alert-box.success { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+        .lookup-dropdown { display: none; position: absolute; left: 25px; right: 25px; background: white; border: 1px solid #cbd5e1; border-radius: 4px; max-height: 200px; overflow-y: auto; z-index: 10000; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-top: 2px; }
+        .dropdown-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #f1f5f9; }
     </style>
 </head>
 <body>
+
 <div class="container">
-    <h2>Generate RFO (Reason for Outage)</h2>
-    <div class="row" style="background: #f8fafc; padding: 15px; border-radius: 6px;">
-        <div class="col"><input type="text" id="lookup_id" placeholder="Enter Circuit ID or Ticket ID..."></div>
-        <div class="col"><button class="btn-fetch" onclick="fetchTicketData()">Fetch Data</button></div>
+    <div class="header-bar">
+        <div>
+            <h1>Reason For Outage (RFO) Report Panel</h1>
+        </div>
+        <a href="/" style="background: #475569; color: white; padding: 10px 16px; border-radius: 6px; text-decoration: none; font-size: 13px;">← Back</a>
     </div>
-    
-    <form id="rfoForm">
-        <div class="row">
-            <div class="col"><label>Customer Name</label><input type="text" name="customer_name" id="customer_name"></div>
-            <div class="col"><label>Circuit ID</label><input type="text" name="circuit_id" id="circuit_id"></div>
+
+    <div class="card" style="background: #f8fafc;">
+        <h3>1. Query Historical Incident Feed</h3>
+        <div class="search-engine-row">
+            <div style="flex: 2; position: relative;">
+                <label>Search by Ticket ID (e.g. TCPLxxxx) or Circuit ID *</label>
+                <input type="text" id="rfo_search_input" placeholder="Type Ticket number or Circuit string ID..." autocomplete="off">
+                <div id="rfo_search_dropdown" class="lookup-dropdown"></div>
+            </div>
+            <div style="display: flex; align-items: flex-end;">
+                <button type="button" class="search-btn" onclick="executeCombinedRfoLookup()">Fetch Records</button>
+            </div>
         </div>
-        <div class="row">
-            <div class="col"><label>Circuit Location</label><input type="text" name="circuit_location" id="circuit_location"></div>
-            <div class="col"><label>Circuit Bandwidth</label><input type="text" name="bandwidth" id="bandwidth"></div>
-        </div>
-        <div class="row">
-            <div class="col"><label>SR Number / Ticket ID</label><input type="text" name="ticket_id" id="ticket_id"></div>
-            <div class="col"><label>SR Type / Category</label><input type="text" name="er_type" id="er_type"></div>
-        </div>
-        <div class="row">
-            <div class="col"><label>Reference Ticket ID</label><input type="text" name="reference_ticket_id"></div>
-            <div class="col"><label>SR Priority</label><input type="text" name="priority"></div>
-        </div>
-        <div class="row">
-            <div class="col"><label>SR Creation Time</label><input type="text" name="creation_time" id="creation_time"></div>
-            <div class="col"><label>SR Resolution Time</label><input type="text" name="resolution_time" id="resolution_time"></div>
-        </div>
-        <div class="row">
-            <div class="col"><label>Total Resolution Time</label><input type="text" name="total_resolution_time" id="total_resolution_time"></div>
-            <div class="col"><label>Circuit Up Time</label><input type="text" name="circuit_up_time"></div>
-        </div>
-        <div class="row">
-            <div class="col"><label>'On-hold' Duration</label><input type="text" name="on_hold_duration"></div>
-            <div class="col"><label>SR Reopen Case (Y/N)</label><input type="text" name="roopen_case"></div>
-        </div>
-        <div class="row">
-            <div class="col"><label>Nature of Fault</label><input type="text" name="nature_of_fault"></div>
-            <div class="col"><label>Reason for Outage</label><input type="text" name="reason_for_outage"></div>
-        </div>
-        <div class="row">
-            <div class="col"><label>Issue Location</label><input type="text" name="issue_location"></div>
-            <div class="col"><label>Resolution</label><input type="text" name="resolution"></div>
-        </div>
-        <div class="row">
-            <div class="col"><label>Remarks / Additional Information</label><textarea name="remarks"></textarea></div>
-        </div>
-        <button type="submit" class="btn-submit">Send RFO Email</button>
-    </form>
+    </div>
+
+    <div class="card">
+        <h3>2. Hydrate RFO Template Constraints</h3>
+        <form id="rfoSubmissionForm" onsubmit="dispatchRfoEmail(event)">
+            <input type="hidden" name="ticket_status" id="form_ticket_status" value="Closed">
+            
+            <div class="row">
+                <div class="col">
+                    <label>Customer Registered Name *</label>
+                    <input type="text" name="customer_name" id="form_company_name" required>
+                </div>
+                <div class="col">
+                    <label>Circuit ID Reference *</label>
+                    <input type="text" name="circuit_id" id="form_circuit_id" required>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col">
+                    <label>Circuit Physical Location</label>
+                    <input type="text" name="circuit_location" value="Mumbai Hub DC">
+                </div>
+                <div class="col">
+                    <label>Link Provisioned Bandwidth</label>
+                    <input type="text" name="bandwidth" value="100 Mbps Dedicated Internet">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <label>Incident Ticket ID *</label>
+                    <input type="text" name="ticket_id" id="form_ticket_id" required>
+                </div>
+                <div class="col">
+                    <label>SR Category Type</label>
+                    <input type="text" name="er_type" id="form_issue_category" value="Link Downtime">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <label>Reference Ticket Tracking ID</label>
+                    <input type="text" name="reference_ticket_id" value="N/A">
+                </div>
+                <div class="col">
+                    <label>Incident Priority</label>
+                    <input type="text" name="priority" value="P3 - Normal">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <label>SR Creation Timestamp *</label>
+                    <input type="text" name="creation_time" id="form_outage_start" required placeholder="YYYY-MM-DD HH:MM:SS" oninput="calculateDynamicDowntime()">
+                </div>
+                <div class="col">
+                    <label>SR Resolution Timestamp *</label>
+                    <input type="text" name="resolution_time" id="form_outage_end" required placeholder="YYYY-MM-DD HH:MM:SS" oninput="calculateDynamicDowntime()">
+                </div>
+                <div class="col">
+                    <label>Total Downtime Duration (Auto-Calculated) *</label>
+                    <input type="text" name="total_resolution_time" id="form_duration" required readonly style="background: #f1f5f9; font-weight: bold;">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <label>Circuit Availability Metrics</label>
+                    <input type="text" name="circuit_up_time" value="99.95% Operational">
+                </div>
+                <div class="col">
+                    <label>Total Customer On-Hold Delay Time</label>
+                    <input type="text" name="on_hold_duration" value="0 Mins">
+                </div>
+                <div class="col">
+                    <label>Is This a Reopened Case Ticket? (Y/N)</label>
+                    <input type="text" name="roopen_case" value="No">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <label>Nature of Fault</label>
+                    <input type="text" name="nature_of_fault" value="Core fiber link physical degradation.">
+                </div>
+                <div class="col">
+                    <label>Technical Root Cause Analysis Summary (RCA) *</label>
+                    <textarea name="reason_for_outage" id="form_root_cause" rows="2" required></textarea>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <label>Issue Location Coordinates</label>
+                    <input type="text" name="issue_location" value="ISP Point of Presence (PoP)">
+                </div>
+                <div class="col">
+                    <label>Permanent Corrective Actions Applied *</label>
+                    <textarea name="resolution" id="form_remediation" rows="2" required></textarea>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <label>Additional Operations Remarks / Closure Notes</label>
+                    <textarea name="remarks" rows="2">Link telemetry metrics returned to baseline state.</textarea>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <label>Client Target Email Address *</label>
+                    <input type="text" name="customer_email" id="form_customer_email" required>
+                </div>
+                <div class="col">
+                    <label>Additional CC Routing Addresses</label>
+                    <input type="text" name="cc_emails" id="form_cc_emails">
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">Compile & Dispatch RFO Report Email</button>
+        </form>
+        <div id="rfoAlertBox" class="alert-box"></div>
+    </div>
 </div>
 
-<!--script>
-async function fetchTicketData() {
-    const id = document.getElementById('lookup_id').value;
-    // This assumes an endpoint exists that returns ticket/circuit details
-    const res = await fetch(`/api/ticket/details/${id}`);
-    const data = await res.json();
-    if(data) {
-        document.getElementById('customer_name').value = data.customer_name || '';
-        document.getElementById('circuit_id').value = data.circuit_id || '';
-        document.getElementById('ticket_id').value = data.ticket_id || '';
-        document.getElementById('er_type').value = data.issue_category || '';
-        document.getElementById('creation_time').value = data.timestamp || '';
-        document.getElementById('resolution_time').value = data.closed_timestamp || '';
-        // Map other fields accordingly
+<script>
+function calculateDynamicDowntime() {
+    const startStr = document.getElementById('form_outage_start').value.trim();
+    const endStr = document.getElementById('form_outage_end').value.trim();
+    const durationInput = document.getElementById('form_duration');
+
+    if (!startStr || !endStr) return;
+
+    // Standardize text format for cross-browser parsing consistency
+    const cleanStart = startStr.replace(' ', 'T');
+    const cleanEnd = endStr.replace(' ', 'T');
+
+    const startDate = new Date(cleanStart);
+    const endDate = new Date(cleanEnd);
+
+    if (!isNaN(startDate) && !isNaN(endDate)) {
+        const diffMs = endDate - startDate;
+        if (diffMs < 0) {
+            durationInput.value = "Invalid (End Date is before Start Date)";
+            return;
+        }
+        const diffMins = Math.floor(diffMs / 60000);
+        if (diffMins < 60) {
+            durationInput.value = diffMins + " Mins";
+        } else {
+            const hrs = Math.floor(diffMins / 60);
+            const remainingMins = diffMins % 60;
+            durationInput.value = `${hrs} Hours ${remainingMins} Mins`;
+        }
     }
 }
-</script-->
 
-<script>
-document.getElementById('rfoForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    
-    const res = await fetch('/api/send-rfo', { // Ensure this route exists in main.py
-        method: 'POST',
-        body: formData
-    });
-    
-    const result = await res.json();
-    if(res.ok) {
-        alert("RFO Email Sent Successfully");
-    } else {
-        alert("Error: " + result.detail);
+async function executeCombinedRfoLookup() {
+    const query = document.getElementById('rfo_search_input').value.trim();
+    const dropdown = document.getElementById('rfo_search_dropdown');
+    dropdown.style.display = 'none';
+
+    if (!query) {
+        alert('Please specify a valid Search Token.');
+        return;
     }
-});
+
+    try {
+        const response = await fetch(`/api/ticket/search-details/${encodeURIComponent(query)}`);
+        if (!response.ok) throw new Error("Backend query rejected.");
+        
+        const tickets = await response.json();
+        if (tickets.length === 0) {
+            alert("No matching incident metrics located for the specified query string.");
+            return;
+        }
+
+        dropdown.innerHTML = '';
+        tickets.forEach(t => {
+            const row = document.createElement('div');
+            row.className = 'dropdown-item';
+            row.style.padding = '10px';
+            row.style.borderBottom = '1px solid #eee';
+            row.style.cursor = 'pointer';
+            row.innerHTML = `<strong>${t.ticket_id}</strong> - ${t.circuit_id} (<span style="color:${t.status === 'Closed' ? 'green':'red'}">${t.status}</span>)`;
+            
+            row.onclick = () => {
+                // Constraint Check: Explicitly block loading if the ticket is not Closed
+                if (t.status.toLowerCase() !== 'closed') {
+                    alert(`Operational Constraint Violation: Ticket ${t.ticket_id} is currently ${t.status}. RFO reports can only be processed for Closed tickets.`);
+                    dropdown.style.display = 'none';
+                    return;
+                }
+                populateFormWithTicket(t);
+                dropdown.style.display = 'none';
+            };
+            dropdown.appendChild(row);
+        });
+        dropdown.style.display = 'block';
+
+    } catch (err) {
+        alert("Search Failed: " + err.message);
+    }
+}
+
+async function populateFormWithTicket(t) {
+    document.getElementById('form_ticket_id').value = t.ticket_id;
+    document.getElementById('form_circuit_id').value = t.circuit_id;
+    document.getElementById('form_issue_category').value = t.issue_category;
+    document.getElementById('form_outage_start').value = t.opened_at;
+    document.getElementById('form_outage_end').value = t.closed_at !== '--' ? t.closed_at : '';
+    document.getElementById('form_root_cause').value = t.root_cause_segment || '';
+    document.getElementById('form_ticket_status').value = t.status;
+
+    calculateDynamicDowntime();
+
+    // Secondary cascade check to map company details from the inventory profile
+    try {
+        const response = await fetch(`/api/circuit/${encodeURIComponent(t.circuit_id)}`);
+        if (response.ok) {
+            const data = await response.json();
+            if (data.length > 0) {
+                document.getElementById('form_company_name').value = data[0].company_name || data[0].customer_name || '';
+                document.getElementById('form_customer_email').value = data[0].customer_email || '';
+            }
+        }
+    } catch (err) {
+        console.error("Profile cascade mapping bypassed: " + err.message);
+    }
+}
+
+async function dispatchRfoEmail(e) {
+    e.preventDefault();
+    const form = document.getElementById('rfoSubmissionForm');
+    const box = document.getElementById('rfoAlertBox');
+    
+    box.style.display = 'block';
+    box.className = 'alert-box success';
+    box.style.background = '#e0f2fe';
+    box.style.color = '#0369a1';
+    box.textContent = "Processing layout parameters and dispatching payload to task system loop...";
+
+    try {
+        const response = await fetch('/api/tools/send-rfo-mail', {
+            method: 'POST',
+            body: new FormData(form)
+        });
+        const result = await response.json();
+        
+        if (response.ok) {
+            box.className = "alert-box success";
+            box.style.background = '#d1fae5';
+            box.style.color = '#065f46';
+            box.textContent = "Success: RFO Analysis Report successfully processed and dispatched.";
+            form.reset();
+        } else {
+            throw new Error(result.detail || "Transaction rejected by internal route rules.");
+        }
+    } catch (err) {
+        box.className = "alert-box error";
+        box.textContent = "Execution Error: " + err.message;
+    }
+}
 </script>
 </body>
 </html>
