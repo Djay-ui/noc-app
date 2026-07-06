@@ -28,7 +28,7 @@ SMTP_SERVER = "mail.teleglobal.in"
 SMTP_PORT = 465
 SMTP_USER = "noc@teleglobal.in"
 SMTP_PASSWORD = "8QKti-lme88&"
-GLOBAL_MANDATORY_CC = ["noc@teleglobal.in", "teleglobal2016@gmail.com"]
+GLOBAL_MANDATORY_CC = ["noc@teleglobal.in"]
 
 AUTH_SECRET_KEY = "SUPER_SECRET_NOC_KEY_2026_TRACK_SYSTEM_SECURE"
 COOKIE_NAME = "noc_session_token"
@@ -533,53 +533,83 @@ async def api_get_all_circuits(search: str = "", user=Depends(get_current_user))
     finally:
         cursor.close(); conn.close()
 
+@app.post("/api/circuit/save")
 @app.post("/api/circuits/save")
+@app.put("/api/circuit/save")
+@app.put("/api/circuits/save")
 async def api_save_circuit(request: Request, user=Depends(get_current_user)):
+    # 1. Authorization Guard
     if user["role"] != "admin":
         raise HTTPException(status_code=403, detail="Admin authorization required.")
-    
-    content_type = request.headers.get("content-type", "")
-    data = {}
-    if "application/json" in content_type:
-        try: data = await request.json()
-        except: pass
-    else:
+
+    # 2. Flexible Payload Parsing (Handles JSON or Form Submissions)
+    try:
+        data = await request.json()
+    except Exception:
         try:
             form_data = await request.form()
             data = dict(form_data)
-        except: pass
+        except Exception:
+            raise HTTPException(
+                status_code=400, 
+                detail="Invalid request format. Payload must be valid JSON or Form data."
+            )
 
-    circuit_id = data.get("circuit_id") or data.get("Circuit ID")
-    customer_name = data.get("customer_name") or data.get("Customer Name")
-    company_name = data.get("company_name") or data.get("Company Name") or ""
-    customer_email = data.get("customer_email") or data.get("Customer Email Target") or ""
-    phone_number = data.get("phone_number") or data.get("Phone Number") or ""
-    address = data.get("address") or data.get("Site / POP Address") or ""
+    # 3. Extract Values from Payload
+    circuit_id = data.get("circuit_id")
+    customer_name = data.get("customer_name")
+    company_name = data.get("company_name")
+    customer_email = data.get("customer_email")
+    phone_number = data.get("phone_number")
+    address = data.get("address")
 
-    if not circuit_id or not customer_name:
-        raise HTTPException(status_code=400, detail="Circuit ID and Customer Name are mandatory fields.")
+    # Validation Guard
+    if not circuit_id:
+        raise HTTPException(status_code=400, detail="Missing required field: circuit_id")
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    # 4. Database Transaction
+    conn = None
+    cursor = None
     try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Database Upsert query to elegantly handle updates vs inserts without conflicts
         query = """
             INSERT INTO customers (circuit_id, customer_name, company_name, customer_email, phone_number, address)
             VALUES (%s, %s, %s, %s, %s, %s)
-            ON CONFLICT (circuit_id) DO UPDATE SET
+            ON CONFLICT (circuit_id) 
+            DO UPDATE SET
                 customer_name = EXCLUDED.customer_name,
                 company_name = EXCLUDED.company_name,
                 customer_email = EXCLUDED.customer_email,
                 phone_number = EXCLUDED.phone_number,
-                address = EXCLUDED.address
+                address = EXCLUDED.address;
         """
-        cursor.execute(query, (circuit_id.strip(), customer_name.strip(), company_name.strip(), customer_email.strip(), phone_number.strip(), address.strip()))
+        
+        cursor.execute(query, (
+            str(circuit_id).strip(),
+            str(customer_name).strip() if customer_name else None,
+            str(company_name).strip() if company_name else None,
+            str(customer_email).strip() if customer_email else None,
+            str(phone_number).strip() if phone_number else None,
+            str(address).strip() if address else None
+        ))
+        
         conn.commit()
-        return {"status": "success", "message": "Circuit pipeline record synced cleanly."}
+        return {"status": "success", "message": f"Customer record for circuit {circuit_id} has been saved successfully."}
+
     except Exception as e:
-        conn.rollback()
-        raise HTTPException(status_code=500, detail=f"Database pipeline transactional break: {str(e)}")
+        if conn:
+            conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Database save execution failure: {str(e)}")
+        
     finally:
-        cursor.close(); conn.close()
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
 
 @app.get("/api/admin/users/all")
 async def api_get_all_users(user=Depends(get_current_user)):
