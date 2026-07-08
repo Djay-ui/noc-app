@@ -5,18 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teleglobal NOC Operations Engine</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
-        .container { max-width: 1350px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .header-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 25px; gap: 15px; flex-wrap: wrap; }
-        h1 { color: #1e293b; margin: 0; font-size: 24px; font-weight: 700; }
-        .nav-group { display: flex; gap: 10px; align-items: center; }
-        .nav-link-btn { background: #2563eb; color: white; padding: 10px 18px; border-radius: 6px; font-weight: 600; font-size: 14px; border: none; text-decoration: none; cursor: pointer; }
+        /* --- Dynamic Theme System --- */
+        :root {
+            /* Dark Theme (Default) */
+            --bg-body: #0f172a;
+            --bg-container: #1e293b;
+            --bg-card: #0f172a;
+            --bg-alt: #1e293b;
+            --input-bg: #0f172a;
+            --border: #334155;
+            --border-light: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-highlight: #38bdf8;
+            --dropdown-bg: #1e293b;
+            --dropdown-hover: #334155;
+            --cc-selected-bg: #172554;
+            --cc-selected-border: #1e3a8a;
+            --cc-selected-text: #60a5fa;
+            --table-th-bg: #0f172a;
+        }
+
+        [data-theme="light"] {
+            /* Light Theme (Original Colors) */
+            --bg-body: #f4f6f9;
+            --bg-container: white;
+            --bg-card: #f8fafc;
+            --bg-alt: #f1f5f9;
+            --input-bg: #fff;
+            --border: #cbd5e1;
+            --border-light: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #475569;
+            --text-highlight: #2563eb;
+            --dropdown-bg: white;
+            --dropdown-hover: #f1f5f9;
+            --cc-selected-bg: #e0f2fe;
+            --cc-selected-border: #3b82f6;
+            --cc-selected-text: #0369a1;
+            --table-th-bg: #e2e8f0;
+        }
+
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-body); color: var(--text-main); margin: 0; padding: 20px; transition: background 0.3s, color 0.3s; }
+        .container { max-width: 1350px; margin: 0 auto; background: var(--bg-container); padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.15); transition: background 0.3s; }
+        .header-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border-light); padding-bottom: 20px; margin-bottom: 25px; gap: 15px; flex-wrap: wrap; }
+        h1 { color: var(--text-main); margin: 0; font-size: 24px; font-weight: 700; }
+        .nav-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .nav-link-btn { background: #2563eb; color: white; padding: 10px 18px; border-radius: 6px; font-weight: 600; font-size: 14px; border: none; text-decoration: none; cursor: pointer; transition: opacity 0.2s; }
         .nav-link-btn.alt { background: #475569; }
         .nav-link-btn.logout { background: #ef4444; }
         .nav-link-btn:hover { opacity: 0.9; }
 
+        /* Theme Toggle Button Specific Style */
+        .theme-toggle-btn { background: var(--bg-body); color: var(--text-main); border: 1px solid var(--border); padding: 10px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s ease; }
+        .theme-toggle-btn:hover { opacity: 0.8; }
+
         .kpi-row { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
-        .kpi-card { flex: 1; min-width: 220px; padding: 20px; border-radius: 6px; border: 1px solid #e2e8f0; text-align: center; color: white; }
+        .kpi-card { flex: 1; min-width: 220px; padding: 20px; border-radius: 6px; border: 1px solid var(--border-light); text-align: center; color: white; }
         .kpi-card.total { background: #3b82f6; }
         .kpi-card.open { background: #ef4444; }
         .kpi-card.monitoring { background: #f59e0b; }
@@ -24,63 +69,72 @@
         .kpi-val { font-size: 28px; font-weight: bold; margin-top: 5px; }
         
         .form-group { margin-bottom: 18px; }
-        label { display: block; font-weight: 600; margin-bottom: 6px; color: #475569; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 14px; background-color: #fff; }
+        label { display: block; font-weight: 600; margin-bottom: 6px; color: var(--text-muted); }
+        input, select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 4px; box-sizing: border-box; font-size: 14px; background-color: var(--input-bg); color: var(--text-main); }
         .row { display: flex; gap: 15px; }
         .col { flex: 1; }
         .search-btn { background: #2563eb; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-weight: bold; width: 100%; height: 41px; }
         .submit-btn { background: #10b981; color: white; border: none; padding: 14px; width: 100%; cursor: pointer; border-radius: 6px; font-size: 16px; font-weight: bold; margin-top: 15px; }
-        .card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 6px; margin-bottom: 20px; }
+        .card { background: var(--bg-card); border: 1px solid var(--border-light); padding: 20px; border-radius: 6px; margin-bottom: 20px; }
         .status-msg { padding: 12px; margin-top: 15px; border-radius: 4px; font-weight: bold; display: none; }
-        .signature-preview { background: #f1f5f9; border: 1px dashed #cbd5e1; padding: 12px; font-family: monospace; font-size: 12px; white-space: pre-wrap; margin-top: 8px; border-radius: 4px; color: #334155; }
+        .signature-preview { background: var(--bg-alt); border: 1px dashed var(--border); padding: 12px; font-family: monospace; font-size: 12px; white-space: pre-wrap; margin-top: 8px; border-radius: 4px; color: var(--text-muted); }
         
-        .dropdown-selection-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 13px; transition: background 0.1s ease; }
+        .dropdown-selection-item { padding: 12px; cursor: pointer; border-bottom: 1px solid var(--border-light); font-size: 13px; transition: background 0.1s ease; color: var(--text-main); }
 
-        .cc-container { display: flex; flex-direction: column; gap: 6px; background: white; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; max-height: 200px; overflow-y: auto; }
-        .cc-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 4px; cursor: pointer; border: 1px solid #e2e8f0; background: #f8fafc; transition: all 0.2s ease; user-select: none; }
-        .cc-item:hover { background: #f1f5f9; border-color: #cbd5e1; }
-        .cc-item.selected { background: #e0f2fe; border-color: #3b82f6; color: #0369a1; font-weight: 600; }
-        .cc-checkmark { font-size: 14px; font-weight: bold; display: none; color: #2563eb; }
+        .cc-container { display: flex; flex-direction: column; gap: 6px; background: var(--bg-container); border: 1px solid var(--border); border-radius: 6px; padding: 10px; max-height: 200px; overflow-y: auto; }
+        .cc-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 4px; cursor: pointer; border: 1px solid var(--border-light); background: var(--bg-card); transition: all 0.2s ease; user-select: none; color: var(--text-main); }
+        .cc-item:hover { background: var(--bg-alt); border-color: var(--border); }
+        .cc-item.selected { background: var(--cc-selected-bg); border-color: var(--cc-selected-border); color: var(--cc-selected-text); font-weight: 600; }
+        .cc-checkmark { font-size: 14px; font-weight: bold; display: none; color: var(--cc-selected-text); }
         .cc-item.selected .cc-checkmark { display: block; }
 
         table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
-        th, td { padding: 10px; border: 1px solid #cbd5e1; text-align: left; }
-        th { background: #e2e8f0; color: #334155; }
+        th, td { padding: 10px; border: 1px solid var(--border); text-align: left; }
+        th { background: var(--table-th-bg); color: var(--text-muted); font-weight: 600; }
         @media (max-width: 768px) { .row { flex-direction: column; gap: 0; } }
 
         .nav-dropdown { position: relative; display: inline-block; }
-        .nav-dropdown-content { display: none; position: absolute; background-color: white; min-width: 220px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1); z-index: 20000; border-radius: 6px; border: 1px solid #e2e8f0; top: 100%; right: 0; margin-top: 4px; overflow: hidden; }
-        .nav-dropdown-content a { color: #334155; padding: 12px 16px; text-decoration: none; display: block; font-size: 14px; font-weight: 600; text-align: left; transition: background 0.1s ease; }
-        .nav-dropdown-content a:hover { background-color: #f1f5f9; color: #2563eb; }
+        .nav-dropdown-content { display: none; position: absolute; background-color: var(--dropdown-bg); min-width: 220px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); z-index: 20000; border-radius: 6px; border: 1px solid var(--border-light); top: 100%; right: 0; margin-top: 4px; overflow: hidden; }
+        .nav-dropdown-content a { color: var(--text-main); padding: 12px 16px; text-decoration: none; display: block; font-size: 14px; font-weight: 600; text-align: left; transition: background 0.1s ease; }
+        .nav-dropdown-content a:hover { background-color: var(--dropdown-hover); color: var(--text-highlight); }
         .nav-dropdown:hover .nav-dropdown-content { display: block; }
     </style>
 </head>
 <body>
 
+<header style="background-color: var(--bg-container); border-bottom: 1px solid var(--border-light); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div class="logo" style="font-size: 1.25rem; font-weight: 700; color: #38bdf8;">🌐 Teleglobal NOC</div>
+    <nav style="display: flex; gap: 1.5rem;">
+        <a href="/" class="active" style="color: var(--text-main); text-decoration: none; font-weight: 600;">Dashboard</a> 
+        <a href="/tickets" style="color: var(--text-muted); text-decoration: none;">Tickets</a>
+        <a href="/circuits" style="color: var(--text-muted); text-decoration: none;">Circuits Inventory</a>
+    </nav>
+</header>
+
 <div class="container">
     <div class="header-bar">
         <div>
             <h1>Teleglobal NOC Tickets Operations Console</h1>
-            <div style="color: #64748b; font-size: 14px; margin-top: 4px;">Active Session: <strong style="color: #1e293b;">{{ user.full_name }}</strong></div>
+            <div style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">Active Session: <strong style="color: var(--text-main);">{{ user.full_name }}</strong></div>
         </div>
-      <div class="nav-group">
-            <a href="/tickets" class="nav-link-btn">🎟️ Managing Operational Tickets </a>
+        <div class="nav-group">
+            <button class="theme-toggle-btn" onclick="toggleDashboardTheme()">🌓 Switch Theme</button>
+            <a href="/tickets" class="nav-link-btn">🎫 Managing Operational Tickets </a>
             
             {% if user.role == 'admin' %}
             <a href="/circuits" class="nav-link-btn alt">⚙️ Manage Circuits DB </a>
             <a href="/admin/users" class="nav-link-btn" style="background:#0ea5e9;">👥 Manage Users </a>
             {% endif %}
             
-            <!-- Updated Dropdown Menu: Now includes the Operational Reports Download Link -->
             <div class="nav-dropdown">
                 <button type="button" class="nav-link-btn" style="background: #0ea5e9; display: flex; align-items: center; gap: 4px;">📩 System Mail & Reports ▼</button>
                 <div class="nav-dropdown-content">
                     <a href="/system-mail/welcome">📄 Welcome Mail</a>
                     <a href="/system-mail/bandwidth">⚡ Bandwidth Upgradation/Downgradion</a>
                     <a href="/system-mail/terminate">❌ Link Termination</a>
-		    <a href="/system-mail/rfo" style="color: #0284c7; font-weight: bold;">✅ Send RFO</a>
-                    <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 4px 0;">
-                    <a href="/reports" style="background: #f0fdf4; color: #16a34a; font-weight: bold;">📊 Download Operational Reports</a>
+                    <a href="/system-mail/rfo" style="color: #0284c7; font-weight: bold;">✅ Send RFO</a>
+                    <hr style="border: 0; border-top: 1px solid var(--border-light); margin: 4px 0;">
+                    <a href="/reports" style="background: rgba(22, 163, 74, 0.1); color: #16a34a; font-weight: bold;">📊 Download Operational Reports</a>
                 </div>
             </div>
 
@@ -100,7 +154,7 @@
         <div class="form-group row" style="align-items: flex-end; margin-bottom: 0;">
             <div style="flex: 3; position: relative;">
                 <input type="text" id="circuit_search" placeholder="Type Circuit ID, Customer Name, Company Name, or Phone..." autocomplete="off" style="width: 100%; height: 41px;">
-                <div id="circuit_selection_dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 4px; max-height: 220px; overflow-y: auto; z-index: 10000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-top: 2px;"></div>
+                <div id="circuit_selection_dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--dropdown-bg); border: 1px solid var(--border); border-radius: 4px; max-height: 220px; overflow-y: auto; z-index: 10000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-top: 2px;"></div>
             </div>
             <div style="flex: 1;">
                 <button type="button" class="search-btn" onclick="lookupNetworkCircuits()">Fetch Data</button>
@@ -111,12 +165,12 @@
     <div class="card">
         <h3>2. Customer Demographics</h3>
         <div class="row">
-            <div class="form-group col"><label>Customer Name</label><input type="text" id="cust_name" readonly style="background: #f1f5f9;"></div>
-            <div class="form-group col"><label>Company Name</label><input type="text" id="comp_name" readonly style="background: #f1f5f9;"></div>
+            <div class="form-group col"><label>Customer Name</label><input type="text" id="cust_name" readonly style="background: var(--bg-alt);"></div>
+            <div class="form-group col"><label>Company Name</label><input type="text" id="comp_name" readonly style="background: var(--bg-alt);"></div>
         </div>
         <div class="row">
-            <div class="form-group col"><label>Contact Phone</label><input type="text" id="cust_phone" readonly style="background: #f1f5f9;"></div>
-            <div class="form-group col"><label>Site Address</label><input type="text" id="cust_address" readonly style="background: #f1f5f9;"></div>
+            <div class="form-group col"><label>Contact Phone</label><input type="text" id="cust_phone" readonly style="background: var(--bg-alt);"></div>
+            <div class="form-group col"><label>Site Address</label><input type="text" id="cust_address" readonly style="background: var(--bg-alt);"></div>
         </div>
     </div>
 
@@ -127,7 +181,7 @@
             <div class="row">
                 <div class="form-group col">
                     <label>NOC Operator Identity (Open BY)</label>
-                    <input type="text" value="{{ user.full_name }}" readonly style="background: #e2e8f0; font-weight: bold; color: #475569;">
+                    <input type="text" value="{{ user.full_name }}" readonly style="background: var(--bg-alt); font-weight: bold; color: var(--text-muted);">
                 </div>
 
                 <div class="form-group col">
@@ -194,20 +248,20 @@
                 </select>
             </div>
 
-            <div class="form-group" style="border-top:1px dashed #cbd5e1; padding-top:15px;">
+            <div class="form-group" style="border-top:1px dashed var(--border); padding-top:15px;">
                 <label>Incident Evidence Attachment (Screenshots, Trace Logs)</label>
-                <input type="file" name="attachment" id="ticketAttachment">
+                <input type="file" name="attachment" id="ticketAttachment" style="border: none; padding-left: 0; background: transparent;">
             </div>
         </div>
 
         <div class="card">
-            <label style="font-weight: bold; color: #2c3e50; font-size: 14px; margin-bottom: 8px; display: block;">
+            <label style="font-weight: bold; font-size: 14px; margin-bottom: 8px; display: block; color: var(--text-main);">
                 Select Notification CC Recipients (Click rows to highlight & checkmark)
             </label>
             <div class="cc-container">
-                <div class="cc-item selected" style="cursor: not-allowed; background: #eff6ff; border-color: #bfdbfe;">
-                    <span style="color: #1e40af; font-weight: bold;">noc@teleglobal.in (Mandatory Office Desk Address - Locked)</span>
-                    <span class="cc-checkmark" style="display: block; color: #1e40af;">✓</span>
+                <div class="cc-item selected" style="cursor: not-allowed; opacity: 0.8;">
+                    <span>noc@teleglobal.in (Mandatory Office Desk Address - Locked)</span>
+                    <span class="cc-checkmark">✓</span>
                 </div>
                 <div class="cc-item" onclick="toggleCcChoice(this, 'teleglobal2016@gmail.com')">
                     <span>teleglobal2016@gmail.com (Backup Log Archiver)</span>
@@ -230,10 +284,11 @@
 
         <button type="submit" class="submit-btn">Raise Ticket & Dispatch Notification</button>
     </form>
+    
     <div id="statusBox" class="status-msg"></div>
 
     <div class="card" style="margin-top: 30px;">
-        <h3 style="border-bottom:1px solid #e2e8f0; padding-bottom:10px; margin:0 0 10px 0;">Recent Live Incident Feed (Last 10 Tickets Summary)</h3>
+        <h3 style="border-bottom:1px solid var(--border-light); padding-bottom:10px; margin:0 0 10px 0;">Recent Live Incident Feed (Last 10 Tickets Summary)</h3>
         <div style="overflow-x:auto;">
             <table>
                 <thead>
@@ -257,6 +312,22 @@
 </div>
 
 <script>
+// --- Theme Toggle Logic ---
+function initDashboardTheme() {
+    const activeTheme = localStorage.getItem('noc-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', activeTheme);
+}
+
+function toggleDashboardTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('noc-theme', newTheme);
+}
+initDashboardTheme();
+
+// --- Exact Original Dashboard Functions (Untouched) ---
+
 let activeSelectedCcs = ['noc@teleglobal.in'];
 
 function toggleCcChoice(element, emailAddress) {
@@ -297,14 +368,14 @@ async function lookupNetworkCircuits() {
         records.forEach((circuit) => {
             const rowItem = document.createElement('div');
             rowItem.className = 'dropdown-selection-item';
-            rowItem.onmouseover = () => rowItem.style.background = '#f1f5f9';
-            rowItem.onmouseout = () => rowItem.style.background = 'white';
+            rowItem.onmouseover = () => rowItem.style.background = 'var(--dropdown-hover)';
+            rowItem.onmouseout = () => rowItem.style.background = 'transparent';
             rowItem.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center; font-weight:bold;">
-                    <span style="color: #2563eb;">${circuit.circuit_id}</span>
-                    <span style="color: #334155;">${circuit.customer_name}</span>
+                    <span style="color: var(--text-highlight);">${circuit.circuit_id}</span>
+                    <span style="color: var(--text-main);">${circuit.customer_name}</span>
                 </div>
-                <small style="color: #64748b; display:block; margin-top:3px;">Company: ${circuit.company_name || 'N/A'} | Contact: ${circuit.phone_number}</small>
+                <small style="color: var(--text-muted); display:block; margin-top:3px;">Company: ${circuit.company_name || 'N/A'} | Contact: ${circuit.phone_number}</small>
             `;
             rowItem.onclick = () => {
                 populateFormWithCircuit(circuit);
@@ -358,7 +429,7 @@ async function submitTicket(e) {
     const payload = new FormData(form);
     payload.append("cc_emails", activeSelectedCcs.join(","));
 
-    box.style.display = 'block'; box.style.background = '#e0f2fe'; box.style.color = '#0369a1';
+    box.style.display = 'block'; box.style.background = 'var(--cc-selected-bg)'; box.style.color = 'var(--cc-selected-text)';
     box.textContent = 'Writing database log and routing notification email...';
 
     try {
@@ -366,7 +437,7 @@ async function submitTicket(e) {
         const res = await target.json();
         
         if (target.ok && res.status === 'success') {
-            box.style.background = '#d1fae5'; box.style.color = '#065f46';
+            box.style.background = 'rgba(16, 185, 129, 0.15)'; box.style.color = '#10b981';
             box.textContent = `Success: Incident log committed cleanly to the network schema.`;
             form.reset();
             
@@ -386,7 +457,7 @@ async function submitTicket(e) {
             throw new Error(res.detail || 'Server processing error.'); 
         }
     } catch(err) {
-        box.style.background = '#fee2e2'; box.style.color = '#991b1b';
+        box.style.background = 'rgba(239, 68, 68, 0.15)'; box.style.color = '#ef4444';
         box.textContent = `Network Execution error: ${err.message}`;
     }
 }
@@ -409,15 +480,15 @@ async function refreshDashboardLogs() {
                 body.innerHTML += `
                 <tr>
                     <td style="font-weight:bold;">#${t.ticket_id}</td>
-                    <td style="font-family:monospace;">${t.circuit_id}</td>
+                    <td style="font-family:monospace; color: var(--text-highlight);">${t.circuit_id}</td>
                     <td>${t.issue_category}</td>
-                    <td style="font-weight:600; color:#475569;">${t.assigned_team}</td>
+                    <td style="font-weight:600; color:var(--text-muted);">${t.assigned_team}</td>
                     <td>${t.open_by_name}</td>
                     <td>${t.closed_by_name}</td>
-                    <td><span style="padding:3px 8px; font-size:11px; border-radius:10px; font-weight:bold; background:${t.status==='Closed'?'#d1fae5;color:#065f46':t.status==='In Monitoring'?'#fef3c7;color:#d97706':'#fee2e2;color:#991b1b'}">${t.status}</span></td>
-                    <td style="color:#64748b;">${t.timestamp}</td>
-                    <td style="color:#64748b;">${t.closed_timestamp}</td>
-                    <td style="font-weight:bold; color:#1e293b;">${durationText}</td>
+                    <td><span style="padding:3px 8px; font-size:11px; border-radius:10px; font-weight:bold; color: #fff; background:${t.status==='Closed'?'#10b981':t.status==='In Monitoring'?'#f59e0b':'#ef4444'}">${t.status}</span></td>
+                    <td style="color:var(--text-muted);">${t.timestamp}</td>
+                    <td style="color:var(--text-muted);">${t.closed_timestamp}</td>
+                    <td style="font-weight:bold;">${durationText}</td>
                 </tr>`;
             }
         });
@@ -441,7 +512,7 @@ function evaluateOperationalCategory() {
         processingMode.style.border = "2px solid #3b82f6";
     } else {
         processingMode.value = "true";
-        processingMode.style.border = "1px solid #cbd5e1";
+        processingMode.style.border = "1px solid var(--border)";
     }
 }
 </script>

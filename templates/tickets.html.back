@@ -100,6 +100,35 @@
     </div>
 </div>
 
+<thead>
+    <tr>
+        <th>Ticket ID</th>
+        <th>Circuit ID</th>
+        <th>Issue Category</th>
+        <th>Priority</th>
+        <th>SLA Status</th>
+        <th>Status</th>
+    </tr>
+</thead>
+<script>
+function renderTicketRow(ticket) {
+    const breachBadge = ticket.is_sla_breached 
+        ? `<span class="badge error-alert">⚠️ BREACHED</span>` 
+        : `<span class="badge safe-status">SLA Compliant</span>`;
+        
+    return `
+        <tr>
+            <td>#${ticket.ticket_id}</td>
+            <td>${ticket.circuit_id}</td>
+            <td>${ticket.issue_category}</td>
+            <td><strong>${ticket.priority}</strong></td>
+            <td>${breachBadge}</td>
+            <td><span class="status-pill">${ticket.status}</span></td>
+        </tr>
+    `;
+}
+</script>
+
 <script>
 const userRole = "{{ user.role }}";
 function openStatusModal(id, currentStatus) {

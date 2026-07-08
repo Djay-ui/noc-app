@@ -74,6 +74,20 @@ def determine_email_template(issue_category: str, status: str) -> str:
     else:
         return "link_down.html"
 
+from datetime import datetime, timedelta
+
+def assign_priority_and_sla(issue_category: str):
+    now = datetime.utcnow()
+    
+    if issue_category in ["Core Backbone Down", "Complete Site Isolation", "Total Blackout"]:
+        return "P1", now + timedelta(hours=1)
+    elif issue_category in ["High Packet Loss", "Latency Issues", "Redundancy Lost"]:
+        return "P2", now + timedelta(hours=4)
+    elif issue_category in ["Interface Flapping", "Minor Config Error"]:
+        return "P3", now + timedelta(hours=24)
+    else:
+        return "P4", now + timedelta(days=3)
+
 # Security & Crypto Helpers
 def hash_password(password: str) -> str:
     pwd_bytes = password.encode('utf-8')

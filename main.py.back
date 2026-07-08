@@ -19,6 +19,9 @@ from email.mime.base import MIMEBase
 from email import encoders
 from email.mime.application import MIMEApplication
 from typing import Optional
+from datetime import datetime
+from typing import Optional
+from pydantic import BaseModel, Field
 
 app = FastAPI(title="Teleglobal NOC Automation Platform")
 templates = Jinja2Templates(directory="templates")
@@ -138,6 +141,37 @@ class ReportPayload(BaseModel):
     start_date: Optional[str] = None
     end_date: Optional[str] = None
     team: Optional[str] = None
+
+###############################################################################################
+
+
+# Base payload definitions used during core requests
+class TicketBase(BaseModel):
+    circuit_id: str
+    issue_category: str
+    root_cause_segment: Optional[str] = None
+    status: str = "Open"
+    assigned_team: str
+    open_by_name: str
+    priority: str = Field(default="P3", description="P1 (Critical) through P4 (Informational) SLA levels")
+    sla_deadline: Optional[datetime] = None
+
+# Input Validation Model mapping for HTTP POST routes
+class TicketCreate(TicketBase):
+    pass
+
+# Response Marshalling Schema mapping for analytical JSON responses
+class TicketResponse(TicketBase):
+    ticket_id: int
+    closed_by_name: Optional[str] = None
+    created_at: datetime
+    closed_at: Optional[datetime] = None
+    resolution_minutes: Optional[int] = None
+    is_sla_breached: bool = False
+
+    class Config:
+        from_attributes = True  # Handles native ORM row object mappings
+
 
 # Page Routing Interceptors
 @app.get("/login", response_class=HTMLResponse)
