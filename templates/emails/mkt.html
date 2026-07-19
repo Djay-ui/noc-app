@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MKT Device Down Alert</title>
+</head>
+<body style="margin:0; padding:0; background:#f5f7fb; font-family: 'Segoe UI', Arial, sans-serif;">
+<table width="100%" bgcolor="#f5f7fb">
+    <tr>
+        <td align="center" style="padding:30px;">
+            <table width="700" style="background:#fff; border:1px solid #ddd; border-radius:8px; overflow:hidden" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td style="background:#dc2626; padding:24px;">
+                        <table width="100%">
+                            <tr>
+                                <td>
+                                    <h2 style="margin:0; color:#fff;">MKT Device Down Alert</h2>
+                                    <p style="color:#ffe5e5; margin:8px 0 0;">Automated Network Monitoring Notification</p>
+                                </td>
+                                <td align="right">
+                                    <span style="background:#fff; color:#dc2626; padding:8px 14px; border-radius:20px; font-weight:bold;">DEVICE DOWN</span>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:35px; color:#555; line-height:1.8">
+                        <p>Dear Sir/Madam,</p>
+                        <p><b>Greetings of the Day!</b></p>
+                        <p>Our automated systems have detected that your <b>MKT device for Circuit ID: {circuit_id} ({customer_name})</b> is currently unreachable and showing down. This may impact your active internet traffic delivery.</p>
+                        
+                        <div style="background:#fff5f5; border-left:5px solid #dc2626; padding:18px; margin:20px 0;">
+                            <b style="color:#dc2626;">Action Required on Premise:</b>
+                            <ul>
+                                <li>Verify the power supply status of the MKT termination device.</li>
+                                <li>Ensure Ethernet interconnect cables are fully clicked and seated.</li>
+                                <li>Share physical panel LED light patterns with the NOC team.</li>
+                            </ul>
+                        </div>
+                        <p>If the device is already powered up and active, confirm immediately so our engineers can escalate troubleshooting paths upstream.</p>
+                        <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+                        <p>Regards,<br><b>{operator_name}</b><br>Network Operations Center<br><b>Teleglobal Communications Pvt. Ltd.</b></p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="background:#dc2626; padding:12px; text-align:center; color:#fff; font-size:12px;">
+                        24/7 Support Hotline: 020-48522500 || Email: noc@teleglobal.in
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

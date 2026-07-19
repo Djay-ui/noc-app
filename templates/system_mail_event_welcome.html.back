@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Welcome Mailer Engine | TeleGlobal NOC</title>
+    <style>
+        :root {
+            --bg-body: #0f172a;
+            --bg-container: #1e293b;
+            --bg-card: #0f172a;
+            --border: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --success: #10b981;
+            --success-hover: #059669;
+            --input-bg: #0f172a;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            padding: 40px 20px;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 900px;
+            background: var(--bg-container);
+            margin: 0 auto;
+            padding: 40px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        /* Header Branding */
+        .header-block {
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title h2 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+        }
+
+        .header-title p {
+            margin: 4px 0 0;
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .badge {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+
+        /* Premium Inventory Lookup Console */
+        .lookup-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 35px;
+        }
+
+        .lookup-card label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .lookup-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .lookup-group input {
+            flex: 1;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            padding: 12px 16px;
+            color: var(--text-main);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .lookup-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+        }
+
+        /* Section Layouts */
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .section-heading {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-heading::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .form-group input {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            padding: 12px 14px;
+            color: var(--text-main);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+        }
+
+        /* Buttons & Submissions */
+        .btn {
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: #ffffff;
+        }
+
+        .btn-success:hover {
+            background: var(--success-hover);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #0f172a;
+            width: 100%;
+            font-size: 15px;
+            padding: 14px;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .full-width {
+                grid-column: span 1;
+            }
+            body {
+                padding: 15px;
+            }
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-block">
+        <div class="header-title">
+            <h2>Event Welcome Mailer Engine</h2>
+            <p>TeleGlobal Automation Framework</p>
+        </div>
+        <div class="badge">NOC System Node</div>
+    </div>
+    
+    <div class="lookup-card">
+        <label for="search_query">Automated Inventory Core Lookup</label>
+        <div class="lookup-group">
+            <input type="text" id="search_query" placeholder="Enter Circuit ID or Customer Name...">
+            <button type="button" id="searchBtn" onclick="searchCircuit()" class="btn btn-success">Search Inventory</button>
+        </div>
+    </div>
+
+    <form id="eventMailForm">
+        
+        <div class="form-section">
+            <div class="section-heading">Client & Provisioning Profiles</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="circuit_id">Circuit ID</label>
+                    <input type="text" name="circuit_id" id="circuit_id" placeholder="e.g., TG-ENT-12345" required>
+                </div>
+                <div class="form-group">
+                    <label for="customer_name">Customer Name</label>
+                    <input type="text" name="customer_name" id="customer_name" placeholder="e.g., Enterprise Client Pvt Ltd" required>
+                </div>
+                <div class="form-group">
+                    <label for="bandwidth">Allocated Bandwidth</label>
+                    <input type="text" name="bandwidth" id="bandwidth" placeholder="e.g., 100 Mbps" required>
+                </div>
+                <div class="form-group">
+                    <label for="event_date">Operational Event Dates</label>
+                    <input type="text" name="event_date" id="event_date" placeholder="e.g., 15th July 2026 to 20th July 2026" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="section-heading">Network Allocation Parameters</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="usable_ip">Assigned Usable IP Pool</label>
+                    <input type="text" name="usable_ip" id="usable_ip" placeholder="e.g., 103.68.9.X" required>
+                </div>
+                <div class="form-group">
+                    <label for="gateway">Default Gateway Route</label>
+                    <input type="text" name="gateway" id="gateway" placeholder="e.g., 103.68.9.1" required>
+                </div>
+                <div class="form-group full-width">
+                    <label for="subnet">Subnet Mask Architecture</label>
+                    <input type="text" name="subnet" id="subnet" placeholder="e.g., 255.255.255.248" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="section-heading">Target Routing Boundaries</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="customer_email">Primary Customer Destination Email</label>
+                    <input type="email" name="customer_email" id="customer_email" placeholder="client@domain.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="cc_emails">Carbon Copy (CC) Nodes</label>
+                    <input type="text" name="cc_emails" id="cc_emails" placeholder="comma separated additional emails...">
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn btn-primary">Dispatch Event Welcome Mail</button>
+    </form>
+	
+
+
+     	<div class="lookup-card">
+    		<div class="lookup-group">
+        		<a href="/api/reports/download-event-welcome-logs" class="btn" style="background: #475569; color: #f8fafc; text-decoration: none;">📥 Download CSV</a>
+    		</div>
+	</div>
+
+<script>
+    // 1. Inventory Search Functionality
+    async function searchCircuit() {
+        const query = document.getElementById('search_query').value.trim();
+        const btn = document.getElementById('searchBtn');
+        
+        if (!query) return alert("Please enter a search term.");
+        
+        btn.disabled = true;
+        btn.innerText = "Fetching...";
+        
+        try {
+            const response = await fetch(`/api/circuits/search?query=${encodeURIComponent(query)}`);
+            const data = await response.json();
+            
+            if (response.ok) {
+                document.getElementById('circuit_id').value = data.circuit_id || '';
+                document.getElementById('customer_name').value = data.customer_name || '';
+                document.getElementById('customer_email').value = data.customer_email || '';
+                // Note: Clearing fields if not found in lookup to allow manual operator input
+                document.getElementById('bandwidth').value = data.bandwidth || '';
+                document.getElementById('usable_ip').value = data.usable_ip || '';
+                document.getElementById('gateway').value = data.gateway || '';
+                document.getElementById('subnet').value = data.subnet || '';
+            } else {
+                alert("Lookup Error: " + data.detail);
+            }
+        } catch (err) {
+            alert("Network error: Could not reach server.");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Search Inventory";
+        }
+    }
+
+    // 2. Dispatch Form Interception Framework (FIXES THE DISPATCH ERROR)
+    document.getElementById('eventMailForm').addEventListener('submit', async function(e) {
+        e.preventDefault(); // Stop standard form refresh
+        
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Sending Mail Engine Components...";
+
+        // Extract native form key/values
+        const formData = new FormData(this);
+        
+        // Convert to URL-encoded structure since FastAPI route maps to Form(...) values
+        const urlEncodedData = new URLSearchParams(formData);
+
+        try {
+            const response = await fetch('/api/tools/send-event-welcome', {
+                method: 'POST',
+                body: urlEncodedData,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert("Success: " + data.message);
+                this.reset(); // Optional: clears out values on operational success
+            } else {
+                alert("Failed to send welcome mail: " + (data.detail || JSON.stringify(data)));
+            }
+        } catch (error) {
+            alert("NOC Network Connection Exception: System could not reach dispatch router.");
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Dispatch Event Welcome Mail";
+        }
+    });
+</script>
+
+</body>
+</html>

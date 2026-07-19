@@ -4,110 +4,405 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teleglobal NOC Operations Engine</title>
+    <!-- Premium Font & Icons Integration -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* --- Dynamic Theme System --- */
+        /* --- Deep Cyber-NOC Theme Matrix with HUD Accents --- */
         :root {
-            /* Dark Theme (Default) */
-            --bg-body: #0f172a;
-            --bg-container: #1e293b;
-            --bg-card: #0f172a;
-            --bg-alt: #1e293b;
-            --input-bg: #0f172a;
-            --border: #334155;
-            --border-light: #334155;
+            /* Authentic Mission Control Dark Theme */
+            --bg-body: #05070f;
+            --bg-container: #0b1120;
+            --bg-card: #131b2e;
+            --bg-alt: #080d1a;
+            --input-bg: #060a14;
+            --border: #1e293b;
+            --border-light: #172554;
             --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --text-muted: #64748b;
             --text-highlight: #38bdf8;
-            --dropdown-bg: #1e293b;
-            --dropdown-hover: #334155;
-            --cc-selected-bg: #172554;
-            --cc-selected-border: #1e3a8a;
-            --cc-selected-text: #60a5fa;
-            --table-th-bg: #0f172a;
+            --dropdown-bg: #131b2e;
+            --dropdown-hover: #0b1120;
+            --cc-selected-bg: rgba(30, 58, 138, 0.4);
+            --cc-selected-border: #38bdf8;
+            --cc-selected-text: #38bdf8;
+            --table-th-bg: #0b1120;
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            
+            --gradient-total: linear-gradient(135deg, #1e40af, #1e3a8a);
+            --gradient-open: linear-gradient(135deg, #991b1b, #7f1d1d);
+            --gradient-monitor: linear-gradient(135deg, #92400e, #78350f);
+            --gradient-closed: linear-gradient(135deg, #065f46, #064e3b);
+            --btn-nav: #1e293b;
+            
+            --glow-cyan: 0 0 15px rgba(56, 189, 248, 0.4);
+            --glow-red: 0 0 15px rgba(239, 68, 68, 0.4);
+            --glow-amber: 0 0 15px rgba(245, 158, 11, 0.4);
+            --glow-green: 0 0 15px rgba(16, 185, 129, 0.4);
         }
 
         [data-theme="light"] {
-            /* Light Theme (Original Colors) */
-            --bg-body: #f4f6f9;
-            --bg-container: white;
-            --bg-card: #f8fafc;
-            --bg-alt: #f1f5f9;
-            --input-bg: #fff;
+            /* Premium Light Enterprise Desk Theme */
+            --bg-body: #f8fafc;
+            --bg-container: #ffffff;
+            --bg-card: #f1f5f9;
+            --bg-alt: #e2e8f0;
+            --input-bg: #ffffff;
             --border: #cbd5e1;
-            --border-light: #e2e8f0;
-            --text-main: #1e293b;
-            --text-muted: #475569;
-            --text-highlight: #2563eb;
-            --dropdown-bg: white;
+            --border-light: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --text-highlight: #0284c7;
+            --dropdown-bg: #ffffff;
             --dropdown-hover: #f1f5f9;
             --cc-selected-bg: #e0f2fe;
-            --cc-selected-border: #3b82f6;
+            --cc-selected-border: #0284c7;
             --cc-selected-text: #0369a1;
             --table-th-bg: #e2e8f0;
+            --shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+            
+            --gradient-total: linear-gradient(135deg, #3b82f6, #2563eb);
+            --gradient-open: linear-gradient(135deg, #ef4444, #dc2626);
+            --gradient-monitor: linear-gradient(135deg, #f59e0b, #d97706);
+            --gradient-closed: linear-gradient(135deg, #10b981, #059669);
+            --btn-nav: #e2e8f0;
+            
+            --glow-cyan: none;
+            --glow-red: none;
+            --glow-amber: none;
+            --glow-green: none;
         }
 
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-body); color: var(--text-main); margin: 0; padding: 20px; transition: background 0.3s, color 0.3s; }
-        .container { max-width: 1350px; margin: 0 auto; background: var(--bg-container); padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.15); transition: background 0.3s; }
-        .header-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border-light); padding-bottom: 20px; margin-bottom: 25px; gap: 15px; flex-wrap: wrap; }
-        h1 { color: var(--text-main); margin: 0; font-size: 24px; font-weight: 700; }
-        .nav-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        .nav-link-btn { background: #2563eb; color: white; padding: 10px 18px; border-radius: 6px; font-weight: 600; font-size: 14px; border: none; text-decoration: none; cursor: pointer; transition: opacity 0.2s; }
-        .nav-link-btn.alt { background: #475569; }
-        .nav-link-btn.logout { background: #ef4444; }
-        .nav-link-btn:hover { opacity: 0.9; }
+        body { 
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif; 
+            background: var(--bg-body); 
+            color: var(--text-main); 
+            margin: 0; 
+            padding: 0; 
+            transition: background 0.3s, color 0.3s;
+            background-image: radial-gradient(rgba(30, 41, 59, 0.3) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
 
-        /* Theme Toggle Button Specific Style */
-        .theme-toggle-btn { background: var(--bg-body); color: var(--text-main); border: 1px solid var(--border); padding: 10px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s ease; }
-        .theme-toggle-btn:hover { opacity: 0.8; }
+        /* --- Global Structural Layout Elements --- */
+        header {
+            background-color: var(--bg-container); 
+            border-bottom: 1px solid var(--border-light); 
+            padding: 16px 40px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(12px);
+        }
 
-        .kpi-row { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
-        .kpi-card { flex: 1; min-width: 220px; padding: 20px; border-radius: 6px; border: 1px solid var(--border-light); text-align: center; color: white; }
-        .kpi-card.total { background: #3b82f6; }
-        .kpi-card.open { background: #ef4444; }
-        .kpi-card.monitoring { background: #f59e0b; }
-        .kpi-card.closed { background: #10b981; }
-        .kpi-val { font-size: 28px; font-weight: bold; margin-top: 5px; }
+        .logo { 
+            font-size: 20px; 
+            font-weight: 800; 
+            color: var(--text-highlight);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.03em;
+            text-shadow: var(--glow-cyan);
+        }
+
+        /* --- Live Header Radar Scanning Animation Node --- */
+        .radar-pulse-node {
+            width: 10px;
+            height: 10px;
+            background: #22c55e;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 0 10px #22c55e;
+        }
+        .radar-pulse-node::before {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 2px solid #22c55e;
+            border-radius: 50%;
+            top: -12px;
+            left: -12px;
+            animation: radarEcho 2s infinite linear;
+            opacity: 0;
+        }
+        @keyframes radarEcho {
+            0% { transform: scale(0.4); opacity: 1; }
+            100% { transform: scale(1.6); opacity: 0; }
+        }
+
+        header nav { display: flex; gap: 32px; }
+        header nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 13.5px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        header nav a:hover, header nav a.active {
+            color: var(--text-highlight);
+            text-shadow: var(--glow-cyan);
+        }
+
+        .container { 
+            max-width: 1440px; 
+            margin: 40px auto; 
+            background: var(--bg-container); 
+            padding: 40px; 
+            border-radius: 20px; 
+            box-shadow: var(--shadow); 
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease; 
+        }
+
+        .header-bar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid var(--border); 
+            padding-bottom: 24px; 
+            margin-bottom: 40px; 
+            gap: 20px; 
+            flex-wrap: wrap; 
+        }
+
+        h1 { 
+            color: var(--text-main); 
+            margin: 0; 
+            font-size: 28px; 
+            font-weight: 800; 
+            letter-spacing: -0.03em;
+        }
+
+        .nav-group { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
         
-        .form-group { margin-bottom: 18px; }
-        label { display: block; font-weight: 600; margin-bottom: 6px; color: var(--text-muted); }
-        input, select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 4px; box-sizing: border-box; font-size: 14px; background-color: var(--input-bg); color: var(--text-main); }
-        .row { display: flex; gap: 15px; }
+        .nav-link-btn { 
+            background: #1d4ed8; 
+            color: white; 
+            padding: 12px 20px; 
+            border-radius: 8px; 
+            font-weight: 700; 
+            font-size: 13px; 
+            border: 1px solid rgba(255,255,255,0.05); 
+            text-decoration: none; 
+            cursor: pointer; 
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        .nav-link-btn.alt { background: #334155; }
+        .nav-link-btn.logout { background: #991b1b; }
+        .nav-link-btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .theme-toggle-btn { 
+            background: var(--btn-nav); 
+            color: var(--text-main); 
+            border: 1px solid var(--border); 
+            padding: 12px 18px; 
+            border-radius: 8px; 
+            font-size: 13px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* --- Live Performance Telemetry Grid Dashboard Interface --- */
+        .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; margin-bottom: 40px; }
+        .kpi-card { 
+            padding: 28px; 
+            border-radius: 14px; 
+            border: 1px solid rgba(255, 255, 255, 0.03); 
+            text-align: left; 
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .kpi-card:hover {
+            transform: translateY(-4px) scale(1.02);
+        }
+        .kpi-card::after {
+            content: '';
+            position: absolute;
+            right: -10px;
+            bottom: -10px;
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 50%;
+        }
+
+        .kpi-card.total { background: var(--gradient-total); box-shadow: var(--glow-cyan); }
+        .kpi-card.open { background: var(--gradient-open); box-shadow: var(--glow-red); }
+        .kpi-card.monitoring { background: var(--gradient-monitor); box-shadow: var(--glow-amber); }
+        .kpi-card.closed { background: var(--gradient-closed); box-shadow: var(--glow-green); }
+        
+        .kpi-card .label-text {
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            opacity: 0.8;
+        }
+        .kpi-val { font-family: 'JetBrains Mono', monospace; font-size: 40px; font-weight: 700; margin-top: 10px; }
+
+        /* --- System Management Sub-Panels and Components Architecture --- */
+        .card { 
+            background: var(--bg-card); 
+            border: 1px solid var(--border); 
+            padding: 32px; 
+            border-radius: 14px; 
+            margin-bottom: 28px; 
+            position: relative;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--border-light), transparent);
+        }
+        .card h3 {
+            margin: 0 0 24px 0;
+            font-size: 15px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-highlight);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group { margin-bottom: 24px; }
+        label { display: block; font-weight: 700; margin-bottom: 10px; color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
+        
+        input, select, textarea { 
+            width: 100%; 
+            padding: 14px 18px; 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            font-size: 14px; 
+            background-color: var(--input-bg); 
+            color: var(--text-main); 
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--text-highlight);
+            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
+        }
+        
+        .row { display: flex; gap: 24px; margin-bottom: 24px; }
+        .row:last-child { margin-bottom: 0; }
         .col { flex: 1; }
-        .search-btn { background: #2563eb; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-weight: bold; width: 100%; height: 41px; }
-        .submit-btn { background: #10b981; color: white; border: none; padding: 14px; width: 100%; cursor: pointer; border-radius: 6px; font-size: 16px; font-weight: bold; margin-top: 15px; }
-        .card { background: var(--bg-card); border: 1px solid var(--border-light); padding: 20px; border-radius: 6px; margin-bottom: 20px; }
-        .status-msg { padding: 12px; margin-top: 15px; border-radius: 4px; font-weight: bold; display: none; }
-        .signature-preview { background: var(--bg-alt); border: 1px dashed var(--border); padding: 12px; font-family: monospace; font-size: 12px; white-space: pre-wrap; margin-top: 8px; border-radius: 4px; color: var(--text-muted); }
         
-        .dropdown-selection-item { padding: 12px; cursor: pointer; border-bottom: 1px solid var(--border-light); font-size: 13px; transition: background 0.1s ease; color: var(--text-main); }
+        .search-btn, .submit-btn { 
+            border: none;
+            cursor: pointer; 
+            border-radius: 8px; 
+            font-weight: 800; 
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        .search-btn { background: #2563eb; color: white; width: 100%; height: 48px; font-size: 13px; }
+        .search-btn:hover { background: #1d4ed8; transform: translateY(-1px); }
+        
+        .submit-btn { background: #10b981; color: white; padding: 18px; width: 100%; font-size: 15px; margin-top: 24px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+        .submit-btn:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3); }
+        
+        .status-msg { padding: 18px; margin-top: 24px; border-radius: 8px; font-weight: 700; display: none; font-size: 14px; animation: paneSlide 0.3s ease; }
+        @keyframes paneSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .cc-container { display: flex; flex-direction: column; gap: 6px; background: var(--bg-container); border: 1px solid var(--border); border-radius: 6px; padding: 10px; max-height: 200px; overflow-y: auto; }
-        .cc-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 4px; cursor: pointer; border: 1px solid var(--border-light); background: var(--bg-card); transition: all 0.2s ease; user-select: none; color: var(--text-main); }
-        .cc-item:hover { background: var(--bg-alt); border-color: var(--border); }
-        .cc-item.selected { background: var(--cc-selected-bg); border-color: var(--cc-selected-border); color: var(--cc-selected-text); font-weight: 600; }
+        .signature-preview { background: var(--bg-alt); border: 1px dashed var(--border); padding: 18px; font-family: 'JetBrains Mono', monospace; font-size: 13px; white-space: pre-wrap; margin-top: 14px; border-radius: 8px; color: var(--text-muted); line-height: 1.6; }
+        .dropdown-selection-item { padding: 16px 20px; cursor: pointer; border-bottom: 1px solid var(--border-light); font-size: 13px; transition: background 0.15s ease; color: var(--text-main); }
+
+        /* --- Custom Interactive CC Notifications List Node Layout --- */
+        .cc-container { display: flex; flex-direction: column; gap: 10px; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 8px; padding: 14px; max-height: 240px; overflow-y: auto; }
+        .cc-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); background: var(--bg-card); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); user-select: none; color: var(--text-main); font-size: 13.5px; }
+        .cc-item:hover { background: var(--dropdown-hover); transform: translateX(2px); }
+        .cc-item.selected { background: var(--cc-selected-bg); border-color: var(--cc-selected-border); color: var(--cc-selected-text); font-weight: 700; box-shadow: 0 0 10px rgba(56,189,248,0.1); }
         .cc-checkmark { font-size: 14px; font-weight: bold; display: none; color: var(--cc-selected-text); }
         .cc-item.selected .cc-checkmark { display: block; }
 
-        table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
-        th, td { padding: 10px; border: 1px solid var(--border); text-align: left; }
-        th { background: var(--table-th-bg); color: var(--text-muted); font-weight: 600; }
-        @media (max-width: 768px) { .row { flex-direction: column; gap: 0; } }
+        /* --- Live Animated Incident Feed Data Tables Grid Layout Architecture --- */
+        .table-responsive { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-alt); }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 16px 20px; border-bottom: 1px solid var(--border); text-align: left; }
+        th { background: var(--table-th-bg); color: var(--text-muted); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr { transition: background-color 0.15s ease; }
+        tbody tr:hover { background-color: rgba(56, 189, 248, 0.03); }
 
+        /* --- Real-Time Incidents Glowing Beacon Pulse System --- */
+        .ping-pulse-beacon {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            position: relative;
+            vertical-align: middle;
+        }
+        .ping-pulse-beacon::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 50%;
+            animation: pingPulse 1.5s infinite ease-in-out;
+        }
+        @keyframes pingPulse {
+            0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 currentColor; }
+            100% { transform: scale(2.5); opacity: 0; box-shadow: 0 0 0 8px transparent; }
+        }
+
+        @media (max-width: 992px) { .row { flex-direction: column; gap: 0; } .form-group.col { margin-bottom: 24px; } }
+
+        /* Dropdown Options Framework */
         .nav-dropdown { position: relative; display: inline-block; }
-        .nav-dropdown-content { display: none; position: absolute; background-color: var(--dropdown-bg); min-width: 220px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); z-index: 20000; border-radius: 6px; border: 1px solid var(--border-light); top: 100%; right: 0; margin-top: 4px; overflow: hidden; }
-        .nav-dropdown-content a { color: var(--text-main); padding: 12px 16px; text-decoration: none; display: block; font-size: 14px; font-weight: 600; text-align: left; transition: background 0.1s ease; }
-        .nav-dropdown-content a:hover { background-color: var(--dropdown-hover); color: var(--text-highlight); }
+        .nav-dropdown-content { display: none; position: absolute; background-color: var(--dropdown-bg); min-width: 280px; box-shadow: var(--shadow); z-index: 20000; border-radius: 10px; border: 1px solid var(--border); top: 100%; right: 0; margin-top: 10px; overflow: hidden; animation: menuFade 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes menuFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .nav-dropdown-content a { color: var(--text-main); padding: 14px 20px; text-decoration: none; display: block; font-size: 13.5px; font-weight: 700; text-align: left; transition: background 0.15s ease; border-bottom: 1px solid var(--border-light); }
+        .nav-dropdown-content a:last-child { border-bottom: none; }
+        .nav-dropdown-content a:hover { background-color: var(--dropdown-hover); color: var(--text-highlight) !important; }
         .nav-dropdown:hover .nav-dropdown-content { display: block; }
     </style>
 </head>
 <body>
 
-<header style="background-color: var(--bg-container); border-bottom: 1px solid var(--border-light); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-    <div class="logo" style="font-size: 1.25rem; font-weight: 700; color: #38bdf8;">🌐 Teleglobal NOC</div>
-    <nav style="display: flex; gap: 1.5rem;">
-        <a href="/" class="active" style="color: var(--text-main); text-decoration: none; font-weight: 600;">Dashboard</a> 
-        <a href="/tickets" style="color: var(--text-muted); text-decoration: none;">Tickets</a>
-        <a href="/circuits" style="color: var(--text-muted); text-decoration: none;">Circuits Inventory</a>
+<header>
+    <div class="logo">
+        <div class="radar-pulse-node"></div>
+        <i class="fa-solid fa-network-wired"></i> Teleglobal NOC Console
+    </div>
+    <nav>
+        <a href="/" class="active"><i class="fa-solid fa-chart-line"></i> Dashboard</a> 
+        <a href="/tickets"><i class="fa-solid fa-ticket-simple"></i> Tickets Matrix</a>
+        <a href="/circuits"><i class="fa-solid fa-server"></i> Circuits Inventory</a>
     </nav>
 </header>
 
@@ -115,55 +410,60 @@
     <div class="header-bar">
         <div>
             <h1>Teleglobal NOC Tickets Operations Console</h1>
-            <div style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">Active Session: <strong style="color: var(--text-main);">{{ user.full_name }}</strong></div>
+            <div style="color: var(--text-muted); font-size: 14px; margin-top: 8px;">
+                Active Security Clearance Duty Officer: <strong style="color: var(--text-main); font-family: 'JetBrains Mono', monospace;"><i class="fa-regular fa-id-badge" style="margin-right:4px;"></i> {{ user.full_name }}</strong>
+            </div>
         </div>
         <div class="nav-group">
-            <button class="theme-toggle-btn" onclick="toggleDashboardTheme()">🌓 Switch Theme</button>
-            <a href="/tickets" class="nav-link-btn">🎫 Managing Operational Tickets </a>
+            <button class="theme-toggle-btn" onclick="toggleDashboardTheme()"><i class="fa-solid fa-circle-half-stroke"></i> Theme Profile</button>
+            <a href="/tickets" class="nav-link-btn"><i class="fa-solid fa-list-check"></i> Operational Tickets Desk</a>
             
             {% if user.role == 'admin' %}
-            <a href="/circuits" class="nav-link-btn alt">⚙️ Manage Circuits DB </a>
-            <a href="/admin/users" class="nav-link-btn" style="background:#0ea5e9;">👥 Manage Users </a>
+            <a href="/circuits" class="nav-link-btn alt"><i class="fa-solid fa-database"></i> Circuits DB</a>
+            <a href="/admin/users" class="nav-link-btn" style="background:#0ea5e9;"><i class="fa-solid fa-users-gear"></i> Users Profile</a>
             {% endif %}
             
             <div class="nav-dropdown">
-                <button type="button" class="nav-link-btn" style="background: #0ea5e9; display: flex; align-items: center; gap: 4px;">📩 System Mail & Reports ▼</button>
+                <button type="button" class="nav-link-btn" style="background: #0ea5e9; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-envelope-open-text"></i> Mail & Dispatch Options ▼</button>
                 <div class="nav-dropdown-content">
-                    <a href="/system-mail/welcome">📄 Welcome Mail</a>
-                    <a href="/system-mail/bandwidth">⚡ Bandwidth Upgradation/Downgradion</a>
-                    <a href="/system-mail/terminate">❌ Link Termination</a>
-                    <a href="/system-mail/rfo" style="color: #0284c7; font-weight: bold;">✅ Send RFO</a>
-                    <hr style="border: 0; border-top: 1px solid var(--border-light); margin: 4px 0;">
-                    <a href="/reports" style="background: rgba(22, 163, 74, 0.1); color: #16a34a; font-weight: bold;">📊 Download Operational Reports</a>
+                    <a href="/system-mail/welcome"><i class="fa-regular fa-paper-plane" style="margin-right: 8px;"></i> Welcome Mail</a>
+                    <a href="/system-mail/event-welcome" target="_blank" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; font-weight: 700;">
+                        <i class="fa-solid fa-wand-magic-sparkles" style="margin-right: 8px;"></i> Event Welcome Mail
+                    </a>
+                    <a href="/system-mail/bandwidth"><i class="fa-solid fa-gauge-high" style="margin-right: 8px;"></i> Bandwidth Scale Sync</a>
+                    <a href="/system-mail/terminate"><i class="fa-regular fa-circle-xmark" style="margin-right: 8px;"></i> Link Termination</a>
+                    <a href="/system-mail/rfo" style="color: #38bdf8; font-weight: 700;"><i class="fa-solid fa-file-shield" style="margin-right: 8px;"></i> Dispatch RFO File</a>
+                    <a href="/reports" style="background: rgba(22, 163, 74, 0.15); color: #4ade80; font-weight: 700;"><i class="fa-solid fa-cloud-arrow-down" style="margin-right: 8px;"></i> Operational Performance Logs</a>
                 </div>
             </div>
 
-            <a href="/api/auth/logout" class="nav-link-btn logout">🔒 Logout</a>
+            <a href="/api/auth/logout" class="nav-link-btn logout"><i class="fa-solid fa-power-off"></i> Sign Out</a>
         </div>
     </div>
 
+    <!-- Live Performance NOC Metrics Telemetry Panel Deck -->
     <div class="kpi-row">
-        <div class="kpi-card total"><div>Total Displayed</div><div class="kpi-val" id="kpi_total">0</div></div>
-        <div class="kpi-card open"><div>Active Alarms (Open)</div><div class="kpi-val" id="kpi_open">0</div></div>
-        <div class="kpi-card monitoring"><div>In Monitoring</div><div class="kpi-val" id="kpi_monitor">0</div></div>
-        <div class="kpi-card closed"><div>Resolved Tickets</div><div class="kpi-val" id="kpi_closed">0</div></div>
+        <div class="kpi-card total"><div class="label-text">Total Displayed</div><div class="kpi-val" id="kpi_total">0</div></div>
+        <div class="kpi-card open"><div class="label-text">Active Alarms (Open)</div><div class="kpi-val" id="kpi_open">0</div></div>
+        <div class="kpi-card monitoring"><div class="label-text">In Monitoring</div><div class="kpi-val" id="kpi_monitor">0</div></div>
+        <div class="kpi-card closed"><div class="label-text">Resolved Tickets</div><div class="kpi-val" id="kpi_closed">0</div></div>
     </div>
 
     <div class="card" style="position: relative;">
-        <h3>1. Lookup Network Circuit</h3>
+        <h3><i class="fa-solid fa-magnifying-glass-chart"></i> 1. Lookup Network Circuit</h3>
         <div class="form-group row" style="align-items: flex-end; margin-bottom: 0;">
             <div style="flex: 3; position: relative;">
-                <input type="text" id="circuit_search" placeholder="Type Circuit ID, Customer Name, Company Name, or Phone..." autocomplete="off" style="width: 100%; height: 41px;">
-                <div id="circuit_selection_dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--dropdown-bg); border: 1px solid var(--border); border-radius: 4px; max-height: 220px; overflow-y: auto; z-index: 10000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-top: 2px;"></div>
+                <input type="text" id="circuit_search" placeholder="Type Target Circuit ID, Customer Identity Reference, Company Name, or Contact Phone..." autocomplete="off" style="height: 48px;">
+                <div id="circuit_selection_dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--dropdown-bg); border: 1px solid var(--border); border-radius: 8px; max-height: 240px; overflow-y: auto; z-index: 10000; box-shadow: var(--shadow); margin-top: 6px;"></div>
             </div>
             <div style="flex: 1;">
-                <button type="button" class="search-btn" onclick="lookupNetworkCircuits()">Fetch Data</button>
+                <button type="button" class="search-btn" onclick="lookupNetworkCircuits()"><i class="fa-solid fa-database"></i> Fetch Data</button>
             </div>
         </div>
     </div>
 
     <div class="card">
-        <h3>2. Customer Demographics</h3>
+        <h3><i class="fa-solid fa-address-card"></i> 2. Customer Demographics Reference</h3>
         <div class="row">
             <div class="form-group col"><label>Customer Name</label><input type="text" id="cust_name" readonly style="background: var(--bg-alt);"></div>
             <div class="form-group col"><label>Company Name</label><input type="text" id="comp_name" readonly style="background: var(--bg-alt);"></div>
@@ -177,7 +477,7 @@
     <form id="ticketForm" onsubmit="submitTicket(event)">
         <input type="hidden" id="final_circuit_id" name="circuit_id">
         <div class="card">
-            <h3>3. Ticket Parameters & Diagnostics</h3>
+            <h3><i class="fa-solid fa-sliders"></i> 3. Ticket Parameters & Diagnostics Matrix</h3>
             <div class="row">
                 <div class="form-group col">
                     <label>NOC Operator Identity (Open BY)</label>
@@ -205,7 +505,7 @@
             
             <div class="signature-preview" id="sigPreview">Regards,<br>{{ user.full_name }}<br>Teleglobal Communications Pvt. Ltd.</div>
 
-            <div class="row" style="margin-top: 15px;">
+            <div class="row" style="margin-top: 24px;">
                 <div class="form-group col">
                     <label>Issue Subject / Alarm Category</label>
                     <select name="issue_category" id="issue_category" onchange="evaluateOperationalCategory()" required>
@@ -248,16 +548,15 @@
                 </select>
             </div>
 
-            <div class="form-group" style="border-top:1px dashed var(--border); padding-top:15px;">
-                <label>Incident Evidence Attachment (Screenshots, Trace Logs)</label>
+            <div class="form-group" style="border-top:1px dashed var(--border); padding-top:24px; margin-bottom: 0;">
+                <label><i class="fa-solid fa-paperclip"></i> Incident Evidence Attachment (Screenshots, Trace Logs)</label>
                 <input type="file" name="attachment" id="ticketAttachment" style="border: none; padding-left: 0; background: transparent;">
             </div>
         </div>
 
         <div class="card">
-            <label style="font-weight: bold; font-size: 14px; margin-bottom: 8px; display: block; color: var(--text-main);">
-                Select Notification CC Recipients (Click rows to highlight & checkmark)
-            </label>
+            <h3 style="margin-bottom: 12px;"><i class="fa-solid fa-share-nodes"></i> Select Notification CC Recipients</h3>
+            <label style="margin-bottom: 14px;">Click rows to instantly target and append recipient routing addresses</label>
             <div class="cc-container">
                 <div class="cc-item selected" style="cursor: not-allowed; opacity: 0.8;">
                     <span>noc@teleglobal.in (Mandatory Office Desk Address - Locked)</span>
@@ -282,14 +581,15 @@
             </div>
         </div>
 
-        <button type="submit" class="submit-btn">Raise Ticket & Dispatch Notification</button>
+        <button type="submit" class="submit-btn"><i class="fa-solid fa-bolt-lightning"></i> Raise Ticket & Dispatch Notification</button>
     </form>
     
     <div id="statusBox" class="status-msg"></div>
 
-    <div class="card" style="margin-top: 30px;">
-        <h3 style="border-bottom:1px solid var(--border-light); padding-bottom:10px; margin:0 0 10px 0;">Recent Live Incident Feed (Last 10 Tickets Summary)</h3>
-        <div style="overflow-x:auto;">
+    <!-- Live Active Operational Feed Table Architecture Grid -->
+    <div class="card" style="margin-top: 40px;">
+        <h3 style="border-bottom:1px solid var(--border); padding-bottom:16px; margin:0 0 20px 0;"><i class="fa-solid fa-list-check"></i> Recent Live Incident Feed (Last 10 Tickets Summary)</h3>
+        <div class="table-responsive">
             <table>
                 <thead>
                     <tr>
@@ -312,7 +612,7 @@
 </div>
 
 <script>
-// --- Theme Toggle Logic ---
+// --- Dynamic Theme Initialization Framework ---
 function initDashboardTheme() {
     const activeTheme = localStorage.getItem('noc-theme') || 'dark';
     document.documentElement.setAttribute('data-theme', activeTheme);
@@ -326,8 +626,7 @@ function toggleDashboardTheme() {
 }
 initDashboardTheme();
 
-// --- Exact Original Dashboard Functions (Untouched) ---
-
+// --- Core Script Systems Logic ---
 let activeSelectedCcs = ['noc@teleglobal.in'];
 
 function toggleCcChoice(element, emailAddress) {
@@ -372,7 +671,7 @@ async function lookupNetworkCircuits() {
             rowItem.onmouseout = () => rowItem.style.background = 'transparent';
             rowItem.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center; font-weight:bold;">
-                    <span style="color: var(--text-highlight);">${circuit.circuit_id}</span>
+                    <span style="color: var(--text-highlight); font-family: 'JetBrains Mono', monospace;">${circuit.circuit_id}</span>
                     <span style="color: var(--text-main);">${circuit.customer_name}</span>
                 </div>
                 <small style="color: var(--text-muted); display:block; margin-top:3px;">Company: ${circuit.company_name || 'N/A'} | Contact: ${circuit.phone_number}</small>
@@ -411,7 +710,6 @@ async function submitTicket(e) {
     if(!document.getElementById('final_circuit_id').value) return alert('Verify records via lookup first.');
     
     const form = document.getElementById('ticketForm');
-
     const selectedCategory = form.elements['issue_category'].value;
     const attachmentInput = document.getElementById('ticketAttachment');
     
@@ -429,7 +727,9 @@ async function submitTicket(e) {
     const payload = new FormData(form);
     payload.append("cc_emails", activeSelectedCcs.join(","));
 
-    box.style.display = 'block'; box.style.background = 'var(--cc-selected-bg)'; box.style.color = 'var(--cc-selected-text)';
+    box.style.display = 'block'; 
+    box.style.background = 'var(--cc-selected-bg)'; 
+    box.style.color = 'var(--cc-selected-text)';
     box.textContent = 'Writing database log and routing notification email...';
 
     try {
@@ -437,7 +737,8 @@ async function submitTicket(e) {
         const res = await target.json();
         
         if (target.ok && res.status === 'success') {
-            box.style.background = 'rgba(16, 185, 129, 0.15)'; box.style.color = '#10b981';
+            box.style.background = 'rgba(16, 185, 129, 0.15)'; 
+            box.style.color = '#10b981';
             box.textContent = `Success: Incident log committed cleanly to the network schema.`;
             form.reset();
             
@@ -457,7 +758,8 @@ async function submitTicket(e) {
             throw new Error(res.detail || 'Server processing error.'); 
         }
     } catch(err) {
-        box.style.background = 'rgba(239, 68, 68, 0.15)'; box.style.color = '#ef4444';
+        box.style.background = 'rgba(239, 68, 68, 0.15)'; 
+        box.style.color = '#ef4444';
         box.textContent = `Network Execution error: ${err.message}`;
     }
 }
@@ -477,18 +779,27 @@ async function refreshDashboardLogs() {
 
             if (idx < 10) {
                 const durationText = t.status === 'Closed' ? `${t.resolution_minutes} Mins` : '--';
+                
+                let pillBg = 'rgba(239, 68, 68, 0.15)', pillColor = '#ef4444';
+                if(t.status === 'Closed') { pillBg = 'rgba(16, 185, 129, 0.15)'; pillColor = '#10b981'; }
+                else if(t.status === 'In Monitoring') { pillBg = 'rgba(245, 158, 11, 0.15)'; pillColor = '#f59e0b'; }
+
                 body.innerHTML += `
                 <tr>
-                    <td style="font-weight:bold;">#${t.ticket_id}</td>
-                    <td style="font-family:monospace; color: var(--text-highlight);">${t.circuit_id}</td>
-                    <td>${t.issue_category}</td>
-                    <td style="font-weight:600; color:var(--text-muted);">${t.assigned_team}</td>
+                    <td style="font-weight:700; color: var(--text-highlight);">#${t.ticket_id}</td>
+                    <td style="font-family:'JetBrains Mono', monospace; font-weight: 600;">${t.circuit_id}</td>
+                    <td style="font-weight: 600;">${t.issue_category}</td>
+                    <td style="font-weight:700; color:var(--text-muted);">${t.assigned_team}</td>
                     <td>${t.open_by_name}</td>
-                    <td>${t.closed_by_name}</td>
-                    <td><span style="padding:3px 8px; font-size:11px; border-radius:10px; font-weight:bold; color: #fff; background:${t.status==='Closed'?'#10b981':t.status==='In Monitoring'?'#f59e0b':'#ef4444'}">${t.status}</span></td>
-                    <td style="color:var(--text-muted);">${t.timestamp}</td>
-                    <td style="color:var(--text-muted);">${t.closed_timestamp}</td>
-                    <td style="font-weight:bold;">${durationText}</td>
+                    <td>${t.closed_by_name || '<span style="opacity:0.3;">--</span>'}</td>
+                    <td>
+                        <span style="padding:5px 12px; font-size:12px; border-radius:6px; font-weight:800; color:${pillColor}; background:${pillBg}; display:inline-block; border:1px solid rgba(255,255,255,0.03);">
+                            <span class="ping-pulse-beacon" style="color:${pillColor}; background:currentColor;"></span>${t.status}
+                        </span>
+                    </td>
+                    <td style="color:var(--text-muted); font-size:13px; font-family:'JetBrains Mono', monospace;">${t.timestamp}</td>
+                    <td style="color:var(--text-muted); font-size:13px; font-family:'JetBrains Mono', monospace;">${t.closed_timestamp || '--'}</td>
+                    <td style="font-weight:700; font-family:'JetBrains Mono', monospace;">${durationText}</td>
                 </tr>`;
             }
         });

@@ -123,6 +123,54 @@ def verify_session_token(token: str) -> dict:
     except Exception:
         return None
 
+#signiture
+
+import re
+
+# --- SIGNATURE AUTOMATION HELPERS ---
+def get_dynamic_signature(user_info: dict) -> str:
+    """Reads the HTML signature template and injects dynamic user data."""
+    # Fallback to 'NOC Specialist' if full_name is missing
+    engineer_name = user_info.get("full_name", user_info.get("username", "NOC Specialist"))
+    if "|" in engineer_name:
+        engineer_name = engineer_name.split("|")[0].strip()
+        
+    # Get user role for designation
+    designation = user_info.get("role", "NOC Engineer").capitalize()
+    if designation.lower() == "admin":
+        designation = "NOC Administrator"
+        
+    try:
+        with open("/opt/noc-app/templates/emails/signature.html", "r", encoding="utf-8") as f:
+            sig_template = f.read()
+            
+        return (sig_template
+                .replace("{operator_name}", engineer_name)
+                .replace("{designation}", designation)
+                .replace("{OPERATOR_NAME}", engineer_name)
+                .replace("{DESIGNATION}", designation))
+    except Exception as e:
+        print(f"Warning: Could not load signature file: {e}")
+        # Plain text fallback just in case the file goes missing
+        return f"<br><p>Best Regards,<br><strong>{engineer_name}</strong><br>{designation}<br>Teleglobal Communications Pvt. Ltd.</p>"
+
+def append_signature(html_body: str, user_info: dict) -> str:
+    """Safely appends the dynamic signature into an HTML email body."""
+    signature_html = get_dynamic_signature(user_info)
+    
+    # 1. If the explicit {signature} placeholder exists in the HTML, replace it exactly where it sits
+    if "{signature}" in html_body:
+        return html_body.replace("{signature}", signature_html)
+    
+    # 2. Fallback: If a closing body tag exists, inject the signature right before it
+    if "</body>" in html_body.lower():
+        return re.sub(r'(</body>)', f"<br>{signature_html}\\1", html_body, flags=re.IGNORECASE)
+    
+    # 3. Final Fallback: just append it to the end
+    return html_body + "<br>" + signature_html
+
+
+
 # Dependency Providers
 async def get_current_user(request: Request):
     token = request.cookies.get(COOKIE_NAME)
@@ -146,9 +194,19 @@ class CircuitModel(BaseModel):
 class UserUpdateModel(BaseModel):
     user_id: int
     username: str
+    email_id: str
     full_name: str
+    employee_id: str
     role: str
     password: str = None
+
+class UserCreateModel(BaseModel):
+    username: str
+    email_id: str
+    full_name: str
+    employee_id: str
+    role: str
+    password: str
 
 class ReportPayload(BaseModel):
     report_type: str
@@ -363,7 +421,7 @@ async def api_send_provisioning_welcome_mail(
         msg['Cc'] = ", ".join(cc_list)
         recipients.extend(cc_list)
 
-    msg.attach(MIMEText(hydrated_body, 'html'))
+    msg.attach(MIMEText(append_signature(hydrated_body, user), 'html'))
 
     if not escalation_matrix.filename.lower().endswith('.pdf'):
         raise HTTPException(status_code=400, detail="The Escalation Matrix attachment must strictly be a PDF document.")
@@ -465,7 +523,7 @@ async def api_send_bandwidth_change_mail(
         msg['Cc'] = ", ".join(cc_list)
         recipients.extend(cc_list)
 
-    msg.attach(MIMEText(hydrated_body, 'html'))
+    msg.attach(MIMEText(append_signature(hydrated_body, user), 'html'))
     background_tasks.add_task(send_smtp_email_background, msg.as_string(), recipients)
     log_operational_event("bandwidth_upgrade_logs", circuit_id.strip(), old_bandwidth_speed.strip(), new_bandwidth_speed.strip())
     return {"status": "success", "message": f"Bandwidth {action_title} notifications queued cleanly."}
@@ -520,7 +578,7 @@ async def api_send_termination_mail(
         msg['Cc'] = ", ".join(cc_list)
         recipients.extend(cc_list)
 
-    msg.attach(MIMEText(hydrated_body, 'html'))
+    msg.attach(MIMEText(append_signature(hydrated_body, user), 'html'))
     background_tasks.add_task(send_smtp_email_background, msg.as_string(), recipients)
     log_operational_event("link_termination_logs", circuit_id.strip(), "Termination requested by client", None)
     return {"status": "success", "message": "Link termination announcement queued cleanly via background layers."}
@@ -670,6 +728,7 @@ async def api_get_all_users(user=Depends(get_current_user)):
     cursor.close(); conn.close()
     return user_records
 
+
 @app.post("/api/admin/users/update")
 async def api_update_user_profile(payload: UserUpdateModel, user=Depends(get_current_user)):
     if user["role"] != "admin":
@@ -681,19 +740,89 @@ async def api_update_user_profile(payload: UserUpdateModel, user=Depends(get_cur
         if payload.password and payload.password.strip():
             new_hash = hash_password(payload.password.strip())
             cursor.execute(
-                "UPDATE users SET username = %s, full_name = %s, role = %s, password_hash = %s WHERE id = %s",
-                (payload.username.strip().lower(), payload.full_name.strip(), payload.role, new_hash, payload.user_id)
+                """UPDATE users 
+                   SET username = %s, email_id = %s, full_name = %s, employee_id = %s, role = %s, password_hash = %s 
+                   WHERE id = %s""",
+                (payload.username.strip().lower(), payload.email_id.strip().lower(), payload.full_name.strip(), payload.employee_id.strip(), payload.role, new_hash, payload.user_id)
             )
         else:
             cursor.execute(
-                "UPDATE users SET username = %s, full_name = %s, role = %s WHERE id = %s",
-                (payload.username.strip().lower(), payload.full_name.strip(), payload.role, payload.user_id)
+                """UPDATE users 
+                   SET username = %s, email_id = %s, full_name = %s, employee_id = %s, role = %s 
+                   WHERE id = %s""",
+                (payload.username.strip().lower(), payload.email_id.strip().lower(), payload.full_name.strip(), payload.employee_id.strip(), payload.role, payload.user_id)
             )
         conn.commit()
         return {"status": "success"}
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=400, detail=f"Database constraint violation: {str(e)}")
+    finally:
+        cursor.close(); conn.close()
+
+@app.post("/api/admin/users/create")
+async def api_create_new_user(payload: UserCreateModel, user=Depends(get_current_user)):
+    # Strict Admin Security Authorization Guard
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin authorization required.")
+    
+    if not payload.password or len(payload.password.strip()) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters long.")
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        # Check if username or email already exists
+        cursor.execute("SELECT id FROM users WHERE LOWER(username) = LOWER(%s) OR LOWER(email_id) = LOWER(%s)", 
+                       (payload.username.strip(), payload.email_id.strip()))
+        if cursor.fetchone():
+            raise HTTPException(status_code=400, detail="Username or Email ID already registered within system inventory.")
+
+        # Hash the admin-defined password securely
+        new_password_hash = hash_password(payload.password.strip())
+        
+        # Insert the metadata layout mapping your specifications
+        query = """
+            INSERT INTO users (username, email_id, full_name, employee_id, role, password_hash)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """
+        cursor.execute(query, (
+            payload.username.strip().lower(),
+            payload.email_id.strip().lower(),
+            payload.full_name.strip(),
+            payload.employee_id.strip(),
+            payload.role,
+            new_password_hash
+        ))
+        conn.commit()
+        return {"status": "success", "message": f"User account tracking profile created successfully for {payload.username}."}
+    except HTTPException as http_e:
+        raise http_e
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=400, detail=f"Database target mapping constraint dropped: {str(e)}")
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.post("/api/admin/users/delete/{target_id}")
+async def api_delete_user(target_id: int, user=Depends(get_current_user)):
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin authorization required.")
+        
+    if user["id"] == target_id:
+        raise HTTPException(status_code=400, detail="Administrative Safeguard: You cannot delete your own active session account.")
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM users WHERE id = %s", (target_id,))
+        conn.commit()
+        return {"status": "success", "message": "User profile successfully removed from core systems inventory."}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Database execution layer failure: {str(e)}")
     finally:
         cursor.close(); conn.close()
 
@@ -761,7 +890,7 @@ async def api_welcome_handover(
 </body>
 </html>"""
     
-    msg.attach(MIMEText(html_template, 'html'))
+    msg.attach(MIMEText(append_signature(html_template, user), 'html'))
     
     if testing_snap and testing_snap.filename:
         try:
@@ -877,7 +1006,7 @@ async def process_raise_ticket(
             .replace("{assigned_team}", str(assigned_team))\
             .replace("{remark_note}", "Ticket Initialization.")
         
-        msg.attach(MIMEText(final_body, 'html'))
+        msg.attach(MIMEText(append_signature(final_body, user), 'html'))
     except Exception as io_err:
         mail_signature = f"Regards,\n{engineer_identity}\nTeleglobal Communications Pvt. Ltd."
         mail_body = f"Dear Operations Team,\n\nIncident Reference: #{formatted_ticket_id}\nCircuit Reference: {circuit_id}\n{mail_signature}"
@@ -967,7 +1096,7 @@ async def update_ticket_status(payload: dict, background_tasks: BackgroundTasks,
         msg['To'] = customer_meta["customer_email"]
         msg['Cc'] = ", ".join(recipients_cc)
         msg['Subject'] = f"Internet Link Status Notice [{target_status}] - Circuit ID: {ticket_meta['circuit_id']}"
-        msg.attach(MIMEText(final_html_body, 'html'))
+        msg.attach(MIMEText(append_signature(final_html_body, user), 'html'))
         background_tasks.add_task(send_smtp_email_background, msg.as_string(), [customer_meta["customer_email"]] + recipients_cc)
     return {"status": "success"}
 
@@ -1278,10 +1407,185 @@ async def api_send_rfo_mail(
     circuit_ref = email_context["circuit_id"] or "N/A"
     msg['Subject'] = f"Reason for Outage (RFO) Report || {company_name} || Circuit ID: {circuit_ref}"
     
-    msg.attach(MIMEText(html_body, 'html'))
+    msg.attach(MIMEText(append_signature(html_body, user), 'html'))
     all_recipients = to_recipients + recipients_cc
 
     # Hand off to non-blocking background queue task loop to prevent browser page freeze
     background_tasks.add_task(send_smtp_email_background, msg.as_string(), all_recipients)
 
     return {"status": "success", "message": f"RFO email compiled and dispatched for ticket {email_context['ticket_id']}"}
+
+
+# =====================================================================
+# EVENT WELCOME MAILER ROUTING SUBSYSTEM
+# =====================================================================
+
+# =========================================================================
+# EVENT WELCOME MAIL & LOGGING PIPELINE (COMPLETE ARCHITECTURE)
+# =========================================================================
+
+# =========================================================================
+# EVENT WELCOME MAIL & LOGGING PIPELINE (COMPLETE ARCHITECTURE)
+# =========================================================================
+
+@app.get("/system-mail/event-welcome", response_class=HTMLResponse)
+async def route_system_mail_event_welcome_page(request: Request, user = Depends(get_optional_user)):
+    """
+    Renders the secure Event Welcome operational template dashboard interface.
+    """
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+    return templates.TemplateResponse(request=request, name="system_mail_event_welcome.html", context={"user": user})
+
+
+@app.get("/api/circuits/search")
+async def api_search_event_circuits(query: str = Query(...), user = Depends(get_current_user)):
+    """
+    Dynamically fetches active inventory profiles matching either Circuit ID or Customer Name.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        search_term = f"%{query.strip()}%"
+        db_query = """
+            SELECT circuit_id, customer_name, customer_email 
+            FROM customers 
+            WHERE circuit_id ILIKE %s OR customer_name ILIKE %s
+            LIMIT 1;
+        """
+        cursor.execute(db_query, (search_term, search_term))
+        record = cursor.fetchone()
+        
+        if not record:
+            raise HTTPException(status_code=404, detail="No active circuit metrics found matching criteria.")
+        return record
+    except HTTPException as http_err:
+        raise http_err
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=f"Inventory lookup failure: {str(err)}")
+    finally:
+        cursor.close()
+        conn.close()
+
+
+
+
+# Updated route in main.py
+@app.post("/api/tools/send-event-welcome")
+async def api_send_event_welcome_mail(
+    background_tasks: BackgroundTasks,
+    circuit_id: str = Form(...),
+    customer_name: str = Form(...),
+    bandwidth: str = Form(...),
+    event_date: str = Form(...),
+    usable_ip: str = Form(...),
+    gateway: str = Form(...),
+    subnet: str = Form(...),
+    customer_email: str = Form(...),
+    cc_emails: str = Form(""),
+    user = Depends(get_current_user)
+):
+    engineer_identity = user.get("full_name", user.get("username", "NOC Specialist"))
+
+    # Render the event.html template
+    try:
+        template = templates.get_template("emails/event.html")
+        hydrated_body = template.render({
+            "circuit_id": circuit_id.strip(),
+            "customer_name": customer_name.strip(),
+            "bandwidth": bandwidth.strip(),
+            "event_date": event_date.strip(),
+            "usable_ip": usable_ip.strip(),
+            "gateway": gateway.strip(),
+            "subnet": subnet.strip(),
+            "operator_name": engineer_identity
+        })
+    except Exception as render_err:
+        raise HTTPException(status_code=500, detail=f"Template Error: {str(render_err)}")
+
+    # Construct the message
+    msg = MIMEMultipart()
+    msg['From'] = SMTP_USER
+    to_recipients = [addr.strip() for addr in customer_email.split(",") if addr.strip()]
+    msg['To'] = ", ".join(to_recipients)
+    msg['Subject'] = f"Welcome to Event Connectivity || {customer_name.strip()}"
+    
+    # Only attach HTML
+    msg.attach(MIMEText(append_signature(hydrated_body, user), 'html'))
+    
+    # Handle Recipients
+    recipients = list(to_recipients)
+    cc_list = list(GLOBAL_MANDATORY_CC)
+    if cc_emails.strip():
+        for addr in cc_emails.split(","):
+            if addr.strip(): cc_list.append(addr.strip())
+    
+    msg['Cc'] = ", ".join(cc_list)
+    recipients.extend(cc_list)
+
+    # Queue background task
+    background_tasks.add_task(send_smtp_email_background, msg.as_string(), recipients)
+    
+    return {"status": "success", "message": "Event Welcome Mail dispatched successfully."}
+
+@app.get("/api/reports/download-event-welcome-logs")
+async def download_event_welcome_logs(user = Depends(get_current_user)):
+    """
+    Queries historical operational parameters stored within event_welcome_logs,
+    structures the payload into an explicit in-memory stream buffer, and delivers a standard CSV.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        db_query = """
+            SELECT id, circuit_id, customer_name, bandwidth, event_date, 
+                   usable_ip, gateway, subnet, customer_email, cc_emails, sent_by, sent_at
+            FROM event_welcome_logs
+            ORDER BY sent_at DESC;
+        """
+        cursor.execute(db_query)
+        records = cursor.fetchall()
+
+        # Initialize the output memory buffers
+        csv_buffer = io.StringIO()
+        writer = csv.writer(csv_buffer)
+        
+        # Standardize report header row configurations
+        writer.writerow([
+            "Log ID", "Circuit ID", "Customer Name", "Bandwidth Speed", "Event Operations Window",
+            "Assigned Pool IPs", "Gateway Address", "Subnet Mask Architecture", 
+            "Destination Target Email", "Carbon Copy Recipients", "NOC Operator", "Timestamp (Local)"
+        ])
+        
+        # Populate each historical log row configuration entries
+        for item in records:
+            time_stamp_str = item["sent_at"].strftime("%Y-%m-%d %H:%M:%S") if item["sent_at"] else ""
+            writer.writerow([
+                item["id"],
+                item["circuit_id"],
+                item["customer_name"],
+                item["bandwidth"],
+                item["event_date"],
+                item["usable_ip"],
+                item["gateway"],
+                item["subnet"],
+                item["customer_email"],
+                item["cc_emails"],
+                item["sent_by"],
+                time_stamp_str
+            ])
+        
+        csv_buffer.seek(0)
+        date_stamp = datetime.now().strftime("%Y%m%d")
+        report_filename = f"event_welcome_logs_{date_stamp}.csv"
+        
+        return StreamingResponse(
+            iter([csv_buffer.getvalue()]),
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={report_filename}"}
+        )
+    except Exception as query_err:
+        raise HTTPException(status_code=500, detail=f"Log compilation processing failed: {str(query_err)}")
+    finally:
+        cursor.close()
+        conn.close()
