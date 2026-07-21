@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premises Access Request | Teleglobal NOC</title>
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root[data-theme="dark"] {
+            --bg-body: #0f172a;
+            --bg-container: #1e293b;
+            --bg-card: #0f172a;
+            --border: #334155;
+            --border-focus: #10b981;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #10b981;
+            --accent-hover: #059669;
+            --accent-glow: rgba(16, 185, 129, 0.2);
+            --input-bg: #0f172a;
+            --section-bg: rgba(30, 41, 59, 0.7);
+            --lookup-bg: #1e293b;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        :root[data-theme="light"] {
+            --bg-body: #f1f5f9;
+            --bg-container: #ffffff;
+            --bg-card: #f8fafc;
+            --border: #cbd5e1;
+            --border-focus: #059669;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent: #059669;
+            --accent-hover: #047857;
+            --accent-glow: rgba(5, 150, 105, 0.15);
+            --input-bg: #ffffff;
+            --section-bg: #f8fafc;
+            --lookup-bg: #e2e8f0;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            padding: 40px 20px;
+            margin: 0;
+            line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            max-width: 920px;
+            background: var(--bg-container);
+            margin: 0 auto;
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Header Block */
+        .header-block {
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 24px;
+            margin-bottom: 36px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title h2 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title h2 i {
+            color: var(--accent);
+            background: var(--accent-glow);
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .header-title p {
+            margin: 6px 0 0 0;
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .theme-toggle-btn {
+            background: var(--bg-card);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Lookup Component */
+        .lookup-card {
+            background: var(--lookup-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 36px;
+        }
+
+        .lookup-card label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 10px;
+        }
+
+        .lookup-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .lookup-group input {
+            flex: 1;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            padding: 12px 16px;
+            color: var(--text-main);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .lookup-group input:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        /* Form Sections */
+        .form-section {
+            background: var(--section-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 28px;
+            margin-bottom: 36px;
+        }
+
+        .section-heading {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+        }
+
+        .section-heading i { color: var(--accent); }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        .full-width { grid-column: span 2; }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .form-group input, 
+        .form-group textarea {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            padding: 12px 16px;
+            color: var(--text-main);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        /* Dynamic Calendar Integration */
+        input[type="datetime-local"] {
+            color-scheme: dark light;
+            cursor: pointer;
+        }
+
+        .form-group input:focus, 
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        /* Engineers Grid */
+        .engineer-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 20px;
+        }
+
+        .engineer-card:last-child { margin-bottom: 0; }
+
+        .engineer-badge {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: var(--accent-glow);
+            color: var(--accent);
+            display: inline-block;
+            margin-bottom: 14px;
+        }
+
+        .engineer-badge.optional {
+            background: rgba(148, 163, 184, 0.15);
+            color: var(--text-muted);
+        }
+
+        .engineer-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .input-icon-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon-wrapper i {
+            position: absolute;
+            left: 14px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .input-icon-wrapper input {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            padding: 11px 14px 11px 40px;
+            color: var(--text-main);
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .input-icon-wrapper input:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 22px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-accent {
+            background: var(--accent);
+            color: #ffffff;
+        }
+
+        .btn-accent:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-submit {
+            background: var(--accent);
+            color: #ffffff;
+            width: 100%;
+            font-size: 16px;
+            padding: 16px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .btn-submit:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 6px 20px var(--accent-glow);
+        }
+
+        /* Status Banners */
+        .status-banner {
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-banner.success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #34d399;
+            display: flex;
+        }
+
+        .status-banner.error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #f87171;
+            display: flex;
+        }
+
+        @media (max-width: 768px) {
+            .engineer-grid-3 { grid-template-columns: 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
+        }
+    </style>
+</head>
+<body>
+
+<script>
+    const savedTheme = localStorage.getItem('noc-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+</script>
+
+<div class="container">
+    <!-- Header -->
+    <div class="header-block">
+        <div class="header-title">
+            <h2><i class="fa-solid fa-envelope-open-text"></i> Premises Access Request Engine</h2>
+            <p>Teleglobal Network Operations Center Dispatch</p>
+        </div>
+        <div>
+            <button type="button" id="themeToggle" class="theme-toggle-btn" title="Toggle Visual Mode">
+                <i class="fa-solid fa-sun"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="statusAlert" class="status-banner"></div>
+
+    <!-- Quick Auto-Fill Search -->
+    <div class="lookup-card">
+        <label for="search_query"><i class="fa-solid fa-magnifying-glass"></i> Inventory Auto-Fill</label>
+        <div class="lookup-group">
+            <input type="text" id="search_query" placeholder="Enter Circuit ID or Customer Name...">
+            <button type="button" id="searchBtn" onclick="searchCircuit()" class="btn btn-accent">
+                <i class="fa-solid fa-bolt"></i> Fetch Details
+            </button>
+        </div>
+    </div>
+
+    <form id="accessMailForm">
+        <!-- 1. Customer & Site Metadata -->
+        <div class="form-section">
+            <div class="section-heading"><i class="fa-solid fa-building"></i> 1. Customer & Site Metadata</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="company_name">Customer / Company Name</label>
+                    <input type="text" name="company_name" id="company_name" placeholder="e.g., Enterprise Client Pvt Ltd" required>
+                </div>
+                
+                <!-- Calendar Option Pick -->
+                <div class="form-group">
+                    <label for="access_date">Planned Visit Date & Time</label>
+                    <input type="datetime-local" name="access_date" id="access_date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="site_location">Site Location / Address</label>
+                    <input type="text" name="site_location" id="site_location" placeholder="e.g., Server Room, 3rd Floor, Building B" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="expected_duration">Estimated Duration</label>
+                    <input type="text" name="expected_duration" id="expected_duration" placeholder="e.g., 2 Hours" required>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="purpose">Scope & Purpose of Visit</label>
+                    <textarea name="purpose" id="purpose" rows="2" placeholder="Completion of the backup fiber path." required>Completion of the backup fiber path.</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Engineer Details Roster -->
+        <div class="form-section">
+            <div class="section-heading"><i class="fa-solid fa-users-gear"></i> 2. Visiting Engineers Roster</div>
+            
+            <!-- Primary Engineer -->
+            <div class="engineer-card">
+                <span class="engineer-badge"><i class="fa-solid fa-user-check"></i> Primary Field Engineer</span>
+                <div class="engineer-grid-3">
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" name="engineer_name_1" placeholder="Full Name *" required>
+                    </div>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-id-card"></i>
+                        <input type="text" name="employee_id_1" placeholder="Employee ID *" required>
+                    </div>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-phone"></i>
+                        <input type="text" name="contact_number_1" placeholder="Mobile Number *" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Secondary Engineer -->
+            <div class="engineer-card">
+                <span class="engineer-badge optional"><i class="fa-solid fa-user-plus"></i> Secondary Engineer (Optional)</span>
+                <div class="engineer-grid-3">
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" name="engineer_name_2" placeholder="Full Name">
+                    </div>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-id-card"></i>
+                        <input type="text" name="employee_id_2" placeholder="Employee ID">
+                    </div>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-phone"></i>
+                        <input type="text" name="contact_number_2" placeholder="Mobile Number">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tertiary Engineer -->
+            <div class="engineer-card">
+                <span class="engineer-badge optional"><i class="fa-solid fa-user-plus"></i> Tertiary Engineer (Optional)</span>
+                <div class="engineer-grid-3">
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" name="engineer_name_3" placeholder="Full Name">
+                    </div>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-id-card"></i>
+                        <input type="text" name="employee_id_3" placeholder="Employee ID">
+                    </div>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-phone"></i>
+                        <input type="text" name="contact_number_3" placeholder="Mobile Number">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Mail Routing -->
+        <div class="form-section">
+            <div class="section-heading"><i class="fa-solid fa-paper-plane"></i> 3. Recipient Mail Routing</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="customer_email">Primary Recipient Email</label>
+                    <input type="email" name="customer_email" id="customer_email" placeholder="client@domain.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="cc_emails">CC Emails</label>
+                    <input type="text" name="cc_emails" id="cc_emails" placeholder="noc@teleglobal.com, manager@domain.com">
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn btn-submit">
+            <i class="fa-solid fa-paper-plane"></i> Dispatch Outlook Access Request Mail
+        </button>
+    </form>
+</div>
+
+<script>
+    // Theme Switcher Logic
+    const themeToggleBtn = document.getElementById('themeToggle');
+    function updateToggleIcon(theme) {
+        themeToggleBtn.querySelector('i').className = theme === 'light' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+    }
+    updateToggleIcon(document.documentElement.getAttribute('data-theme'));
+
+    themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('noc-theme', newTheme);
+        updateToggleIcon(newTheme);
+    });
+
+    // Set Default Calendar Date to 22 July 2026 10:00 AM
+    window.addEventListener('DOMContentLoaded', () => {
+        const accessDateInput = document.getElementById('access_date');
+        accessDateInput.value = '2026-07-22T10:00';
+    });
+
+    // Status Display Banner
+    function displayStatus(message, isSuccess) {
+        const banner = document.getElementById('statusAlert');
+        banner.className = `status-banner ${isSuccess ? 'success' : 'error'}`;
+        banner.innerHTML = isSuccess 
+            ? `<i class="fa-solid fa-circle-check"></i> <span>${message}</span>`
+            : `<i class="fa-solid fa-triangle-exclamation"></i> <span>${message}</span>`;
+        banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Auto-fill Circuit Inventory
+    async function searchCircuit() {
+        const query = document.getElementById('search_query').value.trim();
+        const btn = document.getElementById('searchBtn');
+        if (!query) return alert("Please enter a Circuit ID or Customer Name.");
+        
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Fetching...`;
+        
+        try {
+            const response = await fetch(`/api/circuits/search?query=${encodeURIComponent(query)}`);
+            const data = await response.json();
+            
+            if (response.ok) {
+                document.getElementById('company_name').value = data.customer_name || '';
+                document.getElementById('customer_email').value = data.customer_email || '';
+                displayStatus("Customer information populated successfully.", true);
+            } else {
+                displayStatus("Inventory Lookup: " + (data.detail || "No matching record found."), false);
+            }
+        } catch (err) {
+            displayStatus("Unable to connect to inventory lookup service.", false);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fa-solid fa-bolt"></i> Fetch Details`;
+        }
+    }
+
+    // Submit Request
+    document.getElementById('accessMailForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Sending Request...`;
+
+        const formData = new FormData(this);
+        const urlEncodedData = new URLSearchParams(formData);
+
+        try {
+            const response = await fetch('/api/tools/send-access-mail', {
+                method: 'POST',
+                body: urlEncodedData,
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                displayStatus(data.message || "Access request email sent successfully.", true);
+            } else {
+                displayStatus("Failed to send mail: " + (data.detail || JSON.stringify(data)), false);
+            }
+        } catch (error) {
+            displayStatus("Network error occurred while dispatching email.", false);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Dispatch Outlook Access Request Mail`;
+        }
+    });
+</script>
+</body>
+</html>

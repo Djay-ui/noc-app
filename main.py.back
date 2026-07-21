@@ -22,6 +22,7 @@ from typing import Optional
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, Field
+from email_helpers import build_email_message
 
 app = FastAPI(title="Teleglobal NOC Automation Platform")
 templates = Jinja2Templates(directory="templates")
@@ -56,17 +57,32 @@ def send_smtp_email_background(msg_string: str, all_recipients: list):
         print(f"Background SMTP Dispatch Failure: {str(smtp_err)}")
 
 # SCALABLE ALARM CONFIGURATION MATRIX
+
+from datetime import datetime, timedelta, timezone
+from fastapi import FastAPI, Depends, HTTPException, Form, UploadFile, File, BackgroundTasks
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+# --- SCALABLE ALARM CONFIGURATION MATRIX ---
 def determine_email_template(issue_category: str, status: str) -> str:
     if not issue_category:
         cat = ""
     else:
         cat = issue_category.strip().lower()
 
-    if cat == "ip is not pingable":
+    # Exact matching logic (case-insensitive & whitespace trimmed)
+    if cat in ["primary default update", "primary default", "primary", "general issue"]:
+        return "primary_up.html" if status == "Closed" else "primary.html"
+    elif cat == "ip is not pingable":
         return "ip_up.html" if status == "Closed" else "ip_down.html"
     elif cat in ["switch isolated", "switch is isolated"]:
         return "switch_up.html" if status == "Closed" else "switch_down.html"
+    elif cat in ["media device down", "media device"]:
+        return "mkt_up.html" if status == "Closed" else "mkt.html"
+    elif cat == "high bandwidth utilization":
+        return "high.html"
 
+    # Default fallbacks
     if status == "Closed":
         return "link_up.html"
     elif status == "In Monitoring":
@@ -74,19 +90,18 @@ def determine_email_template(issue_category: str, status: str) -> str:
     else:
         return "link_down.html"
 
-from datetime import datetime, timedelta
-
 def assign_priority_and_sla(issue_category: str):
     now = datetime.utcnow()
     
     if issue_category in ["Core Backbone Down", "Complete Site Isolation", "Total Blackout"]:
         return "P1", now + timedelta(hours=1)
-    elif issue_category in ["High Packet Loss", "Latency Issues", "Redundancy Lost"]:
+    elif issue_category in ["high bandwidth utilization", "High Packet Loss", "Latency Issues", "Redundancy Lost"]:
         return "P2", now + timedelta(hours=4)
     elif issue_category in ["Interface Flapping", "Minor Config Error"]:
         return "P3", now + timedelta(hours=24)
     else:
         return "P4", now + timedelta(days=3)
+
 
 # Security & Crypto Helpers
 def hash_password(password: str) -> str:
@@ -122,6 +137,54 @@ def verify_session_token(token: str) -> dict:
         return payload
     except Exception:
         return None
+
+#signiture
+
+import re
+
+# --- SIGNATURE AUTOMATION HELPERS ---
+def get_dynamic_signature(user_info: dict) -> str:
+    """Reads the HTML signature template and injects dynamic user data."""
+    # Fallback to 'NOC Specialist' if full_name is missing
+    engineer_name = user_info.get("full_name", user_info.get("username", "NOC Specialist"))
+    if "|" in engineer_name:
+        engineer_name = engineer_name.split("|")[0].strip()
+        
+    # Get user role for designation
+    designation = user_info.get("role", "NOC Engineer").capitalize()
+    if designation.lower() == "admin":
+        designation = "NOC Administrator"
+        
+    try:
+        with open("/opt/noc-app/templates/emails/signature.html", "r", encoding="utf-8") as f:
+            sig_template = f.read()
+            
+        return (sig_template
+                .replace("{operator_name}", engineer_name)
+                .replace("{designation}", designation)
+                .replace("{OPERATOR_NAME}", engineer_name)
+                .replace("{DESIGNATION}", designation))
+    except Exception as e:
+        print(f"Warning: Could not load signature file: {e}")
+        # Plain text fallback just in case the file goes missing
+        return f"<br><p>Best Regards,<br><strong>{engineer_name}</strong><br>{designation}<br>Teleglobal Communications Pvt. Ltd.</p>"
+
+def append_signature(html_body: str, user_info: dict) -> str:
+    """Safely appends the dynamic signature into an HTML email body."""
+    signature_html = get_dynamic_signature(user_info)
+    
+    # 1. If the explicit {signature} placeholder exists in the HTML, replace it exactly where it sits
+    if "{signature}" in html_body:
+        return html_body.replace("{signature}", signature_html)
+    
+    # 2. Fallback: If a closing body tag exists, inject the signature right before it
+    if "</body>" in html_body.lower():
+        return re.sub(r'(</body>)', f"<br>{signature_html}\\1", html_body, flags=re.IGNORECASE)
+    
+    # 3. Final Fallback: just append it to the end
+    return html_body + "<br>" + signature_html
+
+
 
 # Dependency Providers
 async def get_current_user(request: Request):
@@ -229,6 +292,17 @@ async def route_system_mail_welcome_page(request: Request, user=Depends(get_opti
     if not user:
         return RedirectResponse(url="/login", status_code=303)
     return templates.TemplateResponse(request=request, name="system_mail_welcome.html", context={"user": user})
+
+# Route to render the Access Mail UI page
+@app.get("/system-mail/access", response_class=HTMLResponse)
+async def route_system_mail_access_page(request: Request, user = Depends(get_optional_user)):
+    """
+    Renders the secure Access Request operational template dashboard interface.
+    """
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+    return templates.TemplateResponse(request=request, name="system_mail_access.html", context={"user": user})
+
 
 @app.get("/system-mail/bandwidth", response_class=HTMLResponse)
 async def route_bandwidth_change_page(request: Request, user=Depends(get_optional_user)):
@@ -373,7 +447,7 @@ async def api_send_provisioning_welcome_mail(
         msg['Cc'] = ", ".join(cc_list)
         recipients.extend(cc_list)
 
-    msg.attach(MIMEText(hydrated_body, 'html'))
+    msg.attach(MIMEText(append_signature(hydrated_body, user), 'html'))
 
     if not escalation_matrix.filename.lower().endswith('.pdf'):
         raise HTTPException(status_code=400, detail="The Escalation Matrix attachment must strictly be a PDF document.")
@@ -475,7 +549,7 @@ async def api_send_bandwidth_change_mail(
         msg['Cc'] = ", ".join(cc_list)
         recipients.extend(cc_list)
 
-    msg.attach(MIMEText(hydrated_body, 'html'))
+    msg.attach(MIMEText(append_signature(hydrated_body, user), 'html'))
     background_tasks.add_task(send_smtp_email_background, msg.as_string(), recipients)
     log_operational_event("bandwidth_upgrade_logs", circuit_id.strip(), old_bandwidth_speed.strip(), new_bandwidth_speed.strip())
     return {"status": "success", "message": f"Bandwidth {action_title} notifications queued cleanly."}
@@ -530,7 +604,7 @@ async def api_send_termination_mail(
         msg['Cc'] = ", ".join(cc_list)
         recipients.extend(cc_list)
 
-    msg.attach(MIMEText(hydrated_body, 'html'))
+    msg.attach(MIMEText(append_signature(hydrated_body, user), 'html'))
     background_tasks.add_task(send_smtp_email_background, msg.as_string(), recipients)
     log_operational_event("link_termination_logs", circuit_id.strip(), "Termination requested by client", None)
     return {"status": "success", "message": "Link termination announcement queued cleanly via background layers."}
@@ -842,7 +916,7 @@ async def api_welcome_handover(
 </body>
 </html>"""
     
-    msg.attach(MIMEText(html_template, 'html'))
+    msg.attach(MIMEText(append_signature(html_template, user), 'html'))
     
     if testing_snap and testing_snap.filename:
         try:
@@ -871,6 +945,51 @@ async def api_welcome_handover(
     all_recipients = [customer_email.strip()] + recipients_cc
     background_tasks.add_task(send_smtp_email_background, msg.as_string(), all_recipients)
     return {"status": "success", "message": "Welcome Onboarding Pack dispatched successfully."}
+
+
+from datetime import datetime, timedelta, timezone
+from fastapi import FastAPI, Depends, HTTPException, Form, UploadFile, File, BackgroundTasks
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+# --- SCALABLE ALARM CONFIGURATION MATRIX ---
+def determine_email_template(issue_category: str, status: str) -> str:
+    if not issue_category:
+        cat = ""
+    else:
+        cat = issue_category.strip().lower()
+
+    # Exact matching logic (case-insensitive & whitespace trimmed)
+    if cat in ["primary default update", "primary default", "primary", "general issue"]:
+        return "primary_up.html" if status == "Closed" else "primary.html"
+    elif cat == "ip is not pingable":
+        return "ip_up.html" if status == "Closed" else "ip_down.html"
+    elif cat in ["switch isolated", "switch is isolated"]:
+        return "switch_up.html" if status == "Closed" else "switch_down.html"
+    elif cat in ["media device down", "media device"]:
+        return "mkt_up.html" if status == "Closed" else "mkt.html"
+    elif cat == "high bandwidth utilization":
+        return "high.html"
+
+    # Default fallbacks
+    if status == "Closed":
+        return "link_up.html"
+    elif status == "In Monitoring":
+        return "link_monitoring.html"
+    else:
+        return "link_down.html"
+
+def assign_priority_and_sla(issue_category: str):
+    now = datetime.utcnow()
+    
+    if issue_category in ["Core Backbone Down", "Complete Site Isolation", "Total Blackout"]:
+        return "P1", now + timedelta(hours=1)
+    elif issue_category in ["high bandwidth utilization", "High Packet Loss", "Latency Issues", "Redundancy Lost"]:
+        return "P2", now + timedelta(hours=4)
+    elif issue_category in ["Interface Flapping", "Minor Config Error"]:
+        return "P3", now + timedelta(hours=24)
+    else:
+        return "P4", now + timedelta(days=3)
 
 @app.post("/api/ticket/raise")
 async def process_raise_ticket(
@@ -923,30 +1042,47 @@ async def process_raise_ticket(
         conn.rollback()
         raise HTTPException(status_code=500, detail=f"Database Logging Error: {str(db_err)}")
     finally:
-        cursor.close(); conn.close()
+        cursor.close()
+        conn.close()
 
-    msg = MIMEMultipart()
-    msg['From'] = SMTP_USER
-    msg['To'] = customer['customer_email']
-    
+    # --- EMAIL PREPARATION & INLINE ATTACHMENT HANDLING ---
     recipients_cc = list(GLOBAL_MANDATORY_CC)
     if cc_emails:
         custom_emails = [email.strip() for email in cc_emails.split(",") if email.strip()]
         for c_email in custom_emails:
             if c_email not in recipients_cc:
                 recipients_cc.append(c_email)
-                
-    msg['Cc'] = ", ".join(recipients_cc)
-    msg['Subject'] = f"[NOC Ticket #{formatted_ticket_id}] {issue_category} | Circuit ID: {circuit_id}"
-    
+
+    resolved_customer_name = customer["customer_name"] if customer and "customer_name" in customer else "Valued Client"
+
+    # Read attached file bytes (if provided)
+    attachment_bytes = None
+    attachment_filename = None
+    if attachment and attachment.filename:
+        attachment_bytes = await attachment.read()
+        attachment_filename = attachment.filename
+
+    # Determine template
     template_file = determine_email_template(issue_category, status)
 
+    # Build inline HTML image block if snapshot is provided for High Bandwidth Utilization
+    inline_snapshot_html = ""
+    if attachment_bytes and template_file == "high.html":
+        inline_snapshot_html = """
+        <div style="margin:25px 0;padding:18px;background:#fff8e6;border-left:5px solid #d97706;border-radius:4px;text-align:left;">
+            <b style="display:block;margin-bottom:12px;color:#b45309;font-size:15px;font-weight:700;">Current Link Utilization Snapshot:</b>
+            <div style="text-align:center;padding:5px 0;">
+                <img src="cid:utilization_snapshot_img" alt="Bandwidth Utilization Snapshot" style="max-width:100%;height:auto;border:1px solid #d9e2ec;border-radius:4px;display:inline-block;margin:0 auto;box-shadow:0 2px 6px rgba(0,0,0,0.06);">
+            </div>
+        </div>
+        """
+
+    # Load HTML template file
     try:
         with open(f"/opt/noc-app/templates/emails/{template_file}", "r", encoding="utf-8") as html_file:
             html_template_data = html_file.read()
 
-        resolved_customer_name = customer["customer_name"] if customer else "Valued Client"
-        final_body = html_template_data\
+        final_html_body = html_template_data\
             .replace("{customer_name}", str(resolved_customer_name))\
             .replace("{circuit_id}", str(circuit_id))\
             .replace("{{IP_ADDRESS}}", str(circuit_id))\
@@ -954,30 +1090,36 @@ async def process_raise_ticket(
             .replace("{operator_name}", str(engineer_identity))\
             .replace("{status}", str(status))\
             .replace("{issue_category}", str(issue_category))\
+            .replace("{issue_subject}", str(issue_category))\
+            .replace("{etr}", "2 Hours")\
             .replace("{root_cause_segment}", str(root_cause_segment))\
             .replace("{assigned_team}", str(assigned_team))\
-            .replace("{remark_note}", "Ticket Initialization.")
-        
-        msg.attach(MIMEText(final_body, 'html'))
+            .replace("{remark_note}", "Ticket Initialization.")\
+            .replace("{SNAPSHOT_CONTAINER}", inline_snapshot_html)
+
+        email_content_with_signature = append_signature(final_html_body, user)
     except Exception as io_err:
-        mail_signature = f"Regards,\n{engineer_identity}\nTeleglobal Communications Pvt. Ltd."
-        mail_body = f"Dear Operations Team,\n\nIncident Reference: #{formatted_ticket_id}\nCircuit Reference: {circuit_id}\n{mail_signature}"
-        msg.attach(MIMEText(mail_body, 'plain'))
+        # Fallback text if template fails
+        email_content_with_signature = f"Dear Operations Team,\n\nIncident Reference: #{formatted_ticket_id}\nCircuit Reference: {circuit_id}\nRegards,\n{engineer_identity}"
 
-    if attachment and attachment.filename:
-        try:
-            file_bytes = await attachment.read()
-            if len(file_bytes) > 0:
-                part = MIMEBase('application', 'octet-stream')
-                part.set_payload(file_bytes)
-                encoders.encode_base64(part)
-                part.add_header('Content-Disposition', f'attachment; filename="{attachment.filename}"')
-                msg.attach(part)
-        except Exception as attachment_err:
-            print(f"Attachment processing bypassed: {str(attachment_err)}")
+    # Construct and dispatch MIME email message
+    if customer and customer.get("customer_email"):
+        subject_line = f"[NOC Ticket #{formatted_ticket_id}] {issue_category} | Circuit ID: {circuit_id}"
+        
+        msg = build_email_message(
+            sender=SMTP_USER,
+            to_email=customer["customer_email"],
+            cc_list=recipients_cc,
+            subject=subject_line,
+            html_body=email_content_with_signature,
+            file_bytes=attachment_bytes,
+            filename=attachment_filename,
+            is_high_utilization=(template_file == "high.html")
+        )
 
-    all_recipients = [customer['customer_email']] + recipients_cc
-    background_tasks.add_task(send_smtp_email_background, msg.as_string(), all_recipients)
+        all_recipients = [customer["customer_email"]] + recipients_cc
+        background_tasks.add_task(send_smtp_email_background, msg.as_string(), all_recipients)
+
     return {"status": "success", "ticket_id": formatted_ticket_id}
 
 @app.post("/api/ticket/update-status")
@@ -1019,8 +1161,17 @@ async def update_ticket_status(payload: dict, background_tasks: BackgroundTasks,
         conn.rollback()
         raise HTTPException(status_code=500, detail=f"Database operational failure: {str(db_err)}")
     finally:
-        cursor.close(); conn.close()
+        cursor.close()
+        conn.close()
 
+    # --- SUPPRESS EMAIL NOTIFICATION FOR HIGH BANDWIDTH UTILIZATION ISSUES ---
+    if ticket_meta and ticket_meta.get("issue_category") == "High Bandwidth Utilization":
+        return {
+            "status": "success",
+            "message": "Ticket status updated successfully in database. Email notification bypassed for High Bandwidth Utilization."
+        }
+
+    # --- EMAIL DISPATCH FOR OTHER ISSUE CATEGORIES ---
     template_file = determine_email_template(ticket_meta.get("issue_category"), target_status)
 
     try:
@@ -1040,6 +1191,9 @@ async def update_ticket_status(payload: dict, background_tasks: BackgroundTasks,
         .replace("{ticket_id}", str(formatted_ticket_id))\
         .replace("{operator_name}", str(engineer_identity))\
         .replace("{status}", str(target_status))\
+        .replace("{issue_category}", str(ticket_meta.get("issue_category")))\
+        .replace("{issue_subject}", str(ticket_meta.get("issue_category")))\
+        .replace("{etr}", "Resolved" if target_status == "Closed" else "2 Hours")\
         .replace("{remark_note}", str(clean_remark))
 
     if customer_meta and customer_meta.get("customer_email"):
@@ -1048,8 +1202,9 @@ async def update_ticket_status(payload: dict, background_tasks: BackgroundTasks,
         msg['To'] = customer_meta["customer_email"]
         msg['Cc'] = ", ".join(recipients_cc)
         msg['Subject'] = f"Internet Link Status Notice [{target_status}] - Circuit ID: {ticket_meta['circuit_id']}"
-        msg.attach(MIMEText(final_html_body, 'html'))
+        msg.attach(MIMEText(append_signature(final_html_body, user), 'html'))
         background_tasks.add_task(send_smtp_email_background, msg.as_string(), [customer_meta["customer_email"]] + recipients_cc)
+
     return {"status": "success"}
 
 @app.get("/api/tickets/recent")
@@ -1076,7 +1231,8 @@ async def read_recent_tickets(limit: int = 10, search: str = "", status: str = "
     
     cursor.execute(query, tuple(params))
     records = cursor.fetchall()
-    cursor.close(); conn.close()
+    cursor.close()
+    conn.close()
     
     formatted_records = []
     for row in records:
@@ -1089,6 +1245,9 @@ async def read_recent_tickets(limit: int = 10, search: str = "", status: str = "
             "closed_timestamp": row['closed_timestamp'], "resolution_minutes": row['resolution_minutes']
         })
     return formatted_records
+
+
+
 
 # =========================================================================
 # OPERATIONAL COMPLIANCE EXPORT DATA AUDIT ENGINE
@@ -1359,7 +1518,7 @@ async def api_send_rfo_mail(
     circuit_ref = email_context["circuit_id"] or "N/A"
     msg['Subject'] = f"Reason for Outage (RFO) Report || {company_name} || Circuit ID: {circuit_ref}"
     
-    msg.attach(MIMEText(html_body, 'html'))
+    msg.attach(MIMEText(append_signature(html_body, user), 'html'))
     all_recipients = to_recipients + recipients_cc
 
     # Hand off to non-blocking background queue task loop to prevent browser page freeze
@@ -1463,7 +1622,7 @@ async def api_send_event_welcome_mail(
     msg['Subject'] = f"Welcome to Event Connectivity || {customer_name.strip()}"
     
     # Only attach HTML
-    msg.attach(MIMEText(hydrated_body, 'html'))
+    msg.attach(MIMEText(append_signature(hydrated_body, user), 'html'))
     
     # Handle Recipients
     recipients = list(to_recipients)
@@ -1541,3 +1700,85 @@ async def download_event_welcome_logs(user = Depends(get_current_user)):
     finally:
         cursor.close()
         conn.close()
+
+
+
+
+# Route to handle Access Mail dispatch
+@app.post("/api/tools/send-access-mail")
+async def api_send_access_mail(
+    background_tasks: BackgroundTasks,
+    company_name: str = Form(...),
+    access_date: str = Form(...),
+    purpose: str = Form(...),
+    site_location: str = Form(...),
+    expected_duration: str = Form(...),
+    engineer_name_1: str = Form(""),
+    employee_id_1: str = Form(""),
+    contact_number_1: str = Form(""),
+    id_proof_1: str = Form(""),
+    engineer_name_2: str = Form(""),
+    employee_id_2: str = Form(""),
+    contact_number_2: str = Form(""),
+    id_proof_2: str = Form(""),
+    engineer_name_3: str = Form(""),
+    employee_id_3: str = Form(""),
+    contact_number_3: str = Form(""),
+    id_proof_3: str = Form(""),
+    customer_email: str = Form(...),
+    cc_emails: str = Form(""),
+    user = Depends(get_current_user)
+):
+    engineer_identity = user.get("full_name", user.get("username", "NOC Specialist"))
+
+    # Render the emails/access.html template
+    try:
+        template = templates.get_template("emails/access.html")
+        hydrated_body = template.render({
+            "company_name": company_name.strip(),
+            "access_date": access_date.strip(),
+            "purpose": purpose.strip(),
+            "site_location": site_location.strip(),
+            "expected_duration": expected_duration.strip(),
+            "engineer_name_1": engineer_name_1.strip(),
+            "employee_id_1": employee_id_1.strip(),
+            "contact_number_1": contact_number_1.strip(),
+            "id_proof_1": id_proof_1.strip(),
+            "engineer_name_2": engineer_name_2.strip(),
+            "employee_id_2": employee_id_2.strip(),
+            "contact_number_2": contact_number_2.strip(),
+            "id_proof_2": id_proof_2.strip(),
+            "engineer_name_3": engineer_name_3.strip(),
+            "employee_id_3": employee_id_3.strip(),
+            "contact_number_3": contact_number_3.strip(),
+            "id_proof_3": id_proof_3.strip(),
+            "sender_name": engineer_identity
+        })
+    except Exception as render_err:
+        raise HTTPException(status_code=500, detail=f"Template Error: {str(render_err)}")
+
+    # Construct the email message
+    msg = MIMEMultipart()
+    msg['From'] = SMTP_USER
+    to_recipients = [addr.strip() for addr in customer_email.split(",") if addr.strip()]
+    msg['To'] = ", ".join(to_recipients)
+    msg['Subject'] = f"Request for Premises Access Approval || {company_name.strip()}"
+    
+    # Attach HTML body with automated NOC signature
+    msg.attach(MIMEText(append_signature(hydrated_body, user), 'html'))
+    
+    # Handle Recipient Routing
+    recipients = list(to_recipients)
+    cc_list = list(GLOBAL_MANDATORY_CC)
+    if cc_emails.strip():
+        for addr in cc_emails.split(","):
+            if addr.strip(): cc_list.append(addr.strip())
+    
+    msg['Cc'] = ", ".join(cc_list)
+    recipients.extend(cc_list)
+
+    # Queue background sending task
+    background_tasks.add_task(send_smtp_email_background, msg.as_string(), recipients)
+    
+    return {"status": "success", "message": "Premises Access Request Mail dispatched successfully."}
+

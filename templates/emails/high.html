@@ -38,18 +38,18 @@
                     <tr>
                         <td style="padding:35px 35px 20px 35px;">
                             <p style="margin:0 0 16px;font-size:16px;line-height:26px;color:#1e293b;">
-                                Dear Customer,
+                                Dear {customer_name},
                             </p>
                             <p style="margin:0 0 20px;font-size:15px;line-height:26px;color:#334155;">
-                                Our automated Network Management System has detected **high bandwidth utilization** on your circuit. Due to this, you may experience temporary latencies, slower internet speeds, or degraded overall network throughput performance.
+                                Our automated Network Management System has detected **high bandwidth utilization** on your circuit (ID: {circuit_id}). Due to this, you may experience temporary latencies, slower internet speeds, or degraded overall network throughput performance.
                             </p>
                             <p style="margin:0 0 20px;font-size:15px;line-height:26px;color:#334155;">
                                 Our Network Operations Center (NOC) team is actively monitoring the network segment and has observed frequent traffic spikes breaching threshold criteria during the current polling period.
                             </p>
 
-				<div style="margin:25px 0;padding:18px;background:#fff8e6;border-left:5px solid #d97706;border-radius:4px; text-align: center;">
-    				<b style="display: block; margin-bottom: 10px; text-align: left;">Current Link Utilization:</b>
-				<img src="cid:utilization_snapshot_img" alt="Bandwidth Snapshot" style="max-width:100%; height:auto; border:1px solid #ccc; display:block;">				</div>			
+                            <!-- DYNAMIC SNAPSHOT CONTAINER INJECTED HERE -->
+                            {SNAPSHOT_CONTAINER}
+
                             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:25px 0;">
                                 <tr>
                                     <td style="background:#fff8e6;border-left:5px solid #d97706;padding:22px;border-radius:0 4px 4px 0;">
@@ -63,7 +63,7 @@
                                         </ul>
                                     </td>
                                 </tr>
-                              </table>
+                            </table>
 
                             <p style="margin:20px 0 0;font-size:15px;line-height:26px;color:#334155;">
                                 Our engineering team will continue tracking the link states and provide structural updates if any prolonged anomalies persist. 

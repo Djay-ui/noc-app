@@ -4,79 +4,91 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teleglobal NOC Operations Engine</title>
-    <!-- Premium Icons Toolkit Integration -->
+    <!-- Premium Font & Icons Integration -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* --- Dynamic Mission-Critical Theme Engine Matrix --- */
+        /* --- Deep Cyber-NOC Theme Matrix with HUD Accents --- */
         :root {
-            /* Authentic Cyber-NOC Dark Mode (Default) */
-            --bg-body: #090d16;
-            --bg-container: #111827;
-            --bg-card: #1f2937;
-            --bg-alt: #0b0f19;
-            --input-bg: #0b0f19;
-            --border: #374151;
-            --border-light: #1f2937;
-            --text-main: #f9fafb;
-            --text-muted: #9ca3af;
+            /* Authentic Mission Control Dark Theme */
+            --bg-body: #05070f;
+            --bg-container: #0b1120;
+            --bg-card: #131b2e;
+            --bg-alt: #080d1a;
+            --input-bg: #060a14;
+            --border: #1e293b;
+            --border-light: #172554;
+            --text-main: #f8fafc;
+            --text-muted: #64748b;
             --text-highlight: #38bdf8;
-            --dropdown-bg: #1f2937;
-            --dropdown-hover: #111827;
+            --dropdown-bg: #131b2e;
+            --dropdown-hover: #0b1120;
             --cc-selected-bg: rgba(30, 58, 138, 0.4);
-            --cc-selected-border: #3b82f6;
-            --cc-selected-text: #60a5fa;
-            --table-th-bg: #111827;
-            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+            --cc-selected-border: #38bdf8;
+            --cc-selected-text: #38bdf8;
+            --table-th-bg: #0b1120;
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
             
-            --gradient-total: linear-gradient(135deg, #2563eb, #1d4ed8);
-            --gradient-open: linear-gradient(135deg, #dc2626, #b91c1c);
-            --gradient-monitor: linear-gradient(135deg, #d97706, #b45309);
-            --gradient-closed: linear-gradient(135deg, #059669, #047857);
-            --btn-nav: #374151;
+            --gradient-total: linear-gradient(135deg, #1e40af, #1e3a8a);
+            --gradient-open: linear-gradient(135deg, #991b1b, #7f1d1d);
+            --gradient-monitor: linear-gradient(135deg, #92400e, #78350f);
+            --gradient-closed: linear-gradient(135deg, #065f46, #064e3b);
+            --btn-nav: #1e293b;
+            
+            --glow-cyan: 0 0 15px rgba(56, 189, 248, 0.4);
+            --glow-red: 0 0 15px rgba(239, 68, 68, 0.4);
+            --glow-amber: 0 0 15px rgba(245, 158, 11, 0.4);
+            --glow-green: 0 0 15px rgba(16, 185, 129, 0.4);
         }
 
         [data-theme="light"] {
-            /* Clean Enterprise Light Mode */
-            --bg-body: #f1f5f9;
+            /* Premium Light Enterprise Desk Theme */
+            --bg-body: #f8fafc;
             --bg-container: #ffffff;
-            --bg-card: #f8fafc;
-            --bg-alt: #f1f5f9;
+            --bg-card: #f1f5f9;
+            --bg-alt: #e2e8f0;
             --input-bg: #ffffff;
             --border: #cbd5e1;
-            --border-light: #e2e8f0;
+            --border-light: #cbd5e1;
             --text-main: #0f172a;
             --text-muted: #64748b;
-            --text-highlight: #0ea5e9;
+            --text-highlight: #0284c7;
             --dropdown-bg: #ffffff;
             --dropdown-hover: #f1f5f9;
             --cc-selected-bg: #e0f2fe;
-            --cc-selected-border: #0ea5e9;
+            --cc-selected-border: #0284c7;
             --cc-selected-text: #0369a1;
-            --table-th-bg: #f8fafc;
-            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+            --table-th-bg: #e2e8f0;
+            --shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
             
             --gradient-total: linear-gradient(135deg, #3b82f6, #2563eb);
             --gradient-open: linear-gradient(135deg, #ef4444, #dc2626);
             --gradient-monitor: linear-gradient(135deg, #f59e0b, #d97706);
             --gradient-closed: linear-gradient(135deg, #10b981, #059669);
             --btn-nav: #e2e8f0;
+            
+            --glow-cyan: none;
+            --glow-red: none;
+            --glow-amber: none;
+            --glow-green: none;
         }
 
         body { 
-            font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif; 
             background: var(--bg-body); 
             color: var(--text-main); 
             margin: 0; 
             padding: 0; 
             transition: background 0.3s, color 0.3s;
-            line-height: 1.5;
+            background-image: radial-gradient(rgba(30, 41, 59, 0.3) 1px, transparent 0);
+            background-size: 24px 24px;
         }
 
-        /* Top Navigation Header bar styling */
+        /* --- Global Structural Layout Elements --- */
         header {
             background-color: var(--bg-container); 
             border-bottom: 1px solid var(--border-light); 
-            padding: 18px 32px; 
+            padding: 16px 40px; 
             display: flex; 
             justify-content: space-between; 
             align-items: center;
@@ -84,6 +96,7 @@
             position: sticky;
             top: 0;
             z-index: 1000;
+            backdrop-filter: blur(12px);
         }
 
         .logo { 
@@ -92,40 +105,64 @@
             color: var(--text-highlight);
             display: flex;
             align-items: center;
-            gap: 10px;
-            letter-spacing: -0.025em;
+            gap: 12px;
+            letter-spacing: -0.03em;
+            text-shadow: var(--glow-cyan);
         }
 
-        header nav { 
-            display: flex; 
-            gap: 24px; 
+        /* --- Live Header Radar Scanning Animation Node --- */
+        .radar-pulse-node {
+            width: 10px;
+            height: 10px;
+            background: #22c55e;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 0 10px #22c55e;
+        }
+        .radar-pulse-node::before {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 2px solid #22c55e;
+            border-radius: 50%;
+            top: -12px;
+            left: -12px;
+            animation: radarEcho 2s infinite linear;
+            opacity: 0;
+        }
+        @keyframes radarEcho {
+            0% { transform: scale(0.4); opacity: 1; }
+            100% { transform: scale(1.6); opacity: 0; }
         }
 
+        header nav { display: flex; gap: 32px; }
         header nav a {
             color: var(--text-muted);
             text-decoration: none;
-            font-weight: 600;
-            font-size: 14px;
-            transition: color 0.2s ease;
+            font-weight: 700;
+            font-size: 13.5px;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
-
         header nav a:hover, header nav a.active {
             color: var(--text-highlight);
+            text-shadow: var(--glow-cyan);
         }
 
-        /* Main Workspace Container Layout Frame */
         .container { 
-            max-width: 1400px; 
-            margin: 32px auto; 
+            max-width: 1440px; 
+            margin: 40px auto; 
             background: var(--bg-container); 
             padding: 40px; 
-            border-radius: 16px; 
+            border-radius: 20px; 
             box-shadow: var(--shadow); 
             border: 1px solid var(--border-light);
-            transition: background 0.3s; 
+            transition: all 0.3s ease; 
         }
 
         .header-bar { 
@@ -134,7 +171,7 @@
             align-items: center; 
             border-bottom: 1px solid var(--border); 
             padding-bottom: 24px; 
-            margin-bottom: 32px; 
+            margin-bottom: 40px; 
             gap: 20px; 
             flex-wrap: wrap; 
         }
@@ -142,86 +179,124 @@
         h1 { 
             color: var(--text-main); 
             margin: 0; 
-            font-size: 26px; 
-            font-weight: 700; 
-            letter-spacing: -0.025em;
+            font-size: 28px; 
+            font-weight: 800; 
+            letter-spacing: -0.03em;
         }
 
         .nav-group { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
         
         .nav-link-btn { 
-            background: #2563eb; 
+            background: #1d4ed8; 
             color: white; 
-            padding: 10px 18px; 
+            padding: 12px 20px; 
             border-radius: 8px; 
-            font-weight: 600; 
+            font-weight: 700; 
             font-size: 13px; 
-            border: 1px solid transparent; 
+            border: 1px solid rgba(255,255,255,0.05); 
             text-decoration: none; 
             cursor: pointer; 
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            transition: all 0.2s ease; 
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
         }
-        
-        .nav-link-btn.alt { background: #475569; }
-        .nav-link-btn.logout { background: #dc2626; }
-        .nav-link-btn:hover { transform: translateY(-1px); opacity: 0.95; }
+        .nav-link-btn.alt { background: #334155; }
+        .nav-link-btn.logout { background: #991b1b; }
+        .nav-link-btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
 
         .theme-toggle-btn { 
             background: var(--btn-nav); 
             color: var(--text-main); 
             border: 1px solid var(--border); 
-            padding: 10px 16px; 
+            padding: 12px 18px; 
             border-radius: 8px; 
             font-size: 13px; 
-            font-weight: 600; 
+            font-weight: 700; 
             cursor: pointer; 
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            transition: all 0.2s ease; 
         }
-        .theme-toggle-btn:hover { border-color: var(--text-muted); }
 
-        /* High-Impact Grid Performance Cards Matrix */
-        .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 32px; }
+        /* --- Live Performance Telemetry Grid Dashboard Interface --- */
+        .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; margin-bottom: 40px; }
         .kpi-card { 
-            padding: 24px; 
-            border-radius: 12px; 
-            border: 1px solid var(--border-light); 
+            padding: 28px; 
+            border-radius: 14px; 
+            border: 1px solid rgba(255, 255, 255, 0.03); 
             text-align: left; 
             color: white;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+        .kpi-card:hover {
+            transform: translateY(-4px) scale(1.02);
+        }
         .kpi-card::after {
             content: '';
             position: absolute;
-            right: -15px;
-            bottom: -15px;
-            width: 70px;
-            height: 70px;
-            background: rgba(255, 255, 255, 0.06);
+            right: -10px;
+            bottom: -10px;
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.04);
             border-radius: 50%;
         }
 
-        .kpi-card.total { background: var(--gradient-total); }
-        .kpi-card.open { background: var(--gradient-open); }
-        .kpi-card.monitoring { background: var(--gradient-monitor); }
-        .kpi-card.closed { background: var(--gradient-closed); }
-        .kpi-val { font-size: 36px; font-weight: 800; margin-top: 8px; font-variant-numeric: tabular-nums; }
+        .kpi-card.total { background: var(--gradient-total); box-shadow: var(--glow-cyan); }
+        .kpi-card.open { background: var(--gradient-open); box-shadow: var(--glow-red); }
+        .kpi-card.monitoring { background: var(--gradient-monitor); box-shadow: var(--glow-amber); }
+        .kpi-card.closed { background: var(--gradient-closed); box-shadow: var(--glow-green); }
         
-        /* Advanced Web Form Component Modules Grid layout configuration rules */
-        .form-group { margin-bottom: 20px; }
-        .form-group.col { margin-bottom: 0; }
-        label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .kpi-card .label-text {
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            opacity: 0.8;
+        }
+        .kpi-val { font-family: 'JetBrains Mono', monospace; font-size: 40px; font-weight: 700; margin-top: 10px; }
+
+        /* --- System Management Sub-Panels and Components Architecture --- */
+        .card { 
+            background: var(--bg-card); 
+            border: 1px solid var(--border); 
+            padding: 32px; 
+            border-radius: 14px; 
+            margin-bottom: 28px; 
+            position: relative;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--border-light), transparent);
+        }
+        .card h3 {
+            margin: 0 0 24px 0;
+            font-size: 15px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-highlight);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group { margin-bottom: 24px; }
+        label { display: block; font-weight: 700; margin-bottom: 10px; color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
+        
         input, select, textarea { 
             width: 100%; 
-            padding: 12px 16px; 
+            padding: 14px 18px; 
             border: 1px solid var(--border); 
             border-radius: 8px; 
             box-sizing: border-box; 
@@ -229,107 +304,89 @@
             background-color: var(--input-bg); 
             color: var(--text-main); 
             transition: all 0.2s ease;
+            font-family: inherit;
         }
         input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: var(--text-highlight);
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
         }
         
-        .row { display: flex; gap: 20px; margin-bottom: 20px; }
+        .row { display: flex; gap: 24px; margin-bottom: 24px; }
         .row:last-child { margin-bottom: 0; }
         .col { flex: 1; }
         
-        .search-btn { 
-            background: #2563eb; 
-            color: white; 
-            border: none; 
-            padding: 0 24px; 
+        .search-btn, .submit-btn { 
+            border: none;
             cursor: pointer; 
             border-radius: 8px; 
-            font-weight: 700; 
-            width: 100%; 
-            height: 46px; 
-            font-size: 14px;
+            font-weight: 800; 
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            transition: background 0.2s ease;
-        }
-        .search-btn:hover { background: #1d4ed8; }
-        
-        .submit-btn { 
-            background: #10b981; 
-            color: white; 
-            border: none; 
-            padding: 16px; 
-            width: 100%; 
-            cursor: pointer; 
-            border-radius: 8px; 
-            font-size: 15px; 
-            font-weight: 700; 
-            margin-top: 24px; 
-            letter-spacing: 0.025em;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: background 0.2s ease;
-        }
-        .submit-btn:hover { background: #059669; }
-        
-        .card { 
-            background: var(--bg-card); 
-            border: 1px solid var(--border-light); 
-            padding: 28px; 
-            border-radius: 12px; 
-            margin-bottom: 24px; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        .card h3 {
-            margin: 0 0 20px 0;
-            font-size: 16px;
-            font-weight: 700;
+            gap: 10px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.04em;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-highlight);
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
-
-        .status-msg { padding: 16px; margin-top: 20px; border-radius: 8px; font-weight: 600; display: none; font-size: 14px; }
-        .signature-preview { background: var(--bg-alt); border: 1px dashed var(--border); padding: 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; white-space: pre-wrap; margin-top: 12px; border-radius: 8px; color: var(--text-muted); }
+        .search-btn { background: #2563eb; color: white; width: 100%; height: 48px; font-size: 13px; }
+        .search-btn:hover { background: #1d4ed8; transform: translateY(-1px); }
         
-        /* Auto Selection Dropdown Grid Space rules */
-        .dropdown-selection-item { padding: 14px 18px; cursor: pointer; border-bottom: 1px solid var(--border-light); font-size: 13px; transition: background 0.15s ease; color: var(--text-main); }
-        .dropdown-selection-item:last-child { border-bottom: none; }
+        .submit-btn { background: #10b981; color: white; padding: 18px; width: 100%; font-size: 15px; margin-top: 24px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+        .submit-btn:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3); }
+        
+        .status-msg { padding: 18px; margin-top: 24px; border-radius: 8px; font-weight: 700; display: none; font-size: 14px; animation: paneSlide 0.3s ease; }
+        @keyframes paneSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Custom CC Choice Selection Panels Layout block style specifications */
-        .cc-container { display: flex; flex-direction: column; gap: 8px; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 8px; padding: 12px; max-height: 220px; overflow-y: auto; }
-        .cc-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-radius: 6px; cursor: pointer; border: 1px solid var(--border-light); background: var(--bg-card); transition: all 0.2s ease; user-select: none; color: var(--text-main); font-size: 13.5px; }
-        .cc-item:hover { background: var(--dropdown-hover); border-color: var(--border); }
-        .cc-item.selected { background: var(--cc-selected-bg); border-color: var(--cc-selected-border); color: var(--cc-selected-text); font-weight: 600; }
+        .signature-preview { background: var(--bg-alt); border: 1px dashed var(--border); padding: 18px; font-family: 'JetBrains Mono', monospace; font-size: 13px; white-space: pre-wrap; margin-top: 14px; border-radius: 8px; color: var(--text-muted); line-height: 1.6; }
+        .dropdown-selection-item { padding: 16px 20px; cursor: pointer; border-bottom: 1px solid var(--border-light); font-size: 13px; transition: background 0.15s ease; color: var(--text-main); }
+
+        /* --- Custom Interactive CC Notifications List Node Layout --- */
+        .cc-container { display: flex; flex-direction: column; gap: 10px; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 8px; padding: 14px; max-height: 240px; overflow-y: auto; }
+        .cc-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); background: var(--bg-card); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); user-select: none; color: var(--text-main); font-size: 13.5px; }
+        .cc-item:hover { background: var(--dropdown-hover); transform: translateX(2px); }
+        .cc-item.selected { background: var(--cc-selected-bg); border-color: var(--cc-selected-border); color: var(--cc-selected-text); font-weight: 700; box-shadow: 0 0 10px rgba(56,189,248,0.1); }
         .cc-checkmark { font-size: 14px; font-weight: bold; display: none; color: var(--cc-selected-text); }
         .cc-item.selected .cc-checkmark { display: block; }
 
-        /* Premium Integrated Data Grid Tables */
-        .table-responsive { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+        /* --- Live Animated Incident Feed Data Tables Grid Layout Architecture --- */
+        .table-responsive { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-alt); }
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th, td { padding: 14px 16px; border-bottom: 1px solid var(--border); text-align: left; }
-        th { background: var(--table-th-bg); color: var(--text-muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+        th, td { padding: 16px 20px; border-bottom: 1px solid var(--border); text-align: left; }
+        th { background: var(--table-th-bg); color: var(--text-muted); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
         tbody tr:last-child td { border-bottom: none; }
         tbody tr { transition: background-color 0.15s ease; }
-        tbody tr:hover { background-color: var(--dropdown-hover); }
+        tbody tr:hover { background-color: rgba(56, 189, 248, 0.03); }
 
-        @media (max-width: 992px) { .row { flex-direction: column; gap: 0; } .form-group.col { margin-bottom: 20px; } }
+        /* --- Real-Time Incidents Glowing Beacon Pulse System --- */
+        .ping-pulse-beacon {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            position: relative;
+            vertical-align: middle;
+        }
+        .ping-pulse-beacon::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 50%;
+            animation: pingPulse 1.5s infinite ease-in-out;
+        }
+        @keyframes pingPulse {
+            0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 currentColor; }
+            100% { transform: scale(2.5); opacity: 0; box-shadow: 0 0 0 8px transparent; }
+        }
 
-        /* Header Premium System Dropdown Mechanics */
+        @media (max-width: 992px) { .row { flex-direction: column; gap: 0; } .form-group.col { margin-bottom: 24px; } }
+
+        /* Dropdown Options Framework */
         .nav-dropdown { position: relative; display: inline-block; }
-        .nav-dropdown-content { display: none; position: absolute; background-color: var(--dropdown-bg); min-width: 260px; box-shadow: var(--shadow); z-index: 20000; border-radius: 8px; border: 1px solid var(--border); top: 100%; right: 0; margin-top: 8px; overflow: hidden; animation: menuFade 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes menuFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        .nav-dropdown-content a { color: var(--text-main); padding: 12px 18px; text-decoration: none; display: block; font-size: 13.5px; font-weight: 600; text-align: left; transition: background 0.15s ease; border-bottom: 1px solid var(--border-light); }
+        .nav-dropdown-content { display: none; position: absolute; background-color: var(--dropdown-bg); min-width: 280px; box-shadow: var(--shadow); z-index: 20000; border-radius: 10px; border: 1px solid var(--border); top: 100%; right: 0; margin-top: 10px; overflow: hidden; animation: menuFade 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes menuFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .nav-dropdown-content a { color: var(--text-main); padding: 14px 20px; text-decoration: none; display: block; font-size: 13.5px; font-weight: 700; text-align: left; transition: background 0.15s ease; border-bottom: 1px solid var(--border-light); }
         .nav-dropdown-content a:last-child { border-bottom: none; }
         .nav-dropdown-content a:hover { background-color: var(--dropdown-hover); color: var(--text-highlight) !important; }
         .nav-dropdown:hover .nav-dropdown-content { display: block; }
@@ -338,10 +395,13 @@
 <body>
 
 <header>
-    <div class="logo"><i class="fa-solid fa-satellite-dish"></i> Teleglobal NOC Console</div>
+    <div class="logo">
+        <div class="radar-pulse-node"></div>
+        <i class="fa-solid fa-network-wired"></i> Teleglobal NOC Console
+    </div>
     <nav>
-        <a href="/" class="active"><i class="fa-solid fa-chart-pie"></i> Dashboard</a> 
-        <a href="/tickets"><i class="fa-solid fa-ticket"></i> Tickets</a>
+        <a href="/" class="active"><i class="fa-solid fa-chart-line"></i> Dashboard</a> 
+        <a href="/tickets"><i class="fa-solid fa-ticket-simple"></i> Tickets Matrix</a>
         <a href="/circuits"><i class="fa-solid fa-server"></i> Circuits Inventory</a>
     </nav>
 </header>
@@ -350,8 +410,8 @@
     <div class="header-bar">
         <div>
             <h1>Teleglobal NOC Tickets Operations Console</h1>
-            <div style="color: var(--text-muted); font-size: 14px; margin-top: 6px;">
-                Active Operations Duty Officer: <strong style="color: var(--text-main);"><i class="fa-regular fa-user-circle" style="margin-right:4px;"></i> {{ user.full_name }}</strong>
+            <div style="color: var(--text-muted); font-size: 14px; margin-top: 8px;">
+                Active Security Clearance Duty Officer: <strong style="color: var(--text-main); font-family: 'JetBrains Mono', monospace;"><i class="fa-regular fa-id-badge" style="margin-right:4px;"></i> {{ user.full_name }}</strong>
             </div>
         </div>
         <div class="nav-group">
@@ -367,9 +427,12 @@
                 <button type="button" class="nav-link-btn" style="background: #0ea5e9; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-envelope-open-text"></i> Mail & Dispatch Options ▼</button>
                 <div class="nav-dropdown-content">
                     <a href="/system-mail/welcome"><i class="fa-regular fa-paper-plane" style="margin-right: 8px;"></i> Welcome Mail</a>
-                    <a href="/system-mail/event-welcome" target="_blank" style="background: rgba(168, 85, 247, 0.1); color: #c084fc; font-weight: 700;">
+                    <a href="/system-mail/event-welcome" target="_blank" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; font-weight: 700;">
                         <i class="fa-solid fa-wand-magic-sparkles" style="margin-right: 8px;"></i> Event Welcome Mail
                     </a>
+		    <a href="/system-mail/access" class="dropdown-item">
+    			<i class="fa-solid fa-key"></i> Access Mail
+			</a>
                     <a href="/system-mail/bandwidth"><i class="fa-solid fa-gauge-high" style="margin-right: 8px;"></i> Bandwidth Scale Sync</a>
                     <a href="/system-mail/terminate"><i class="fa-regular fa-circle-xmark" style="margin-right: 8px;"></i> Link Termination</a>
                     <a href="/system-mail/rfo" style="color: #38bdf8; font-weight: 700;"><i class="fa-solid fa-file-shield" style="margin-right: 8px;"></i> Dispatch RFO File</a>
@@ -381,19 +444,19 @@
         </div>
     </div>
 
-    <!-- Live Performance NOC Metrics Array -->
+    <!-- Live Performance NOC Metrics Telemetry Panel Deck -->
     <div class="kpi-row">
-        <div class="kpi-card total"><div>Total Displayed</div><div class="kpi-val" id="kpi_total">0</div></div>
-        <div class="kpi-card open"><div>Active Alarms (Open)</div><div class="kpi-val" id="kpi_open">0</div></div>
-        <div class="kpi-card monitoring"><div>In Monitoring</div><div class="kpi-val" id="kpi_monitor">0</div></div>
-        <div class="kpi-card closed"><div>Resolved Tickets</div><div class="kpi-val" id="kpi_closed">0</div></div>
+        <div class="kpi-card total"><div class="label-text">Total Displayed</div><div class="kpi-val" id="kpi_total">0</div></div>
+        <div class="kpi-card open"><div class="label-text">Active Alarms (Open)</div><div class="kpi-val" id="kpi_open">0</div></div>
+        <div class="kpi-card monitoring"><div class="label-text">In Monitoring</div><div class="kpi-val" id="kpi_monitor">0</div></div>
+        <div class="kpi-card closed"><div class="label-text">Resolved Tickets</div><div class="kpi-val" id="kpi_closed">0</div></div>
     </div>
 
     <div class="card" style="position: relative;">
         <h3><i class="fa-solid fa-magnifying-glass-chart"></i> 1. Lookup Network Circuit</h3>
         <div class="form-group row" style="align-items: flex-end; margin-bottom: 0;">
             <div style="flex: 3; position: relative;">
-                <input type="text" id="circuit_search" placeholder="Type Target Circuit ID, Customer Identity Reference, Company Name, or Contact Phone..." autocomplete="off" style="height: 46px;">
+                <input type="text" id="circuit_search" placeholder="Type Target Circuit ID, Customer Identity Reference, Company Name, or Contact Phone..." autocomplete="off" style="height: 48px;">
                 <div id="circuit_selection_dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--dropdown-bg); border: 1px solid var(--border); border-radius: 8px; max-height: 240px; overflow-y: auto; z-index: 10000; box-shadow: var(--shadow); margin-top: 6px;"></div>
             </div>
             <div style="flex: 1;">
@@ -445,25 +508,22 @@
             
             <div class="signature-preview" id="sigPreview">Regards,<br>{{ user.full_name }}<br>Teleglobal Communications Pvt. Ltd.</div>
 
-            <div class="row" style="margin-top: 20px;">
+            <div class="row" style="margin-top: 24px;">
                 <div class="form-group col">
                     <label>Issue Subject / Alarm Category</label>
                     <select name="issue_category" id="issue_category" onchange="evaluateOperationalCategory()" required>
                         <option value="" disabled selected>-- Select Alarm Category --</option>
                         <optgroup label="Standard Ticket Types">
+                            <option value="Primary Default Update">Primary Default Update / General Issue</option>
                             <option value="Link Down">Link Down</option>
-                            <option value="packet drop">packet drop</option>
                             <option value="High Bandwidth Utilization">High Bandwidth Utilization</option>
-                            <option value="Fiber Down">Fiber Down</option>
                             <option value="latency issue">latency issue</option>
-                            <option value="ip blacklist">ip blacklist</option>
                         </optgroup>
+
                         <optgroup label="Direct Mail Notification Categories">
                             <option value="Switch Is Isolated">Switch Is Isolated</option>
                             <option value="IP is Not Pingable">IP is Not Pingable</option>
-                            <option value="website issue">website issue</option>
                             <option value="Media Device Down">Media Device Down</option>
-                            <option value="Port is Down">Port is Down</option>
                         </optgroup>
                      </select> 
                 </div>
@@ -488,7 +548,7 @@
                 </select>
             </div>
 
-            <div class="form-group" style="border-top:1px dashed var(--border); padding-top:20px; margin-bottom: 0;">
+            <div class="form-group" style="border-top:1px dashed var(--border); padding-top:24px; margin-bottom: 0;">
                 <label><i class="fa-solid fa-paperclip"></i> Incident Evidence Attachment (Screenshots, Trace Logs)</label>
                 <input type="file" name="attachment" id="ticketAttachment" style="border: none; padding-left: 0; background: transparent;">
             </div>
@@ -496,7 +556,7 @@
 
         <div class="card">
             <h3 style="margin-bottom: 12px;"><i class="fa-solid fa-share-nodes"></i> Select Notification CC Recipients</h3>
-            <label style="margin-bottom: 12px;">Click rows to instantly target and append recipient routing addresses</label>
+            <label style="margin-bottom: 14px;">Click rows to instantly target and append recipient routing addresses</label>
             <div class="cc-container">
                 <div class="cc-item selected" style="cursor: not-allowed; opacity: 0.8;">
                     <span>noc@teleglobal.in (Mandatory Office Desk Address - Locked)</span>
@@ -526,8 +586,9 @@
     
     <div id="statusBox" class="status-msg"></div>
 
+    <!-- Live Active Operational Feed Table Architecture Grid -->
     <div class="card" style="margin-top: 40px;">
-        <h3 style="border-bottom:1px solid var(--border-light); padding-bottom:14px; margin:0 0 16px 0;"><i class="fa-solid fa-list-check"></i> Recent Live Incident Feed (Last 10 Tickets Summary)</h3>
+        <h3 style="border-bottom:1px solid var(--border); padding-bottom:16px; margin:0 0 20px 0;"><i class="fa-solid fa-list-check"></i> Recent Live Incident Feed (Last 10 Tickets Summary)</h3>
         <div class="table-responsive">
             <table>
                 <thead>
@@ -610,7 +671,7 @@ async function lookupNetworkCircuits() {
             rowItem.onmouseout = () => rowItem.style.background = 'transparent';
             rowItem.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center; font-weight:bold;">
-                    <span style="color: var(--text-highlight);">${circuit.circuit_id}</span>
+                    <span style="color: var(--text-highlight); font-family: 'JetBrains Mono', monospace;">${circuit.circuit_id}</span>
                     <span style="color: var(--text-main);">${circuit.customer_name}</span>
                 </div>
                 <small style="color: var(--text-muted); display:block; margin-top:3px;">Company: ${circuit.company_name || 'N/A'} | Contact: ${circuit.phone_number}</small>
@@ -719,22 +780,26 @@ async function refreshDashboardLogs() {
             if (idx < 10) {
                 const durationText = t.status === 'Closed' ? `${t.resolution_minutes} Mins` : '--';
                 
-                let pillBg = '#ef4444';
-                if(t.status === 'Closed') pillBg = '#10b981';
-                else if(t.status === 'In Monitoring') pillBg = '#f59e0b';
+                let pillBg = 'rgba(239, 68, 68, 0.15)', pillColor = '#ef4444';
+                if(t.status === 'Closed') { pillBg = 'rgba(16, 185, 129, 0.15)'; pillColor = '#10b981'; }
+                else if(t.status === 'In Monitoring') { pillBg = 'rgba(245, 158, 11, 0.15)'; pillColor = '#f59e0b'; }
 
                 body.innerHTML += `
                 <tr>
                     <td style="font-weight:700; color: var(--text-highlight);">#${t.ticket_id}</td>
-                    <td style="font-family:monospace; font-weight: 500;">${t.circuit_id}</td>
-                    <td>${t.issue_category}</td>
-                    <td style="font-weight:600; color:var(--text-muted);">${t.assigned_team}</td>
+                    <td style="font-family:'JetBrains Mono', monospace; font-weight: 600;">${t.circuit_id}</td>
+                    <td style="font-weight: 600;">${t.issue_category}</td>
+                    <td style="font-weight:700; color:var(--text-muted);">${t.assigned_team}</td>
                     <td>${t.open_by_name}</td>
-                    <td>${t.closed_by_name || '<span style="opacity:0.4;">--</span>'}</td>
-                    <td><span style="padding:4px 10px; font-size:12px; border-radius:6px; font-weight:bold; color: #fff; background:${pillBg}">${t.status}</span></td>
-                    <td style="color:var(--text-muted); font-size:13px;">${t.timestamp}</td>
-                    <td style="color:var(--text-muted); font-size:13px;">${t.closed_timestamp || '--'}</td>
-                    <td style="font-weight:700; font-variant-numeric: tabular-nums;">${durationText}</td>
+                    <td>${t.closed_by_name || '<span style="opacity:0.3;">--</span>'}</td>
+                    <td>
+                        <span style="padding:5px 12px; font-size:12px; border-radius:6px; font-weight:800; color:${pillColor}; background:${pillBg}; display:inline-block; border:1px solid rgba(255,255,255,0.03);">
+                            <span class="ping-pulse-beacon" style="color:${pillColor}; background:currentColor;"></span>${t.status}
+                        </span>
+                    </td>
+                    <td style="color:var(--text-muted); font-size:13px; font-family:'JetBrains Mono', monospace;">${t.timestamp}</td>
+                    <td style="color:var(--text-muted); font-size:13px; font-family:'JetBrains Mono', monospace;">${t.closed_timestamp || '--'}</td>
+                    <td style="font-weight:700; font-family:'JetBrains Mono', monospace;">${durationText}</td>
                 </tr>`;
             }
         });

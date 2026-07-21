@@ -430,6 +430,9 @@
                     <a href="/system-mail/event-welcome" target="_blank" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; font-weight: 700;">
                         <i class="fa-solid fa-wand-magic-sparkles" style="margin-right: 8px;"></i> Event Welcome Mail
                     </a>
+		    <a href="/system-mail/access" class="dropdown-item">
+    			<i class="fa-solid fa-key"></i> Access Mail
+			</a>
                     <a href="/system-mail/bandwidth"><i class="fa-solid fa-gauge-high" style="margin-right: 8px;"></i> Bandwidth Scale Sync</a>
                     <a href="/system-mail/terminate"><i class="fa-regular fa-circle-xmark" style="margin-right: 8px;"></i> Link Termination</a>
                     <a href="/system-mail/rfo" style="color: #38bdf8; font-weight: 700;"><i class="fa-solid fa-file-shield" style="margin-right: 8px;"></i> Dispatch RFO File</a>
@@ -511,19 +514,16 @@
                     <select name="issue_category" id="issue_category" onchange="evaluateOperationalCategory()" required>
                         <option value="" disabled selected>-- Select Alarm Category --</option>
                         <optgroup label="Standard Ticket Types">
+                            <option value="Primary Default Update">Primary Default Update / General Issue</option>
                             <option value="Link Down">Link Down</option>
-                            <option value="packet drop">packet drop</option>
                             <option value="High Bandwidth Utilization">High Bandwidth Utilization</option>
-                            <option value="Fiber Down">Fiber Down</option>
                             <option value="latency issue">latency issue</option>
-                            <option value="ip blacklist">ip blacklist</option>
                         </optgroup>
+
                         <optgroup label="Direct Mail Notification Categories">
                             <option value="Switch Is Isolated">Switch Is Isolated</option>
                             <option value="IP is Not Pingable">IP is Not Pingable</option>
-                            <option value="website issue">website issue</option>
                             <option value="Media Device Down">Media Device Down</option>
-                            <option value="Port is Down">Port is Down</option>
                         </optgroup>
                      </select> 
                 </div>

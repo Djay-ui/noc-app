@@ -3,66 +3,112 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Power Status Verification Required</title>
+<title>Switch Isolated Alert</title>
 </head>
+
 <body style="margin:0;padding:0;background-color:#f4f7fa;font-family:Arial,Helvetica,sans-serif;">
+
 <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f7fa">
     <tr>
         <td align="center" style="padding:30px 15px;">
-            <table width="700" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 3px 10px rgba(0,0,0,0.08);">
+
+            <table width="700" cellpadding="0" cellspacing="0" border="0"
+                style="background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 3px 10px rgba(0,0,0,0.08);">
+
                 <!-- Header -->
                 <tr>
-                    <td bgcolor="#1E3A8A" style="padding:28px;text-align:center;">
-                        <h2 style="margin:0;color:#ffffff;font-size:26px;font-weight:600;">Power Status Verification Required</h2>
-                        <p style="margin:10px 0 0;color:#dbe7ff;font-size:14px;">Teleglobal Communications Pvt. Ltd.</p>
-                    </td>
-                </tr>
-                <!-- Body -->
-                <tr>
-                    <td style="padding:35px;color:#333333;font-size:14px;line-height:1.9;">
-                        <p style="margin-top:0;">Dear Sir/Madam,</p>
-                        <p>Greetings from <strong>Teleglobal Communications Pvt. Ltd.</strong></p>
-                        <p>During our investigation, we observed that the network switch installed at your premises is currently showing an <strong style="color:#dc2626;">Isolated</strong> status for Circuit ID: <strong>{circuit_id}</strong>.</p>
-                        <p>To assist us in restoring the service as quickly as possible, we kindly request you to verify the power status of the switch installed at your location.</p>
-                        <p>If the switch is powered <strong>OFF</strong>, kindly restore the power supply and update us once completed.</p>
-                        <p>If the switch is already powered <strong>ON</strong>, kindly confirm the same so that our technical team can continue with further troubleshooting.</p>
-                        <!-- Action Box -->
-                        <table width="100%" cellpadding="0" cellspacing="0" style="margin:28px 0;background:#eef4ff;border-left:5px solid #1E3A8A;border-radius:4px;">
+                    <td bgcolor="#dc2626" style="padding:24px;">
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
                             <tr>
-                                <td style="padding:18px;">
-                                    <strong style="color:#1E3A8A;font-size:15px;">Action Required</strong>
-                                    <br><br>
-                                    Kindly verify the power status of your end switch and share the update with us at the earliest.
+                                <td>
+                                    <h2 style="margin:0;color:#ffffff;font-size:24px;font-weight:600;">
+                                        Switch Isolated Alert
+                                    </h2>
+                                    <p style="margin:6px 0 0;color:#ffe5e5;font-size:14px;">
+                                        Teleglobal Communications Pvt. Ltd.
+                                    </p>
+                                </td>
+                                <td align="right">
+                                    <span style="background:#ffffff;color:#dc2626;padding:8px 14px;border-radius:20px;font-weight:bold;font-size:13px;">
+                                        SWITCH ISOLATED
+                                    </span>
                                 </td>
                             </tr>
                         </table>
-                        <p>Your prompt response will help us minimize the downtime and expedite the troubleshooting process.</p>
-                        <p>If you have any questions or require any assistance, please feel free to contact us.</p>
-                        <p>We appreciate your support and cooperation.</p>
+                    </td>
+                </tr>
+
+                <!-- Body -->
+                <tr>
+                    <td style="padding:35px;color:#333333;font-size:14px;line-height:1.9;">
+
+                        <p style="margin-top:0;">
+                            Dear Sir/Madam,
+                        </p>
+
+                        <p>
+                            Greetings from <strong>Teleglobal Communications Pvt. Ltd.</strong>
+                        </p>
+
+                        <p>
+                            During our automated monitoring, we observed that the network switch for 
+                            <strong>Circuit ID: {circuit_id} ({customer_name})</strong> is currently showing an 
+                            <strong style="color:#dc2626;">Isolated</strong> status.
+                        </p>
+
+                        <p>
+                            To assist us in restoring the service as quickly as possible, we kindly request you to verify the power status and local connectivity of the switch installed at your location.
+                        </p>
+
+                        <!-- Action Box -->
+                        <table width="100%" cellpadding="0" cellspacing="0"
+                               style="margin:24px 0;background:#fff5f5;border-left:5px solid #dc2626;border-radius:4px;">
+                            <tr>
+                                <td style="padding:18px;">
+                                    <strong style="color:#dc2626;font-size:15px;">
+                                        Action Required on Premise
+                                    </strong>
+                                    <ul style="margin:10px 0 0 18px;padding:0;color:#333333;">
+                                        <li>If the switch is powered <strong>OFF</strong>, kindly restore the power supply and update us.</li>
+                                        <li>If the switch is already powered <strong>ON</strong>, kindly confirm so our technical team can continue upstream troubleshooting.</li>
+                                        <li>Verify Ethernet interconnect cables are properly connected.</li>
+                                    </ul>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p>
+                            Your prompt response will help us minimize downtime and expedite the troubleshooting process.
+                        </p>
+
+                        <p>
+                            Should you require any assistance, please feel free to contact us.
+                        </p>
+
                         <br>
+
                         <p style="margin-bottom:0;">
                             Best Regards,<br><br>
                             <strong>{operator_name}</strong><br>
-                            Network Operations Center (NOC)
+                            Network Operations Center (NOC)<br>
+                            <strong>Teleglobal Communications Pvt. Ltd.</strong>
                         </p>
+
                     </td>
                 </tr>
+
                 <!-- Footer -->
                 <tr>
-                    <td bgcolor="#f8fafc" style="padding:22px;border-top:1px solid #dbe3ea;">
-                        <div style="font-size:13px;color:#555;line-height:1.8;">
-                            <strong style="font-size:14px;">Teleglobal Communications Pvt. Ltd.</strong><br>
-                            Cerebrum IT Park B3, Office No. 4B,<br>
-                            Kalyani Nagar, Pune – 411014, India<br><br>
-                            📞 020-48522500<br>
-                            📱 +91 8855811141<br>
-                            🌐 www.teleglobals.com
-                        </div>
+                    <td bgcolor="#dc2626" style="padding:12px;text-align:center;color:#ffffff;font-size:12px;">
+                        24/7 Support Hotline: 020-48522500 || Email: noc@teleglobal.in
                     </td>
                 </tr>
+
             </table>
+
         </td>
     </tr>
 </table>
+
 </body>
 </html>
