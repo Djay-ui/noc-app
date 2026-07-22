@@ -64,6 +64,46 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 # --- SCALABLE ALARM CONFIGURATION MATRIX ---
+
+# =========================================================================
+# HIGH BANDWIDTH TEMPLATE RENDERER & COLOR PALETTE CONFIGURATION
+# =========================================================================
+
+# For High Bandwidth Alert (Orange Theme)
+color_palette = {
+    "PRIMARY_COLOR": "#d97706",
+    "ACCENT_COLOR": "#fbbf24",
+    "BG_DARK": "#1e1b18",
+    "operator_name": "Dhananjay Tupe",
+    "designation": "NOC Administrator"
+}
+
+# For Standard NOC Ticket/Welcome Mail (Blue Theme)
+# color_palette = {
+#     "PRIMARY_COLOR": "#1565c0",
+#     "ACCENT_COLOR": "#00aaff",
+#     "BG_DARK": "#0a1628",
+#     "operator_name": "Dhananjay Tupe",
+#     "designation": "NOC Administrator"
+# }
+
+def load_high_bandwidth_template():
+    """Renders high bandwidth HTML template with dynamic color palette replacements."""
+    template_path = os.path.join("templates", "emails", "high.html")
+    if os.path.exists(template_path):
+        with open(template_path, "r", encoding="utf-8") as f:
+            template_content = f.read()
+
+        for key, val in color_palette.items():
+            template_content = template_content.replace(f"{{{key}}}", val)
+
+        return template_content
+    return ""
+
+######################
+
+
+
 def determine_email_template(issue_category: str, status: str) -> str:
     if not issue_category:
         cat = ""

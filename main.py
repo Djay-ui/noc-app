@@ -64,6 +64,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 # --- SCALABLE ALARM CONFIGURATION MATRIX ---
+
 def determine_email_template(issue_category: str, status: str) -> str:
     if not issue_category:
         cat = ""
@@ -144,46 +145,45 @@ import re
 
 # --- SIGNATURE AUTOMATION HELPERS ---
 def get_dynamic_signature(user_info: dict) -> str:
-    """Reads the HTML signature template and injects dynamic user data."""
-    # Fallback to 'NOC Specialist' if full_name is missing
+    """Generates a clean dynamic signature string mapping user parameters."""
     engineer_name = user_info.get("full_name", user_info.get("username", "NOC Specialist"))
     if "|" in engineer_name:
         engineer_name = engineer_name.split("|")[0].strip()
         
-    # Get user role for designation
     designation = user_info.get("role", "NOC Engineer").capitalize()
     if designation.lower() == "admin":
         designation = "NOC Administrator"
         
-    try:
-        with open("/opt/noc-app/templates/emails/signature.html", "r", encoding="utf-8") as f:
-            sig_template = f.read()
-            
-        return (sig_template
-                .replace("{operator_name}", engineer_name)
-                .replace("{designation}", designation)
-                .replace("{OPERATOR_NAME}", engineer_name)
-                .replace("{DESIGNATION}", designation))
-    except Exception as e:
-        print(f"Warning: Could not load signature file: {e}")
-        # Plain text fallback just in case the file goes missing
-        return f"<br><p>Best Regards,<br><strong>{engineer_name}</strong><br>{designation}<br>Teleglobal Communications Pvt. Ltd.</p>"
+    return f"""
+    <br><br>
+    <p style="font-family: Arial, sans-serif; font-size: 13px; color: #333333; line-height: 1.5;">
+        Best Regards,<br>
+        <strong style="color: #0b4d91;">{engineer_name}</strong><br>
+        <span>{designation}</span><br>
+        <span style="color: #555555;">Teleglobal Communications Pvt. Ltd.</span>
+    </p>
+    """
 
 def append_signature(html_body: str, user_info: dict) -> str:
-    """Safely appends the dynamic signature into an HTML email body."""
-    signature_html = get_dynamic_signature(user_info)
-    
-    # 1. If the explicit {signature} placeholder exists in the HTML, replace it exactly where it sits
-    if "{signature}" in html_body:
-        return html_body.replace("{signature}", signature_html)
-    
-    # 2. Fallback: If a closing body tag exists, inject the signature right before it
-    if "</body>" in html_body.lower():
-        return re.sub(r'(</body>)', f"<br>{signature_html}\\1", html_body, flags=re.IGNORECASE)
-    
-    # 3. Final Fallback: just append it to the end
-    return html_body + "<br>" + signature_html
+    """
+    Injects operator details into the template placeholders and prevents 
+    external file auto-appends. Only uses the signature built into the template.
+    """
+    engineer_name = user_info.get("full_name", user_info.get("username", "NOC Specialist"))
+    if "|" in engineer_name:
+        engineer_name = engineer_name.split("|")[0].strip()
+        
+    designation = user_info.get("role", "NOC Engineer").capitalize()
+    if designation.lower() == "admin":
+        designation = "NOC Administrator"
 
+    # Replace both lowercase and uppercase variations safely
+    html_body = html_body.replace("{operator_name}", engineer_name)
+    html_body = html_body.replace("{OPERATOR_NAME}", engineer_name)
+    html_body = html_body.replace("{designation}", designation)
+    html_body = html_body.replace("{DESIGNATION}", designation)
+    
+    return html_body
 
 
 # Dependency Providers

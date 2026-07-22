@@ -1,96 +1,193 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>High Bandwidth Utilization Alert</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>High Bandwidth Utilization Alert</title>
 </head>
+
 <body style="margin:0;padding:0;background-color:#f5f7fb;font-family:'Segoe UI',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
 
-    <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f5f7fb">
-        <tr>
-            <td align="center" style="padding:30px 15px;">
-                
-                <table width="700" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #d9e2ec;box-shadow:0 4px 12px rgba(0,0,0,0.05);">
-                    
-                    <tr>
-                        <td style="background:#d97706;padding:25px 35px;">
-                            <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                                <tr>
-                                    <td>
-                                        <h2 style="margin:0;color:#ffffff;font-size:24px;font-weight:600;letter-spacing:-0.5px;">
-                                            High Bandwidth Utilization Alert
-                                        </h2>
-                                        <p style="margin:8px 0 0;color:#fef3c7;font-size:14px;font-weight:500;">
-                                            Automated Monitoring Notification
-                                        </p>
-                                    </td>
-                                    <td align="right" valign="middle">
-                                        <span style="background:#ffffff;color:#d97706;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:700;display:inline-block;text-transform:uppercase;letter-spacing:0.5px;">
-                                            CRITICAL
+<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f5f7fb">
+<tr>
+<td align="center" style="padding:30px 15px;">
+
+<table width="700" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #d9e2ec;box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+
+    <!-- Header -->
+    <tr>
+        <td style="background:#d97706;padding:22px 30px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                    <td>
+                        <h2 style="margin:0;color:#ffffff;font-size:22px;font-weight:600;letter-spacing:-0.5px;">
+                            High Bandwidth Utilization Alert
+                        </h2>
+                        <p style="margin:4px 0 0;color:#fef3c7;font-size:13px;font-weight:500;">
+                            Automated Monitoring Notification
+                        </p>
+                    </td>
+                    <td align="right" valign="middle">
+                        <span style="background:#ffffff;color:#d97706;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;display:inline-block;text-transform:uppercase;letter-spacing:0.5px;">
+                            CRITICAL
+                        </span>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+    <!-- Body Text Content -->
+    <tr>
+        <td style="padding:30px 30px 20px 30px;">
+            <p style="margin:0 0 16px;font-size:15px;line-height:24px;color:#1e293b;">
+                Dear {customer_name},
+            </p>
+            <p style="margin:0 0 18px;font-size:14px;line-height:24px;color:#334155;">
+                Our automated Network Management System has detected <b>high bandwidth utilization</b> on your circuit (ID: {circuit_id}). Due to this, you may experience temporary latencies, slower internet speeds, or degraded overall network throughput performance.
+            </p>
+            <p style="margin:0 0 18px;font-size:14px;line-height:24px;color:#334155;">
+                Our Network Operations Center (NOC) team is actively monitoring the network segment and has observed frequent traffic spikes breaching threshold criteria during the current polling period.
+            </p>
+
+            <!-- DYNAMIC SNAPSHOT CONTAINER -->
+            <div style="margin:15px 0;">
+                {SNAPSHOT_CONTAINER}
+            </div>
+
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0;">
+                <tr>
+                    <td style="background:#fff8e6;border-left:5px solid #d97706;padding:16px;border-radius:0 4px 4px 0;">
+                        <h4 style="margin:0 0 8px 0;color:#b45309;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;">
+                            Recommended Remediation Actions
+                        </h4>
+                        <ul style="margin:0;padding-left:18px;font-size:13px;color:#475569;line-height:20px;">
+                            <li style="margin-bottom:6px;">Please isolate inside applications or specific endpoint stations consuming excessive pipeline capacity.</li>
+                            <li style="margin-bottom:6px;">Temporarily limit or schedule non-essential corporate downloads or streaming data matrices where possible.</li>
+                            <li style="margin-bottom:0;">If link consumption remains consistently close to maximum capacity limits, consider requesting a permanent circuit bandwidth profile upgrade.</li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+
+            <p style="margin:15px 0 0;font-size:14px;line-height:24px;color:#334155;">
+                Our engineering team will continue tracking the link states and provide structural updates if any prolonged anomalies persist.
+            </p>
+            <p style="margin:15px 0 20px;font-size:14px;line-height:24px;color:#334155;">
+                Thank you for your continued cooperation.
+            </p>
+        </td>
+    </tr>
+
+    <!-- Compact Professional Signature Block (Harmonized Deep Amber Tone) -->
+    <tr>
+        <td style="padding: 0; background: #fef3c7;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="table-layout: fixed; border-top: 2px solid #d97706;">
+                <tr>
+                    <!-- Left Panel (Branding) -->
+                    <td width="190" valign="middle" style="background: #d97706; padding: 14px 14px; color: #ffffff;">
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td>
+                                    <div style="font-size: 15px; font-weight: bold; color: #ffffff; line-height: 1.1;">TELEGLOBAL</div>
+                                    <div style="font-size: 7.5px; color: #fef3c7; letter-spacing: 1px; font-weight: bold; margin-top: 2px;">COMMUNICATIONS PVT LTD</div>
+                                    
+                                    <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.25);">
+                                        <div style="font-size: 11px; font-weight: bold; line-height: 1.1; color: #ffffff;">24x7 NOC CENTER</div>
+                                        <div style="font-size: 9px; color: #fef3c7; margin-top: 2px;">Always Monitoring</div>
+                                    </div>
+                                    
+                                    <div style="margin-top: 10px;">
+                                        <span style="font-size: 8.5px; font-weight: bold; background: rgba(0,0,0,0.25); padding: 3px 8px; border-radius: 3px; display: inline-block;">
+                                            🟢 NOC: <span style="color: #86efac;">ONLINE</span>
                                         </span>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td style="padding:35px 35px 20px 35px;">
-                            <p style="margin:0 0 16px;font-size:16px;line-height:26px;color:#1e293b;">
-                                Dear {customer_name},
-                            </p>
-                            <p style="margin:0 0 20px;font-size:15px;line-height:26px;color:#334155;">
-                                Our automated Network Management System has detected **high bandwidth utilization** on your circuit (ID: {circuit_id}). Due to this, you may experience temporary latencies, slower internet speeds, or degraded overall network throughput performance.
-                            </p>
-                            <p style="margin:0 0 20px;font-size:15px;line-height:26px;color:#334155;">
-                                Our Network Operations Center (NOC) team is actively monitoring the network segment and has observed frequent traffic spikes breaching threshold criteria during the current polling period.
-                            </p>
-
-                            <!-- DYNAMIC SNAPSHOT CONTAINER INJECTED HERE -->
-                            {SNAPSHOT_CONTAINER}
-
-                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:25px 0;">
-                                <tr>
-                                    <td style="background:#fff8e6;border-left:5px solid #d97706;padding:22px;border-radius:0 4px 4px 0;">
-                                        <h4 style="margin:0 0 12px 0;color:#b45309;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;">
-                                            Recommended Remediation Actions
-                                        </h4>
-                                        <ul style="margin:0;padding-left:20px;font-size:14px;color:#475569;line-height:22px;">
-                                            <li style="margin-bottom:8px;">Please isolate inside applications or specific endpoint stations consuming excessive pipeline capacity.</li>
-                                            <li style="margin-bottom:8px;">Temporarily limit or schedule non-essential corporate downloads or streaming data matrices where possible.</li>
-                                            <li style="margin-bottom:0;">If link consumption remains consistently close to maximum capacity limits, consider requesting a permanent circuit bandwidth profile upgrade.</li>
-                                        </ul>
-                                    </td>
-                                </tr>
-                            </table>
-
-                            <p style="margin:20px 0 0;font-size:15px;line-height:26px;color:#334155;">
-                                Our engineering team will continue tracking the link states and provide structural updates if any prolonged anomalies persist. 
-                            </p>
-                            <p style="margin:20px 0 35px;font-size:15px;line-height:26px;color:#334155;">
-                                Thank you for your continued cooperation.
-                            </p>
-                            
-                            <p style="margin:0;font-size:14px;color:#64748b;line-height:20px;">
-                                Best Regards,<br>
-                                <strong>Teleglobal Network Operations Center (NOC)</strong>
-                            </p>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td style="background:#d97706;padding:18px 35px;text-align:center;color:#ffffff;font-size:12px;line-height:18px;font-weight:400;letter-spacing:0.2px;">
-                            This is an automated operational notification generated by the Teleglobal Network Monitoring Framework.<br>
-                            Please do not reply directly to this mail system.
-                        </td>
-                    </tr>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
                     
-                </table>
+                    <!-- Right Panel -->
+                    <td valign="top" style="padding: 16px 18px; color: #1e293b; background: #fef1bc;">
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td valign="top">
+                                    <div style="font-size: 15px; font-weight: 700; text-transform: uppercase; color: #78350f; line-height: 1.2;">{operator_name}</div>
+                                    <div style="font-size: 11px; color: #b45309; font-weight: 700; text-transform: uppercase; margin-top: 3px;">{designation}</div>
+                                </td>
+                                <td valign="top" align="right" width="125">
+                                    <div style="border: 1px solid #d97706; background: #fde68a; padding: 4px 8px; border-radius: 4px; text-align: center; font-size: 9px; font-weight: 700;">
+                                        <span style="color: #78350f;">24x7x365 NOC SUPPORT</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <!-- Structured Contact Info Grid -->
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size: 11px; line-height: 1.5; margin-top: 10px; border-top: 1px solid #fcd34d; padding-top: 10px;">
+                            <tr>
+                                <td width="50%" valign="top" style="color: #451a03; padding-bottom: 4px;">
+                                    <span style="color: #d97706; font-size: 12px;">✉</span> <a href="mailto:noc@teleglobal.in" style="color: #92400e; text-decoration: none; font-weight: 600;">noc@teleglobal.in</a>
+                                </td>
+                                <td width="50%" valign="top" style="color: #451a03; padding-bottom: 4px;">
+                                    <span style="color: #d97706; font-size: 12px;">📱</span> <span style="font-weight: 500;">+91 8855811141</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="50%" valign="top" style="color: #451a03;">
+                                    <span style="color: #d97706; font-size: 12px;">🌐</span> <a href="http://www.teleglobals.com" style="color: #92400e; text-decoration: none; font-weight: 500;">www.teleglobals.com</a>
+                                </td>
+                                <td width="50%" valign="top" style="color: #451a03;">
+                                    <span style="color: #d97706; font-size: 12px;">📍</span> <span style="font-weight: 500;">Cerebrum IT Park B3, Pune</span>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <!-- Action Buttons -->
+                        <table cellpadding="0" cellspacing="0" border="0" style="margin-top: 12px;">
+                            <tr>
+                                <td style="background: #92400e; border-radius: 3px;">
+                                    <a href="http://www.teleglobals.com" style="display: inline-block; color: #ffffff; padding: 5px 12px; font-weight: 700; font-size: 9.5px; text-decoration: none;">VISIT WEBSITE</a>
+                                </td>
+                                <td width="8"></td>
+                                <td style="background: #d97706; border-radius: 3px;">
+                                    <a href="mailto:noc@teleglobal.in" style="display: inline-block; color: #ffffff; padding: 5px 12px; font-weight: 700; font-size: 9.5px; text-decoration: none;">RAISE TICKET</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                
+                <!-- Services Bar -->
+                <tr>
+                    <td colspan="2" style="background: #b45309; color: #ffffff; padding: 6px 10px; font-size: 8.5px; font-weight: 700; text-align: center; letter-spacing: 0.3px;">
+                        SERVICES: DEDICATED INTERNET &nbsp;|&nbsp; MPLS VPN &nbsp;|&nbsp; SD-WAN &nbsp;|&nbsp; CLOUD CONNECT &nbsp;|&nbsp; DATA CENTER &nbsp;|&nbsp; SECURITY
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
 
-            </td>
-        </tr>
-    </table>
+    <!-- Footer Banner -->
+    <tr>
+        <td style="background:#d97706;padding:15px 30px;text-align:center;color:#ffffff;font-size:12px;line-height:18px;font-weight:400;letter-spacing:0.2px;">
+            This is an automated operational notification generated by the Teleglobal Network Monitoring Framework.<br>
+            Please do not reply directly to this mail system.
+        </td>
+    </tr>
+
+    <!-- Bottom Disclaimer -->
+    <tr>
+        <td style="padding: 10px 15px; font-size: 8.5px; color: #78350f; line-height: 1.3; background: #fef3c7; text-align: center; border-top: 1px solid #fcd34d;">
+            Confidential notification for intended recipient only. <b style="color: #b45309;">ISO 27001:2013 Certified Company</b>
+        </td>
+    </tr>
+
+</table>
+
+</td>
+</tr>
+</table>
 
 </body>
 </html>

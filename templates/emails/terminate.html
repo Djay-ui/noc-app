@@ -8,12 +8,12 @@
 <body style="margin:0;padding:0;background:#f3f5f7;font-family:Arial,Helvetica,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#f3f5f7">
 <tr><td align="center" style="padding:30px 15px;">
-<table width="650" cellpadding="0" cellspacing="0" style="max-width:650px;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 5px 15px rgba(0,0,0,.08);">
+<table width="760" cellpadding="0" cellspacing="0" style="max-width:760px;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 5px 15px rgba(0,0,0,.08);">
 <tr><td bgcolor="#b71c1c" align="center" style="padding:28px;">
 <h2 style="margin:0;color:#fff;font-weight:normal;">Link Termination Notification</h2>
 </td></tr>
 
-<tr><td style="padding:35px 40px 20px;font-size:16px;line-height:28px;color:#444;">
+<tr><td style="padding:35px 40px 15px;font-size:16px;line-height:28px;color:#444;">
 Dear Sir/Madam,<br><br>
 Greetings from <strong>TeleGlobal Communications Pvt. Ltd.</strong>.<br><br>
 We would like to inform you that your Internet Leased Line (ILL) connection has been <strong>successfully terminated</strong> effective <strong>{{TERMINATION_DATE}}</strong>.
@@ -28,9 +28,9 @@ The requested service disconnection has been completed successfully.
 
 <tr><td style="padding:0 40px 25px;">
 <table width="100%" cellpadding="10" cellspacing="0" style="border:1px solid #e4e4e4;border-collapse:collapse;">
-<tr bgcolor="#f7f7f7"><td width="40%"><b>Circuit ID</b></td><td>{{CIRCUIT_ID}}</td></tr>
-<tr><td><b>Customer Name</b></td><td>{{CUSTOMER_NAME}}</td></tr>
-<tr bgcolor="#f7f7f7"><td><b>Termination Date</b></td><td>{{TERMINATION_DATE}}</td></tr>
+<tr bgcolor="#f7f7f7"><td width="40%" style="border:1px solid #e4e4e4;"><b>Circuit ID</b></td><td style="border:1px solid #e4e4e4;">{{CIRCUIT_ID}}</td></tr>
+<tr><td style="border:1px solid #e4e4e4;"><b>Customer Name</b></td><td style="border:1px solid #e4e4e4;">{{CUSTOMER_NAME}}</td></tr>
+<tr bgcolor="#f7f7f7"><td style="border:1px solid #e4e4e4;"><b>Termination Date</b></td><td style="border:1px solid #e4e4e4;">{{TERMINATION_DATE}}</td></tr>
 </table>
 </td></tr>
 
@@ -48,28 +48,110 @@ Kindly share a convenient date and time so our field engineer can schedule the m
 Thank you for choosing <strong>TeleGlobal Communications Pvt. Ltd.</strong>. We sincerely appreciate your business and look forward to serving you again in the future.
 </td></tr>
 
-<tr><td style="padding:0 40px 30px;">
-<table cellpadding="0" cellspacing="0" style="background:#f7f9fc;border:1px solid #d9e3f0;border-radius:6px;width:340px;">
-<tr><td style="padding:14px 16px;font-size:14px;line-height:22px;color:#444;">
-<strong style="color:#0b5cab;">📞 Technical Support</strong><br>
-✉ noc@teleglobal.in<br>
-☎ 020-41230741 / 020-48522500<br>
-📱 +91 8855811141
-</td></tr>
-</table>
-</td></tr>
+<!-- Signature Block (Full Width without outer margins, zero spacing) -->
+<tr>
+    <td style="padding: 0;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="table-layout: fixed; border-top: 2px solid #b71c1c;">
+            <tr>
+                <!-- Left Panel (Branding) -->
+                <td width="210" valign="middle" style="background: #8b0000; padding: 16px; color: #ffffff;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                            <td>
+                                <div style="font-size: 15px; font-weight: bold; color: #ffffff; line-height: 1.1;">TELEGLOBAL</div>
+                                <div style="font-size: 7.5px; color: #ffcccc; letter-spacing: 1px; font-weight: bold; margin-top: 2px;">COMMUNICATIONS PVT LTD</div>
+                                
+                                <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.25);">
+                                    <div style="font-size: 11px; font-weight: bold; line-height: 1.1; color: #ffffff;">24x7 NOC CENTER</div>
+                                    <div style="font-size: 9px; color: #ffcccc; margin-top: 2px;">Always Monitoring</div>
+                                </div>
+                                
+                                <div style="margin-top: 10px;">
+                                    <span style="font-size: 8.5px; font-weight: bold; background: rgba(0,0,0,0.25); padding: 3px 8px; border-radius: 3px; display: inline-block;">
+                                        🟢 NOC: <span style="color: #86efac;">ONLINE</span>
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+                
+                <!-- Right Panel -->
+                <td valign="top" style="padding: 16px 20px; color: #1e293b; background: #fff5f5;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                            <td valign="top">
+                                <div style="font-size: 15px; font-weight: 700; text-transform: uppercase; color: #8b0000; line-height: 1.2;">{{ENGINEER_NAME}}</div>
+                                <div style="font-size: 11px; color: #b71c1c; font-weight: 700; text-transform: uppercase; margin-top: 3px;">Network Operation Team (NOC)</div>
+                            </td>
+                            <td valign="top" align="right" width="135">
+                                <div style="border: 1px solid #b71c1c; background: #ffcccc; padding: 4px 8px; border-radius: 4px; text-align: center; font-size: 9px; font-weight: 700;">
+                                    <span style="color: #8b0000;">24x7x365 NOC SUPPORT</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                    
+                    <!-- Structured Contact Info Grid -->
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size: 11px; line-height: 1.5; margin-top: 10px; border-top: 1px solid #ffb3b3; padding-top: 10px;">
+                        <tr>
+                            <td width="50%" valign="top" style="color: #555555; padding-bottom: 4px;">
+                                <span style="color: #b71c1c; font-size: 12px;">✉</span> <a href="mailto:noc@teleglobal.in" style="color: #8b0000; text-decoration: none; font-weight: 600;">noc@teleglobal.in</a>
+                            </td>
+                            <td width="50%" valign="top" style="color: #555555; padding-bottom: 4px;">
+                                <span style="color: #b71c1c; font-size: 12px;">📱</span> <span style="font-weight: 500;">+91 8855811141</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td width="50%" valign="top" style="color: #555555;">
+                                <span style="color: #b71c1c; font-size: 12px;">🌐</span> <a href="http://www.teleglobals.com" style="color: #8b0000; text-decoration: none; font-weight: 500;">www.teleglobals.com</a>
+                            </td>
+                            <td width="50%" valign="top" style="color: #555555;">
+                                <span style="color: #b71c1c; font-size: 12px;">📍</span> <span style="font-weight: 500;">Cerebrum IT Park B3, Pune</span>
+                            </td>
+                        </tr>
+                    </table>
+                    
+                    <!-- Action Buttons -->
+                    <table cellpadding="0" cellspacing="0" border="0" style="margin-top: 12px;">
+                        <tr>
+                            <td align="center" bgcolor="#8b0000" style="border-radius: 4px;">
+                                <a href="https://www.teleglobals.com" target="_blank" style="font-size: 9.5px; font-family: Arial, sans-serif; font-weight: 700; color: #ffffff; text-decoration: none; padding: 6px 12px; border-radius: 4px; display: inline-block;">VISIT WEBSITE</a>
+                            </td>
+                            <td width="8" style="font-size: 1px; line-height: 1px;">&nbsp;</td>
+                            <td align="center" bgcolor="#b71c1c" style="border-radius: 4px;">
+                                <a href="mailto:noc@teleglobal.in" style="font-size: 9.5px; font-family: Arial, sans-serif; font-weight: 700; color: #ffffff; text-decoration: none; padding: 6px 12px; border-radius: 4px; display: inline-block;">RAISE TICKET</a>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            
+            <!-- Services Bar -->
+            <tr>
+                <td colspan="2" style="background: #8b0000; color: #ffffff; padding: 6px 10px; font-size: 8.5px; font-weight: 700; text-align: center; letter-spacing: 0.3px;">
+                    SERVICES: DEDICATED INTERNET &nbsp;|&nbsp; MPLS VPN &nbsp;|&nbsp; SD-WAN &nbsp;|&nbsp; CLOUD CONNECT &nbsp;|&nbsp; DATA CENTER &nbsp;|&nbsp; SECURITY
+                </td>
+            </tr>
+        </table>
+    </td>
+</tr>
 
-<tr><td style="padding:0 40px 35px;font-size:15px;line-height:25px;">
-Regards,<br><br>
-<strong>{{ENGINEER_NAME}}</strong><br>
-Network Operations Team
-</td></tr>
+<!-- Footer Banner -->
+<tr>
+    <td style="background:#b71c1c; padding:15px 30px; text-align:center; color:#ffffff; font-size:12px; line-height:18px; font-weight:400; letter-spacing:0.2px;">
+        This is an automated operational notification generated by the Teleglobal Network Monitoring Framework.<br>
+        Please do not reply directly to this mail system.
+    </td>
+</tr>
 
-<tr><td bgcolor="#0b5cab" align="center" style="padding:22px;color:#fff;font-size:13px;line-height:22px;">
-<strong>TeleGlobal Communications Pvt. Ltd.</strong><br>
-Cerebrum IT Park B3, Office No. 4B, Kalyani Nagar, Pune - 411014, India<br><br>
-<a href="https://www.teleglobals.com" style="color:#fff;text-decoration:none;">www.teleglobals.com</a>
-</td></tr>
+<!-- Bottom Disclaimer -->
+<tr>
+    <td style="padding: 10px 15px; font-size: 8.5px; color: #7f1d1d; line-height: 1.3; background: #fff5f5; text-align: center; border-top: 1px solid #ffcccc;">
+        Confidential notification for intended recipient only. <b style="color: #b71c1c;">ISO 27001:2013 Certified Company</b>
+    </td>
+</tr>
+
 </table>
 </td></tr></table>
 </body></html>
