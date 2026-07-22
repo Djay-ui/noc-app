@@ -294,6 +294,39 @@
             transform: translateY(-1px);
         }
 
+        .btn-bulk-close {
+            background: #dc2626;
+            color: #ffffff;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-bulk-close:hover:not(:disabled) {
+            background: #b91c1c;
+            transform: translateY(-1px);
+        }
+
+        .btn-bulk-close:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Checkbox styling */
+        .ticket-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
+
         /* Modal Overlay & Card Space */
         .modal-overlay {
             display: none;
@@ -447,12 +480,19 @@
                 <option value="In Monitoring">In Monitoring</option>
                 <option value="Closed">Closed</option>
             </select>
+            <!-- Bulk Action Button -->
+            <button type="button" id="bulkCloseBtn" class="btn-bulk-close" onclick="bulkCloseTicketsSilent()" disabled>
+                <i class="fa-solid fa-ban"></i> Close Selected (No Mail)
+            </button>
         </div>
         
         <div class="table-responsive">
             <table>
                 <thead>
                     <tr>
+                        <th style="width:40px; text-align:center;">
+                            <input type="checkbox" id="selectAllCheckbox" class="ticket-checkbox" onchange="toggleSelectAll(this)">
+                        </th>
                         <th>Ticket ID</th>
                         <th>Circuit ID</th>
                         <th>Issue Category</th>
@@ -541,7 +581,63 @@
         document.getElementById('statusModal').style.display = 'none'; 
     }
 
-    // 3. Status Modification REST Commit Transaction Function
+    // 3. Checkbox Multi-Select Handling Functions
+    function toggleSelectAll(source) {
+        const checkboxes = document.querySelectorAll('.ticket-select-chk');
+        checkboxes.forEach(chk => {
+            if (!chk.disabled) chk.checked = source.checked;
+        });
+        updateBulkButtonState();
+    }
+
+    function updateBulkButtonState() {
+        const selected = document.querySelectorAll('.ticket-select-chk:checked');
+        const bulkBtn = document.getElementById('bulkCloseBtn');
+        bulkBtn.disabled = selected.length === 0;
+        
+        if (selected.length > 0) {
+            bulkBtn.innerHTML = `<i class="fa-solid fa-ban"></i> Close Selected (${selected.length}) - No Mail`;
+        } else {
+            bulkBtn.innerHTML = `<i class="fa-solid fa-ban"></i> Close Selected (No Mail)`;
+        }
+    }
+
+    // 4. Batch Close Tickets without Mailing Handler
+    async function bulkCloseTicketsSilent() {
+        const selectedBoxes = document.querySelectorAll('.ticket-select-chk:checked');
+        if (selectedBoxes.length === 0) return;
+
+        const ticketIds = Array.from(selectedBoxes).map(cb => parseInt(cb.value));
+
+        if (!confirm(`Are you sure you want to close ${ticketIds.length} selected ticket(s)?\n\nNote: Mail sending will be bypassed and NO emails will be dispatched to customers.`)) {
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/ticket/bulk-close-silent', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ticket_ids: ticketIds,
+                    remark_note: 'Batch closed directly via UI without email dispatch.'
+                })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                alert(data.message || 'Tickets closed successfully.');
+                document.getElementById('selectAllCheckbox').checked = false;
+                refreshLogs();
+            } else {
+                const err = await res.json();
+                alert('Failed to batch close tickets: ' + (err.detail || 'Server Error'));
+            }
+        } catch (e) {
+            alert('Operational Server Error: ' + e.message);
+        }
+    }
+
+    // 5. Status Modification REST Commit Transaction Function
     async function commitStatusUpdate() {
         const ticketId = document.getElementById('modal_ticket_id').value;
         const status = document.getElementById('modal_status').value;
@@ -596,12 +692,12 @@
         }
     }
 
-    // 4. Data Sync Pull and Live KPI Matrix Computations Handler
+    // 6. Data Sync Pull and Live KPI Matrix Computations Handler
     async function refreshLogs() {
         try {
             const search = document.getElementById('filter_search').value;
             const status = document.getElementById('filter_status').value;
-            const res = await fetch(`/api/tickets/recent?limit=50&search=${encodeURIComponent(search)}&status=${status}`);
+            const res = await fetch(`/api/tickets/recent?limit=1000000000&search=${encodeURIComponent(search)}&status=${status}`);
             const tickets = await res.json();
             const body = document.getElementById('logTableBody');
             body.innerHTML = '';
@@ -619,8 +715,16 @@
                 else if(t.status === 'In Monitoring') pillStyles = "background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3);";
                 else pillStyles = "background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3);";
 
+                const isAlreadyClosed = t.status === 'Closed';
+
                 body.innerHTML += `
                 <tr>
+                    <td style="text-align:center;">
+                        <input type="checkbox" class="ticket-checkbox ticket-select-chk" 
+                               value="${t.raw_ticket_id || t.ticket_id}" 
+                               onchange="updateBulkButtonState()" 
+                               ${isAlreadyClosed ? 'disabled title="Ticket is already closed"' : ''}>
+                    </td>
                     <td style="font-weight:700; color:var(--accent);">#${t.ticket_id}</td>
                     <td style="font-weight:500;">${t.circuit_id || '--'}</td>
                     <td>${t.issue_category || 'General Alarm'}</td>
@@ -642,6 +746,10 @@
                 </tr>`;
             });
             
+            // Reset header select-all and bulk button
+            document.getElementById('selectAllCheckbox').checked = false;
+            updateBulkButtonState();
+
             // Hydrate Metric Counts Counter Panels
             document.getElementById('kpi_total').textContent = tickets.length;
             document.getElementById('kpi_open').textContent = openCount;

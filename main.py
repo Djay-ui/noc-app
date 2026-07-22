@@ -1208,7 +1208,7 @@ async def update_ticket_status(payload: dict, background_tasks: BackgroundTasks,
     return {"status": "success"}
 
 @app.get("/api/tickets/recent")
-async def read_recent_tickets(limit: int = 10, search: str = "", status: str = "", user=Depends(get_current_user)):
+async def read_recent_tickets(limit: int = 100000, search: str = "", status: str = "", user=Depends(get_current_user)):
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     query = """
@@ -1782,3 +1782,65 @@ async def api_send_access_mail(
     
     return {"status": "success", "message": "Premises Access Request Mail dispatched successfully."}
 
+# =========================================================================
+# BATCH TICKET CLOSURE PIPELINE (NO MAIL / BYPASS MAIL)
+# =========================================================================
+
+class BulkCloseRequest(BaseModel):
+    ticket_ids: list[int]
+    remark_note: Optional[str] = "Bulk Closed without Email Dispatch"
+
+@app.post("/api/ticket/bulk-close-silent")
+async def api_bulk_close_tickets_silent(payload: BulkCloseRequest, user=Depends(get_current_user)):
+    """
+    Closes multiple tickets selected from the UI in bulk.
+    Bypasses sending any notification emails to customers.
+    """
+    if not payload.ticket_ids:
+        raise HTTPException(status_code=400, detail="No ticket IDs were provided for bulk closing.")
+
+    engineer_identity = user.get("full_name", user.get("username", "NOC Specialist"))
+    if "|" in engineer_identity:
+        engineer_identity = engineer_identity.split("|")[0].strip()
+
+    closed_at = datetime.now(timezone.utc)
+    
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    
+    try:
+        updated_count = 0
+        for ticket_id in payload.ticket_ids:
+            # Fetch ticket metadata for duration metrics calculation
+            cursor.execute("SELECT created_at FROM tickets WHERE ticket_id = %s", (ticket_id,))
+            ticket_meta = cursor.fetchone()
+            
+            if ticket_meta:
+                created_at_tz = ticket_meta['created_at'].replace(tzinfo=timezone.utc)
+                time_delta = closed_at - created_at_tz
+                duration_minutes = max(1, int(time_delta.total_seconds() / 60))
+
+                cursor.execute(
+                    """
+                    UPDATE tickets 
+                    SET status = 'Closed', 
+                        closed_by_name = %s, 
+                        closed_at = %s, 
+                        resolution_minutes = %s 
+                    WHERE ticket_id = %s
+                    """,
+                    (engineer_identity, closed_at, duration_minutes, ticket_id)
+                )
+                updated_count += cursor.rowcount
+
+        conn.commit()
+        return {
+            "status": "success", 
+            "message": f"Successfully closed {updated_count} ticket(s) silently without email notification."
+        }
+    except Exception as db_err:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Database execution error: {str(db_err)}")
+    finally:
+        cursor.close()
+        conn.close()

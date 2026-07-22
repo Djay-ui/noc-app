@@ -2,69 +2,465 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Managing Operational Tickets</title>
+    <!-- FontAwesome for Premium System Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
-        .container { max-width: 1350px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .header-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 25px; }
-        h1 { color: #1e293b; margin: 0; font-size: 24px; font-weight: 700; }
-        .back-btn { background: #475569; color: white; padding: 10px 16px; border-radius: 6px; font-weight: 600; font-size: 14px; text-decoration: none; }
-        .kpi-row { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
-        .kpi-card { flex: 1; min-width: 220px; padding: 20px; border-radius: 6px; border: 1px solid #e2e8f0; text-align: center; color: white; }
-        .kpi-card.total { background: #3b82f6; }
-        .kpi-card.open { background: #ef4444; }
-        .kpi-card.monitoring { background: #f59e0b; }
-        .kpi-card.closed { background: #10b981; }
-        .kpi-val { font-size: 28px; font-weight: bold; margin-top: 5px; }
-        input, select { padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 14px; background-color: #fff; }
-        .card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 6px; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
-        th, td { padding: 10px; border: 1px solid #cbd5e1; text-align: left; }
-        th { background: #e2e8f0; color: #334155; }
-        .patch-btn { background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: 600; margin-bottom: 5px; color: #475569; }
+        /* Base Enterprise Core Theme Configurations */
+        :root[data-theme="dark"] {
+            --bg-body: #090d16;
+            --bg-container: #111827;
+            --bg-card: #1f2937;
+            --border: #374151;
+            --border-focus: #38bdf8;
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --input-bg: #0b0f19;
+            --table-th-bg: #1f2937;
+            --table-row-hover: #1a2232;
+            --modal-bg: rgba(17, 24, 39, 0.95);
+            --modal-card-bg: #1f2937;
+            
+            --kpi-total: linear-gradient(135deg, #2563eb, #1d4ed8);
+            --kpi-open: linear-gradient(135deg, #dc2626, #b91c1c);
+            --kpi-monitor: linear-gradient(135deg, #d97706, #b45309);
+            --kpi-closed: linear-gradient(135deg, #059669, #047857);
+            
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.5);
+            --btn-action-bg: rgba(71, 85, 105, 0.4);
+        }
+
+        :root[data-theme="light"] {
+            --bg-body: #f1f5f9;
+            --bg-container: #ffffff;
+            --bg-card: #f8fafc;
+            --border: #cbd5e1;
+            --border-focus: #0ea5e9;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent: #0ea5e9;
+            --accent-hover: #0284c7;
+            --input-bg: #ffffff;
+            --table-th-bg: #f8fafc;
+            --table-row-hover: #f1f5f9;
+            --modal-bg: rgba(15, 23, 42, 0.6);
+            --modal-card-bg: #ffffff;
+            
+            --kpi-total: linear-gradient(135deg, #3b82f6, #2563eb);
+            --kpi-open: linear-gradient(135deg, #ef4444, #dc2626);
+            --kpi-monitor: linear-gradient(135deg, #f59e0b, #d97706);
+            --kpi-closed: linear-gradient(135deg, #10b981, #059669);
+            
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+            --btn-action-bg: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            padding: 40px 20px;
+            margin: 0;
+            line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            max-width: 1350px;
+            background: var(--bg-container);
+            margin: 0 auto;
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: var(--shadow);
+            transition: background-color 0.3s ease;
+        }
+
+        /* Top Bar Header Layout */
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 24px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        h1 {
+            color: var(--text-main);
+            margin: 0;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            background: var(--btn-action-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            border-color: var(--text-muted);
+            transform: translateY(-1px);
+        }
+
+        .theme-toggle-btn {
+            background: var(--btn-action-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+
+        .theme-toggle-btn:hover {
+            border-color: var(--text-muted);
+            transform: translateY(-1px);
+        }
+
+        /* High-Impact Performance KPI Cards Section */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .kpi-card {
+            padding: 24px;
+            border-radius: 12px;
+            color: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+        }
+
+        .kpi-card.total { background: var(--kpi-total); }
+        .kpi-card.open { background: var(--kpi-open); }
+        .kpi-card.monitoring { background: var(--kpi-monitor); }
+        .kpi-card.closed { background: var(--kpi-closed); }
+
+        .kpi-card .label {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        .kpi-val {
+            font-size: 36px;
+            font-weight: 800;
+            margin-top: 8px;
+            line-height: 1;
+        }
+
+        /* Filter Controls Deck Layout */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        input, select, textarea {
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+            background-color: var(--input-bg);
+            color: var(--text-main);
+            transition: all 0.2s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+        }
+
+        /* Premium Optimized Data Grid Layout table rules */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background-color: var(--table-th-bg);
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.05em;
+        }
+
+        tbody tr {
+            transition: background-color 0.15s ease;
+        }
+
+        tbody tr:hover {
+            background-color: var(--table-row-hover);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Action Buttons */
+        .patch-btn {
+            background: var(--accent);
+            color: var(--bg-body);
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .patch-btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        /* Modal Overlay & Card Space */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--modal-bg);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .modal-card {
+            background: var(--modal-card-bg);
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: 460px;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            animation: modalFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-card h4 {
+            margin: 0 0 20px 0;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .btn-cancel {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .btn-cancel:hover {
+            background: var(--table-th-bg);
+        }
+
+        .btn-commit {
+            background: #10b981;
+            border: none;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-commit:hover {
+            background: #059669;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 16px 8px; }
+            .container { padding: 20px 16px; }
+            .controls-row input { flex: 1; }
+            .controls-row select { width: 100%; }
+        }
     </style>
 </head>
 <body>
+
+<!-- Prevent Light Theme Flash Flickering -->
+<script>
+    const savedTheme = localStorage.getItem('noc-tickets-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+</script>
+
 <div class="container">
     <div class="header-bar">
         <div>
-            <h1>Managing Operational Tickets</h1>
-            <div style="color: #64748b; font-size: 14px; margin-top: 4px;">Role Level: <strong>{{ user.role }}</strong></div>
+            <h1><i class="fa-solid fa-ticket-simple" style="color:var(--accent); margin-right:8px;"></i> Managing Operational Tickets</h1>
+            <div style="color: var(--text-muted); font-size: 14px; margin-top: 6px;">
+                Security Role Level Clearance: <strong style="color: var(--text-main)">{{ user.role }}</strong>
+            </div>
         </div>
-        <a href="/" class="back-btn">← Back to Operations Desk</a>
+        <div class="header-right">
+            <!-- Theme Changer Control Toggle Layout Element -->
+            <button type="button" id="themeToggle" class="theme-toggle-btn" title="Toggle Layout Profile Color Mode">
+                <i class="fa-solid fa-sun"></i>
+            </button>
+            <a href="/" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Operations Desk</a>
+        </div>
     </div>
 
+    <!-- Live Performance KPI Row -->
     <div class="kpi-row">
-        <div class="kpi-card total"><div>Total Displayed</div><div class="kpi-val" id="kpi_total">0</div></div>
-        <div class="kpi-card open"><div>Active Alarms (Open)</div><div class="kpi-val" id="kpi_open">0</div></div>
-        <div class="kpi-card monitoring"><div>In Monitoring</div><div class="kpi-val" id="kpi_monitor">0</div></div>
-        <div class="kpi-card closed"><div>Resolved Tickets</div><div class="kpi-val" id="kpi_closed">0</div></div>
+        <div class="kpi-card total">
+            <div class="label">Total Displayed</div>
+            <div class="kpi-val" id="kpi_total">0</div>
+        </div>
+        <div class="kpi-card open">
+            <div class="label">Active Alarms (Open)</div>
+            <div class="kpi-val" id="kpi_open">0</div>
+        </div>
+        <div class="kpi-card monitoring">
+            <div class="label">In Monitoring</div>
+            <div class="kpi-val" id="kpi_monitor">0</div>
+        </div>
+        <div class="kpi-card closed">
+            <div class="label">Resolved Tickets</div>
+            <div class="kpi-val" id="kpi_closed">0</div>
+        </div>
     </div>
 
+    <!-- Active Management Grid -->
     <div class="card">
-        <div style="display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap;">
-            <input type="text" id="filter_search" onkeyup="refreshLogs()" placeholder="🔍 Search Ticket ID, Circuit ID..." style="width:280px; height:40px;">
-            <select id="filter_status" onchange="refreshLogs()" style="width:160px; height:40px;">
+        <div class="controls-row">
+            <input type="text" id="filter_search" onkeyup="refreshLogs()" placeholder="🔍 Search Ticket ID, Circuit ID, Category..." style="width:320px; height:44px;">
+            <select id="filter_status" onchange="refreshLogs()" style="width:180px; height:44px;">
                 <option value="">All Statuses</option>
                 <option value="Open">Open</option>
                 <option value="In Monitoring">In Monitoring</option>
                 <option value="Closed">Closed</option>
             </select>
         </div>
-        <div style="overflow-x:auto; margin-top:20px;">
+        
+        <div class="table-responsive">
             <table>
                 <thead>
                     <tr>
-                        <th>Ticket #</th>
+                        <th>Ticket ID</th>
                         <th>Circuit ID</th>
-                        <th>Alarm Subject</th>
-                        <th>Open BY</th>
-                        <th>Closed BY</th>
-                        <th>Status</th>
-                        <th>Duration</th>
-                        <th>Action</th>
+                        <th>Issue Category</th>
+                        <th>Opened By</th>
+                        <th>Closed By</th>
+                        <th>Operational Status</th>
+                        <th>Duration Metrics</th>
+                        <th style="text-align: right;">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="logTableBody"></tbody>
@@ -73,167 +469,191 @@
     </div>
 </div>
 
-<div id="statusModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.4); justify-content:center; align-items:center;">
-    <div class="card" style="background:white; width:410px; padding:25px; border-radius:8px;">
-        <h4 style="margin-top:0;">Modify Ticket Operational Status</h4>
+<!-- Stylized Status Record Editor Modal Context Window -->
+<div id="statusModal" class="modal-overlay" onclick="if(event.target === this) closeModal();">
+    <div class="modal-card">
+        <h4><i class="fa-solid fa-pen-to-square" style="color:var(--accent); margin-right:8px;"></i> Modify Ticket Operational Status</h4>
         <input type="hidden" id="modal_ticket_id">
+        
         <div class="form-group">
-            <label>Target Status State</label>
+            <label for="modal_status">Target Status State</label>
             <select id="modal_status" style="width:100%;">
                 <option value="Open">Open</option>
                 <option value="In Monitoring">In Monitoring</option>
                 <option value="Closed">Closed</option>
             </select>
         </div>
+        
         <div class="form-group">
-            <label>Update Remarks / Closure Notes</label>
-            <textarea id="modalRemarkNote" rows="3" placeholder="Provide details..." style="width: 100%; border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px;"></textarea>
+            <label for="modalRemarkNote">Update Remarks / Closure Notes</label>
+            <textarea id="modalRemarkNote" rows="3" placeholder="Provide troubleshooting details or resolution metrics narrative..." style="width: 100%;"></textarea>
         </div>
+        
         <div class="form-group">
-            <label>Snapshot Attachment (Optional)</label>
-            <input type="file" id="modal_status_file" accept="image/*" style="width:100%;">
+            <label for="modal_status_file">Snapshot Attachment (Optional)</label>
+            <input type="file" id="modal_status_file" accept="image/*" style="width:100%; padding:8px;">
         </div>
-        <div style="display:flex; gap:10px; justify-content:flex-end;">
-            <button type="button" onclick="closeModal()" style="background:#cbd5e1; padding:8px 15px; border:none; border-radius:4px;">Cancel</button>
-            <button type="button" onclick="commitStatusUpdate()" style="background:#10b981; color:white; padding:8px 15px; border:none; border-radius:4px;">Update Record</button>
+        
+        <div class="modal-actions">
+            <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+            <button type="button" class="btn-commit" onclick="commitStatusUpdate()">Update Record</button>
         </div>
     </div>
 </div>
 
-<thead>
-    <tr>
-        <th>Ticket ID</th>
-        <th>Circuit ID</th>
-        <th>Issue Category</th>
-        <th>Priority</th>
-        <th>SLA Status</th>
-        <th>Status</th>
-    </tr>
-</thead>
+<!-- Operations Controller Javascript Framework Architecture Logic Engine -->
 <script>
-function renderTicketRow(ticket) {
-    const breachBadge = ticket.is_sla_breached 
-        ? `<span class="badge error-alert">⚠️ BREACHED</span>` 
-        : `<span class="badge safe-status">SLA Compliant</span>`;
+    // 1. Theme Configuration Toggling Switcher Framework
+    const themeToggleBtn = document.getElementById('themeToggle');
+    
+    function updateToggleIcon(theme) {
+        const icon = themeToggleBtn.querySelector('i');
+        icon.className = theme === 'light' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+    }
+    
+    updateToggleIcon(document.documentElement.getAttribute('data-theme'));
+
+    themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
         
-    return `
-        <tr>
-            <td>#${ticket.ticket_id}</td>
-            <td>${ticket.circuit_id}</td>
-            <td>${ticket.issue_category}</td>
-            <td><strong>${ticket.priority}</strong></td>
-            <td>${breachBadge}</td>
-            <td><span class="status-pill">${ticket.status}</span></td>
-        </tr>
-    `;
-}
-</script>
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('noc-tickets-theme', newTheme);
+        updateToggleIcon(newTheme);
+    });
 
-<script>
-const userRole = "{{ user.role }}";
-function openStatusModal(id, currentStatus) {
-    if(userRole !== 'admin') { alert('Access Denied: Admin clearance required.'); return; }
-    document.getElementById('modal_ticket_id').value = id;
-    document.getElementById('modal_status').value = currentStatus;
-    document.getElementById('modalRemarkNote').value = '';
-    document.getElementById('modal_status_file').value = '';
-    document.getElementById('statusModal').style.display = 'flex';
-}
-function closeModal() { document.getElementById('statusModal').style.display = 'none'; }
-
-async function commitStatusUpdate() {
-    const ticketId = document.getElementById('modal_ticket_id').value;
-    const status = document.getElementById('modal_status').value;
-    const remarkNote = document.getElementById('modalRemarkNote').value.trim();
-    const fileSelector = document.getElementById('modal_status_file');
-
-    const payload = {
-        ticket_id: parseInt(ticketId) || ticketId,
-        status: status,
-        remark_note: remarkNote,
-        attachment: null
-    };
-
-    if (fileSelector.files.length > 0) {
-        try {
-            payload.attachment = await new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(fileSelector.files[0]);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = err => reject(err);
-            });
-        } catch (fileErr) {
-            alert('File Reading Error: ' + fileErr.message);
-            return;
+    // 2. Client Side Security Role Check and Operational Management Handlers
+    const userRole = "{{ user.role }}";
+    
+    function openStatusModal(id, currentStatus) {
+        if(userRole !== 'admin') { 
+            alert('Access Denied: Administrative system clearance levels required.'); 
+            return; 
         }
+        document.getElementById('modal_ticket_id').value = id;
+        document.getElementById('modal_status').value = currentStatus;
+        document.getElementById('modalRemarkNote').value = '';
+        document.getElementById('modal_status_file').value = '';
+        document.getElementById('statusModal').style.display = 'flex';
+    }
+    
+    function closeModal() { 
+        document.getElementById('statusModal').style.display = 'none'; 
     }
 
-    try {
-        const res = await fetch('/api/ticket/update-status', { 
-            method: 'POST', 
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload) 
-        });
+    // 3. Status Modification REST Commit Transaction Function
+    async function commitStatusUpdate() {
+        const ticketId = document.getElementById('modal_ticket_id').value;
+        const status = document.getElementById('modal_status').value;
+        const remarkNote = document.getElementById('modalRemarkNote').value.trim();
+        const fileSelector = document.getElementById('modal_status_file');
 
-        if(res.ok) { 
-            closeModal(); 
-            refreshLogs(); 
-        } else { 
-            const err = await res.json();
-            let readableError = 'Failed to update.';
-            
-            if (err && err.detail) {
-                if (typeof err.detail === 'string') {
-                    readableError = err.detail;
-                } else if (Array.isArray(err.detail)) {
-                    readableError = err.detail.map(d => `${d.loc ? d.loc.join('.') : 'Field'}: ${d.msg}`).join('\n');
-                } else if (typeof err.detail === 'object') {
-                    readableError = JSON.stringify(err.detail);
-                }
+        const payload = {
+            ticket_id: parseInt(ticketId) || ticketId,
+            status: status,
+            remark_note: remarkNote,
+            attachment: null
+        };
+
+        if (fileSelector.files.length > 0) {
+            try {
+                payload.attachment = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(fileSelector.files[0]);
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = err => reject(err);
+                });
+            } catch (fileErr) {
+                alert('File Stream Attachment Failure: ' + fileErr.message);
+                return;
             }
-            throw new Error(readableError);
         }
-    } catch(e) { 
-        alert('Operational Error:\n' + e.message); 
+
+        try {
+            const res = await fetch('/api/ticket/update-status', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload) 
+            });
+
+            if(res.ok) { 
+                closeModal(); 
+                refreshLogs(); 
+            } else { 
+                const err = await res.json();
+                let readableError = 'Failed to successfully sync update parameters.';
+                
+                if (err && err.detail) {
+                    if (typeof err.detail === 'string') readableError = err.detail;
+                    else if (Array.isArray(err.detail)) {
+                        readableError = err.detail.map(d => `${d.loc ? d.loc.join('.') : 'Field'}: ${d.msg}`).join('\n');
+                    }
+                }
+                throw new Error(readableError);
+            }
+        } catch(e) { 
+            alert('Operational Server Error:\n' + e.message); 
+        }
     }
-}
 
-async function refreshLogs() {
-    try {
-        const search = document.getElementById('filter_search').value;
-        const status = document.getElementById('filter_status').value;
-        const res = await fetch(`/api/tickets/recent?limit=50&search=${encodeURIComponent(search)}&status=${status}`);
-        const tickets = await res.json();
-        const body = document.getElementById('logTableBody');
-        body.innerHTML = '';
-        
-        let openCount = 0, monitorCount = 0, closedCount = 0;
-        tickets.forEach(t => {
-            if (t.status === 'Open') openCount++;
-            else if (t.status === 'In Monitoring') monitorCount++;
-            else if (t.status === 'Closed') closedCount++;
+    // 4. Data Sync Pull and Live KPI Matrix Computations Handler
+    async function refreshLogs() {
+        try {
+            const search = document.getElementById('filter_search').value;
+            const status = document.getElementById('filter_status').value;
+            const res = await fetch(`/api/tickets/recent?limit=1000000000&search=${encodeURIComponent(search)}&status=${status}`);
+            const tickets = await res.json();
+            const body = document.getElementById('logTableBody');
+            body.innerHTML = '';
+            
+            let openCount = 0, monitorCount = 0, closedCount = 0;
+            
+            tickets.forEach(t => {
+                if (t.status === 'Open') openCount++;
+                else if (t.status === 'In Monitoring') monitorCount++;
+                else if (t.status === 'Closed') closedCount++;
 
-            body.innerHTML += `
-            <tr>
-                <td style="font-weight:bold;">${t.ticket_id}</td>
-                <td>${t.circuit_id}</td>
-                <td>${t.issue_category}</td>
-                <td>${t.open_by_name}</td>
-                <td>${t.closed_by_name}</td>
-                <td><span style="padding:3px 8px; font-size:11px; border-radius:10px; font-weight:bold; background:${t.status==='Closed'?'#d1fae5;color:#065f46':t.status==='In Monitoring'?'#fef3c7;color:#d97706':'#fee2e2;color:#991b1b'}">${t.status}</span></td>
-                <td>${t.status === 'Closed' ? `${t.resolution_minutes} Mins` : '--'}</td>
-                <td><button type="button" class="patch-btn" onclick="openStatusModal('${t.raw_ticket_id}', '${t.status}')">Modify</button></td>
-            </tr>`;
-        });
-        document.getElementById('kpi_total').textContent = tickets.length;
-        document.getElementById('kpi_open').textContent = openCount;
-        document.getElementById('kpi_monitor').textContent = monitorCount;
-        document.getElementById('kpi_closed').textContent = closedCount;
-    } catch(err) { console.error(err); }
-}
-window.addEventListener('DOMContentLoaded', refreshLogs);
+                // Build contextual responsive styling pills dynamically
+                let pillStyles = "";
+                if(t.status === 'Closed') pillStyles = "background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3);";
+                else if(t.status === 'In Monitoring') pillStyles = "background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3);";
+                else pillStyles = "background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3);";
+
+                body.innerHTML += `
+                <tr>
+                    <td style="font-weight:700; color:var(--accent);">#${t.ticket_id}</td>
+                    <td style="font-weight:500;">${t.circuit_id || '--'}</td>
+                    <td>${t.issue_category || 'General Alarm'}</td>
+                    <td><i class="fa-regular fa-user" style="font-size:12px; margin-right:4px; opacity:0.7;"></i> ${t.open_by_name || '--'}</td>
+                    <td><i class="fa-regular fa-user" style="font-size:12px; margin-right:4px; opacity:0.7;"></i> ${t.closed_by_name || '--'}</td>
+                    <td>
+                        <span style="padding:4px 10px; font-size:12px; border-radius:6px; font-weight:600; display:inline-block; ${pillStyles}">
+                            ${t.status}
+                        </span>
+                    </td>
+                    <td style="font-weight:600; font-variant-numeric: tabular-nums;">
+                        ${t.status === 'Closed' ? `<i class="fa-regular fa-clock" style="opacity:0.7;"></i> ${t.resolution_minutes} Mins` : '<span style="opacity:0.5;">--</span>'}
+                    </td>
+                    <td style="text-align: right;">
+                        <button type="button" class="patch-btn" onclick="openStatusModal('${t.raw_ticket_id || t.ticket_id}', '${t.status}')">
+                            <i class="fa-solid fa-sliders"></i> Modify
+                        </button>
+                    </td>
+                </tr>`;
+            });
+            
+            // Hydrate Metric Counts Counter Panels
+            document.getElementById('kpi_total').textContent = tickets.length;
+            document.getElementById('kpi_open').textContent = openCount;
+            document.getElementById('kpi_monitor').textContent = monitorCount;
+            document.getElementById('kpi_closed').textContent = closedCount;
+            
+        } catch(err) { 
+            console.error("Critical Operational Dashboard Data Fetch Error: ", err); 
+        }
+    }
+    
+    window.addEventListener('DOMContentLoaded', refreshLogs);
 </script>
 </body>
 </html>

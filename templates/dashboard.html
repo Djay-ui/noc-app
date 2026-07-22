@@ -766,7 +766,7 @@ async function submitTicket(e) {
 
 async function refreshDashboardLogs() {
     try {
-        const res = await fetch('/api/tickets/recent?limit=100');
+        const res = await fetch('/api/tickets/recent?limit=10000000000');
         const tickets = await res.json();
         const body = document.getElementById('logTableBody');
         body.innerHTML = '';

@@ -4,94 +4,189 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event Welcome Mailer Engine | TeleGlobal NOC</title>
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --bg-body: #0f172a;
-            --bg-container: #1e293b;
-            --bg-card: #0f172a;
-            --border: #334155;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+        /* Base Themes Properties Configurations */
+        :root[data-theme="dark"] {
+            --bg-body: #090d16;
+            --bg-container: #111827;
+            --bg-card: #1f2937;
+            --border: #374151;
+            --border-focus: #38bdf8;
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
             --accent: #38bdf8;
             --accent-hover: #0ea5e9;
             --success: #10b981;
             --success-hover: #059669;
-            --input-bg: #0f172a;
-            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+            --danger: #ef4444;
+            --input-bg: #0b0f19;
+            --section-bg: rgba(31, 41, 55, 0.2);
+            --lookup-bg: rgba(15, 23, 42, 0.4);
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.5);
+            --btn-logs-bg: rgba(71, 85, 105, 0.4);
+            --btn-primary-text: #090d16;
+        }
+
+        :root[data-theme="light"] {
+            --bg-body: #f1f5f9;
+            --bg-container: #ffffff;
+            --bg-card: #f8fafc;
+            --border: #cbd5e1;
+            --border-focus: #0ea5e9;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent: #0ea5e9;
+            --accent-hover: #0284c7;
+            --success: #10b981;
+            --success-hover: #059669;
+            --danger: #ef4444;
+            --input-bg: #ffffff;
+            --section-bg: #f8fafc;
+            --lookup-bg: #f1f5f9;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+            --btn-logs-bg: #e2e8f0;
+            --btn-primary-text: #ffffff;
         }
 
         body {
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
             padding: 40px 20px;
             margin: 0;
-            line-height: 1.5;
+            line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .container {
-            max-width: 900px;
+            max-width: 950px;
             background: var(--bg-container);
             margin: 0 auto;
             padding: 40px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
             box-shadow: var(--shadow);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
 
-        /* Header Branding */
+        /* Top Header Action Bar */
         .header-block {
-            border-bottom: 2px solid var(--border);
-            padding-bottom: 20px;
-            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 24px;
+            margin-bottom: 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
         }
 
         .header-title h2 {
             margin: 0;
-            font-size: 24px;
-            font-weight: 600;
+            font-size: 26px;
+            font-weight: 700;
             color: var(--text-main);
-            letter-spacing: -0.5px;
+            letter-spacing: -0.025em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-title h2 i {
+            color: var(--accent);
         }
 
         .header-title p {
-            margin: 4px 0 0;
-            font-size: 13px;
+            margin: 6px 0 0;
+            font-size: 12px;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .badge {
-            background: rgba(56, 189, 248, 0.1);
+            background: rgba(56, 189, 248, 0.08);
             color: var(--accent);
             padding: 6px 14px;
-            border-radius: 20px;
+            border-radius: 8px;
             font-size: 12px;
             font-weight: 600;
             border: 1px solid rgba(56, 189, 248, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        /* Premium Inventory Lookup Console */
-        .lookup-card {
-            background: var(--bg-card);
+        /* Functional Top Bar Action Buttons */
+        .btn-logs {
+            background: var(--btn-logs-bg);
+            color: var(--text-main);
             border: 1px solid var(--border);
+            padding: 8px 16px;
             border-radius: 8px;
-            padding: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-logs:hover {
+            border-color: var(--text-muted);
+            transform: translateY(-1px);
+        }
+
+        /* Premium Theme Changer Controller Toggle */
+        .theme-toggle-btn {
+            background: var(--btn-logs-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+
+        .theme-toggle-btn:hover {
+            border-color: var(--text-muted);
+            transform: translateY(-1px);
+        }
+
+        /* Core Inventory Lookup Panel */
+        .lookup-card {
+            background: var(--lookup-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
             margin-bottom: 35px;
+            position: relative;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
         .lookup-card label {
             display: block;
-            font-size: 12px;
-            font-weight: 600;
+            font-size: 11px;
+            font-weight: 700;
             color: var(--accent);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
+            letter-spacing: 0.05em;
+            margin-bottom: 10px;
         }
 
         .lookup-group {
@@ -103,41 +198,51 @@
             flex: 1;
             background: var(--input-bg);
             border: 1px solid var(--border);
-            padding: 12px 16px;
+            padding: 14px 18px;
             color: var(--text-main);
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 14px;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
         }
 
         .lookup-group input:focus {
             outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
         }
 
-        /* Section Layouts */
+        /* Forms Layout & Section Splitters */
         .form-section {
-            margin-bottom: 30px;
+            background: var(--section-bg);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            transition: background-color 0.3s ease;
         }
 
         .section-heading {
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 13px;
+            font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 16px;
+            letter-spacing: 0.05em;
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+        }
+
+        .section-heading i {
+            color: var(--accent);
+            font-size: 14px;
         }
 
         .section-heading::after {
             content: '';
             flex: 1;
             height: 1px;
-            background: var(--border);
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .form-grid {
@@ -153,43 +258,44 @@
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
         }
 
         .form-group label {
             font-size: 13px;
-            font-weight: 500;
+            font-weight: 600;
             color: var(--text-main);
         }
 
         .form-group input {
             background: var(--input-bg);
             border: 1px solid var(--border);
-            padding: 12px 14px;
+            padding: 12px 16px;
             color: var(--text-main);
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 14px;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
         }
 
         .form-group input:focus {
             outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
         }
 
-        /* Buttons & Submissions */
+        /* Interactive Standard Buttons */
         .btn {
             padding: 12px 24px;
             font-size: 14px;
             font-weight: 600;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             border: none;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            gap: 8px;
         }
 
         .btn-success {
@@ -203,21 +309,50 @@
 
         .btn-primary {
             background: var(--accent);
-            color: #0f172a;
+            color: var(--btn-primary-text);
             width: 100%;
-            font-size: 15px;
-            padding: 14px;
-            margin-top: 10px;
-            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.2);
+            font-size: 16px;
+            padding: 16px;
+            margin-top: 16px;
+            font-weight: 700;
+            box-shadow: 0 4px 20px rgba(56, 189, 248, 0.15);
         }
 
         .btn-primary:hover {
             background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 24px rgba(56, 189, 248, 0.25);
         }
 
         .btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Status Feedback Banners */
+        .status-banner {
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+        .status-banner.success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+            display: flex;
+        }
+        .status-banner.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+            display: flex;
         }
 
         @media (max-width: 768px) {
@@ -228,37 +363,69 @@
                 grid-column: span 1;
             }
             body {
-                padding: 15px;
+                padding: 16px 8px;
             }
             .container {
-                padding: 20px;
+                padding: 24px 16px;
+            }
+            .header-block {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .header-actions {
+                width: 100%;
+                justify-content: flex-start;
+                flex-wrap: wrap;
             }
         }
     </style>
 </head>
 <body>
 
+<!-- Setup Init Script to Prevent Theme Flash Flickering -->
+<script>
+    const savedTheme = localStorage.getItem('noc-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+</script>
+
 <div class="container">
+    <!-- Repositioned and stylized top bar header area -->
     <div class="header-block">
         <div class="header-title">
-            <h2>Event Welcome Mailer Engine</h2>
+            <h2><i class="fa-solid fa-paper-plane"></i> Event Welcome Mailer Engine</h2>
             <p>TeleGlobal Automation Framework</p>
         </div>
-        <div class="badge">NOC System Node</div>
+        <div class="header-actions">
+            <!-- Theme Changer Control Toggle Layout Element -->
+            <button type="button" id="themeToggle" class="theme-toggle-btn" title="Toggle System Visual Profile Layout">
+                <i class="fa-solid fa-sun"></i>
+            </button>		
+            <a href="/api/reports/download-event-welcome-logs" class="btn-logs">
+                <i class="fa-solid fa-download"></i> Download CSV Logs
+            </a>
+            <div class="badge"><i class="fa-solid fa-circle-nodes"></i> NOC Node <a href="/" class="back-btn">← Back to Dashboard Engine</a></div>
+        </div>
     </div>
+
+    <!-- Live Status Banner Notification Space -->
+    <div id="statusAlert" class="status-banner"></div>
     
+    <!-- Core Automated Database Lookup UI -->
     <div class="lookup-card">
         <label for="search_query">Automated Inventory Core Lookup</label>
         <div class="lookup-group">
             <input type="text" id="search_query" placeholder="Enter Circuit ID or Customer Name...">
-            <button type="button" id="searchBtn" onclick="searchCircuit()" class="btn btn-success">Search Inventory</button>
+            <button type="button" id="searchBtn" onclick="searchCircuit()" class="btn btn-success">
+                <i class="fa-solid fa-magnifying-glass"></i> Search Inventory
+            </button>
         </div>
     </div>
 
+    <!-- Unified Form Component Matrix -->
     <form id="eventMailForm">
         
         <div class="form-section">
-            <div class="section-heading">Client & Provisioning Profiles</div>
+            <div class="section-heading"><i class="fa-solid fa-id-card"></i> Client & Provisioning Profiles</div>
             <div class="form-grid">
                 <div class="form-group">
                     <label for="circuit_id">Circuit ID</label>
@@ -280,7 +447,7 @@
         </div>
 
         <div class="form-section">
-            <div class="section-heading">Network Allocation Parameters</div>
+            <div class="section-heading"><i class="fa-solid fa-network-wired"></i> Network Allocation Parameters</div>
             <div class="form-grid">
                 <div class="form-group">
                     <label for="usable_ip">Assigned Usable IP Pool</label>
@@ -298,7 +465,7 @@
         </div>
 
         <div class="form-section">
-            <div class="section-heading">Target Routing Boundaries</div>
+            <div class="section-heading"><i class="fa-solid fa-envelope-open-text"></i> Target Routing Boundaries</div>
             <div class="form-grid">
                 <div class="form-group">
                     <label for="customer_email">Primary Customer Destination Email</label>
@@ -311,27 +478,58 @@
             </div>
         </div>
 
-        <button type="submit" id="submitBtn" class="btn btn-primary">Dispatch Event Welcome Mail</button>
+        <!-- Master Dispatch Fire Event -->
+        <button type="submit" id="submitBtn" class="btn btn-primary">
+            <i class="fa-solid fa-paper-plane"></i> Dispatch Event Welcome Mail
+        </button>
     </form>
-	
+</div>
 
-
-     	<div class="lookup-card">
-    		<div class="lookup-group">
-        		<a href="/api/reports/download-event-welcome-logs" class="btn" style="background: #475569; color: #f8fafc; text-decoration: none;">📥 Download CSV</a>
-    		</div>
-	</div>
-
+<!-- Dynamic Interactivity Script Operations Engine -->
 <script>
-    // 1. Inventory Search Functionality
+    // 1. Theme Configuration Toggling Script Framework 
+    const themeToggleBtn = document.getElementById('themeToggle');
+    
+    function updateToggleIcon(theme) {
+        const icon = themeToggleBtn.querySelector('i');
+        if (theme === 'light') {
+            icon.className = 'fa-solid fa-moon';
+        } else {
+            icon.className = 'fa-solid fa-sun';
+        }
+    }
+    
+    // Set initial icon match state based on the page load configuration state
+    updateToggleIcon(document.documentElement.getAttribute('data-theme'));
+
+    themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('noc-theme', newTheme);
+        updateToggleIcon(newTheme);
+    });
+
+    // 2. Alert & Status Visual Component Handler
+    function displayStatus(message, isSuccess) {
+        const banner = document.getElementById('statusAlert');
+        banner.className = `status-banner ${isSuccess ? 'success' : 'error'}`;
+        banner.innerHTML = isSuccess 
+            ? `<i class="fa-solid fa-circle-check"></i> <span>${message}</span>`
+            : `<i class="fa-solid fa-triangle-exclamation"></i> <span>${message}</span>`;
+        banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // 3. Dynamic Inventory API Search Handler
     async function searchCircuit() {
         const query = document.getElementById('search_query').value.trim();
         const btn = document.getElementById('searchBtn');
         
-        if (!query) return alert("Please enter a search term.");
+        if (!query) return alert("Please enter an active search criteria term.");
         
         btn.disabled = true;
-        btn.innerText = "Fetching...";
+        btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Fetching Database...`;
         
         try {
             const response = await fetch(`/api/circuits/search?query=${encodeURIComponent(query)}`);
@@ -341,34 +539,31 @@
                 document.getElementById('circuit_id').value = data.circuit_id || '';
                 document.getElementById('customer_name').value = data.customer_name || '';
                 document.getElementById('customer_email').value = data.customer_email || '';
-                // Note: Clearing fields if not found in lookup to allow manual operator input
                 document.getElementById('bandwidth').value = data.bandwidth || '';
                 document.getElementById('usable_ip').value = data.usable_ip || '';
                 document.getElementById('gateway').value = data.gateway || '';
                 document.getElementById('subnet').value = data.subnet || '';
+                displayStatus("Inventory profile successfully matched and loaded.", true);
             } else {
-                alert("Lookup Error: " + data.detail);
+                displayStatus("Lookup Error: " + (data.detail || "No matched metrics found."), false);
             }
         } catch (err) {
-            alert("Network error: Could not reach server.");
+            displayStatus("Network exception encountered routing request to search server.", false);
         } finally {
             btn.disabled = false;
-            btn.innerText = "Search Inventory";
+            btn.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> Search Inventory`;
         }
     }
 
-    // 2. Dispatch Form Interception Framework (FIXES THE DISPATCH ERROR)
+    // 4. Intercept Event Form Post submission to backend endpoints
     document.getElementById('eventMailForm').addEventListener('submit', async function(e) {
-        e.preventDefault(); // Stop standard form refresh
+        e.preventDefault();
         
         const submitBtn = document.getElementById('submitBtn');
         submitBtn.disabled = true;
-        submitBtn.innerText = "Sending Mail Engine Components...";
+        submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Dispatched SMTP Pipeline Processing...`;
 
-        // Extract native form key/values
         const formData = new FormData(this);
-        
-        // Convert to URL-encoded structure since FastAPI route maps to Form(...) values
         const urlEncodedData = new URLSearchParams(formData);
 
         try {
@@ -383,16 +578,16 @@
             const data = await response.json();
 
             if (response.ok) {
-                alert("Success: " + data.message);
-                this.reset(); // Optional: clears out values on operational success
+                displayStatus(data.message || "Event Welcome Mail successfully delivered to pipeline.", true);
+                this.reset();
             } else {
-                alert("Failed to send welcome mail: " + (data.detail || JSON.stringify(data)));
+                displayStatus("Mailer Core Error: " + (data.detail || JSON.stringify(data)), false);
             }
         } catch (error) {
-            alert("NOC Network Connection Exception: System could not reach dispatch router.");
+            displayStatus("NOC Connection Failure: Network exception caught during mail server sync.", false);
         } finally {
             submitBtn.disabled = false;
-            submitBtn.innerText = "Dispatch Event Welcome Mail";
+            submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Dispatch Event Welcome Mail`;
         }
     });
 </script>

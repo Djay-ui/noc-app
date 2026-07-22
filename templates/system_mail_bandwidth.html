@@ -3,115 +3,626 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bandwidth Upgradation & Downgradation Engine</title>
+    <title>Bandwidth Modification Engine | TeleGlobal NOC</title>
+    
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7fa; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 800px; background: #fff; margin: 0 auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        h2 { color: #0b4d91; border-bottom: 2px solid #0b4d91; padding-bottom: 10px; margin-top: 0; }
-        .search-section { background: #eef4fa; padding: 15px; border-radius: 6px; margin-bottom: 25px; display: flex; gap: 10px; align-items: center; }
-        .search-section input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; }
-        .btn { background: #0b4d91; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; transition: background 0.2s; }
-        .btn:hover { background: #08386b; }
-        .btn-secondary { background: #64748b; }
-        .btn-secondary:hover { background: #475569; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .form-group { display: flex; flex-direction: column; }
-        .form-group.full-width { grid-column: span 2; }
-        label { font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #475569; }
-        input[type="text"], input[type="email"], input[type="date"], select { padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; box-sizing: border-box; width: 100%; }
-        input:focus, select:focus { outline: none; border-color: #0b4d91; box-shadow: 0 0 0 3px rgba(11,77,145,0.1); }
-        .status-msg { margin-top: 15px; padding: 12px; border-radius: 4px; display: none; font-weight: 500; }
-        .success { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-        .error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-        .type-selector { background: #fffdf5; border: 2px solid #f59e0b; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+        /* Base Themes Properties Configurations */
+        :root[data-theme="dark"] {
+            --bg-body: #090d16;
+            --bg-container: #111827;
+            --bg-card: #1f2937;
+            --border: #374151;
+            --border-focus: #38bdf8;
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --accent-glow: rgba(56, 189, 248, 0.15);
+            --success: #10b981;
+            --success-hover: #059669;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --input-bg: #0b0f19;
+            --section-bg: rgba(31, 41, 55, 0.2);
+            --lookup-bg: rgba(15, 23, 42, 0.4);
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.5);
+            --btn-action-bg: rgba(31, 41, 55, 0.6);
+            --btn-primary-text: #ffffff;
+            --task-bg: rgba(245, 158, 11, 0.1);
+            --task-border: rgba(245, 158, 11, 0.4);
+            --task-text: #fbbf24;
+        }
+
+        :root[data-theme="light"] {
+            --bg-body: #f1f5f9;
+            --bg-container: #ffffff;
+            --bg-card: #f8fafc;
+            --border: #cbd5e1;
+            --border-focus: #0ea5e9;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent: #0ea5e9;
+            --accent-hover: #0284c7;
+            --accent-glow: rgba(14, 165, 233, 0.15);
+            --success: #10b981;
+            --success-hover: #059669;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --input-bg: #ffffff;
+            --section-bg: #f8fafc;
+            --lookup-bg: #f1f5f9;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+            --btn-action-bg: #f8fafc;
+            --btn-primary-text: #ffffff;
+            --task-bg: #fffdf5;
+            --task-border: #f59e0b;
+            --task-text: #b45309;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            padding: 40px 20px;
+            margin: 0;
+            line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            max-width: 950px;
+            background: var(--bg-container);
+            margin: 0 auto;
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Top Header Action Bar */
+        .header-block {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 24px;
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header-title h2 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.025em;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title h2 i {
+            color: var(--accent);
+            background: var(--accent-glow);
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .header-title p {
+            margin: 6px 0 0 0;
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* Action Controls & Navigation */
+        .back-btn, .btn-logs {
+            background: var(--btn-action-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover, .btn-logs:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        .theme-toggle-btn {
+            background: var(--btn-action-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 15px;
+        }
+
+        .theme-toggle-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        /* Task Path Selector Deck */
+        .type-selector {
+            background: var(--task-bg);
+            border: 1px solid var(--task-border);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .type-selector label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--task-text);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 10px;
+        }
+
+        .type-selector select {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--task-border);
+            color: var(--text-main);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .type-selector select:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        /* Core Inventory Lookup Panel */
+        .lookup-card {
+            background: var(--lookup-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 35px;
+            position: relative;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .lookup-card label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 10px;
+        }
+
+        .lookup-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .lookup-group input {
+            flex: 1;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            padding: 12px 16px;
+            color: var(--text-main);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .lookup-group input:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        /* Forms Layout & Section Dividers */
+        .form-section {
+            background: var(--section-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            transition: background-color 0.3s ease;
+        }
+
+        .section-heading {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-heading i {
+            color: var(--accent);
+            font-size: 14px;
+        }
+
+        .section-heading::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .form-group input[type="text"], 
+        .form-group input[type="email"], 
+        .form-group input[type="date"] {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            padding: 12px 16px;
+            color: var(--text-main);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            color-scheme: dark;
+        }
+
+        :root[data-theme="light"] .form-group input[type="date"] {
+            color-scheme: light;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        /* Interactive Buttons */
+        .btn {
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: #ffffff;
+        }
+
+        .btn-success:hover {
+            background: var(--success-hover);
+        }
+
+        .btn-primary {
+            background: var(--success);
+            color: var(--btn-primary-text);
+            width: 100%;
+            font-size: 16px;
+            padding: 16px;
+            margin-top: 16px;
+            font-weight: 700;
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+
+        .btn-primary:hover {
+            background: var(--success-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary.downgrade-mode {
+            background: var(--danger);
+        }
+
+        .btn-primary.downgrade-mode:hover {
+            background: var(--danger-hover);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Status Banners */
+        .status-banner {
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-banner.success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+            display: flex;
+        }
+
+        .status-banner.error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+            display: flex;
+        }
+
+        .status-banner.info {
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: var(--accent);
+            display: flex;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
+            body { padding: 16px 8px; }
+            .container { padding: 24px 16px; }
+            .header-block { flex-direction: column; align-items: flex-start; }
+            .header-right { width: 100%; justify-content: flex-start; }
+        }
     </style>
 </head>
 <body>
 
+<!-- Init Script to Prevent Theme Flash Flickering -->
+<script>
+    const savedTheme = localStorage.getItem('noc-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+</script>
+
 <div class="container">
-    <h2>Bandwidth Modification Delivery Engine</h2>
-    
+    <!-- Header Block -->
+    <div class="header-block">
+        <div class="header-title">
+            <h2><i class="fa-solid fa-sliders"></i> Bandwidth Modification Delivery Engine</h2>
+            <p>TeleGlobal Automation Framework</p>
+        </div>
+        <div class="header-right">
+            <button type="button" id="themeToggle" class="theme-toggle-btn" title="Toggle System Visual Mode">
+                <i class="fa-solid fa-sun"></i>
+            </button>
+            <a href="/api/reports/download-bandwidth-modification-logs" class="btn-logs">
+                <i class="fa-solid fa-download"></i> Download CSV Logs
+            </a>
+            <a href="/" class="back-btn">
+                <i class="fa-solid fa-arrow-left"></i> Back to Dashboard Engine
+            </a>
+        </div>
+    </div>
+
+    <!-- Dynamic Status Alert Notification -->
+    <div id="statusAlert" class="status-banner"></div>
+
+    <!-- Task Path Selector Matrix -->
     <div class="type-selector">
-        <label for="change_type" style="font-size: 14px; color: #b45309;">Select Operation Task Path *</label>
-        <select id="change_type" name="change_type" form="bandwidthMailForm" onchange="adjustUITheme()" style="border-color: #f59e0b; font-weight: bold; color: #b45309; margin-top: 5px;">
+        <label for="change_type"><i class="fa-solid fa-list-check"></i> Select Operation Task Path *</label>
+        <select id="change_type" name="change_type" form="bandwidthMailForm" onchange="adjustUITheme()">
             <option value="upgrade" selected>🚀 Bandwidth UPGRADATION Confirmation Package</option>
             <option value="downgrade">📉 Bandwidth DOWNGRADATION Confirmation Package</option>
         </select>
     </div>
 
-    <div class="search-section">
-        <input type="text" id="lookup_circuit_id" placeholder="Enter Circuit ID to fetch existing profile configurations...">
-        <button type="button" class="btn btn-secondary" onclick="fetchCircuitData()">Fetch Details</button>
+    <!-- Core Automated Database Lookup UI -->
+    <div class="lookup-card">
+        <label for="lookup_circuit_id"><i class="fa-solid fa-magnifying-glass"></i> Automated Inventory Core Lookup</label>
+        <div class="lookup-group">
+            <input type="text" id="lookup_circuit_id" placeholder="Enter Circuit ID to fetch existing profile configurations...">
+            <button type="button" id="searchBtn" onclick="fetchCircuitData()" class="btn btn-success">
+                <i class="fa-solid fa-bolt"></i> Fetch Details
+            </button>
+        </div>
     </div>
 
+    <!-- Form Section Layout -->
     <form id="bandwidthMailForm">
-        <div class="grid">
-            <div class="form-group">
-                <label for="circuit_id">Circuit ID *</label>
-                <input type="text" id="circuit_id" name="circuit_id" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="company_name">Company Name *</label>
-                <input type="text" id="company_name" name="company_name" required>
-            </div>
-
-            <div class="form-group">
-                <label for="old_bandwidth_speed">Old Bandwidth Speed *</label>
-                <input type="text" id="old_bandwidth_speed" name="old_bandwidth_speed" placeholder="e.g., 50 Mbps" required>
-            </div>
-
-            <div class="form-group">
-                <label id="lbl_new_speed" for="new_bandwidth_speed">New Upgraded Speed *</label>
-                <input type="text" id="new_bandwidth_speed" name="new_bandwidth_speed" placeholder="e.g., 100 Mbps" required>
-            </div>
-
-            <div class="form-group">
-                <label for="effective_date">Effective Activation Date *</label>
-                <input type="date" id="effective_date" name="effective_date" required>
-            </div>
-
-            <div class="form-group">
-                <label for="cc_emails">Mail CC Options (Comma Separated)</label>
-                <input type="text" id="cc_emails" name="cc_emails" placeholder="noc-alerts@teleglobal.in">
-            </div>
-
-            <div class="form-group full-width">
-                <label for="customer_email">Customer Destination Emails (Comma Separated) *</label>
-                <input type="text" id="customer_email" name="customer_email" placeholder="manager@client.com, executive@client.com" required>
+        
+        <div class="form-section">
+            <div class="section-heading"><i class="fa-solid fa-id-card"></i> Circuit Profile & Entity Info</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="circuit_id">Circuit ID *</label>
+                    <input type="text" id="circuit_id" name="circuit_id" placeholder="e.g., TG-CIR-9921" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="company_name">Company Name *</label>
+                    <input type="text" id="company_name" name="company_name" placeholder="e.g., Enterprise Client Pvt Ltd" required>
+                </div>
             </div>
         </div>
 
-        <button type="submit" id="submitBtn" class="btn" style="width: 100%; padding: 13px; font-size: 16px; background-color: #16a34a;">Process Upgradation Notification Package</button>
-    </form>
+        <div class="form-section">
+            <div class="section-heading"><i class="fa-solid fa-gauge-high"></i> Modification Metric Configurations</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="old_bandwidth_speed">Old Bandwidth Speed *</label>
+                    <input type="text" id="old_bandwidth_speed" name="old_bandwidth_speed" placeholder="e.g., 50 Mbps" required>
+                </div>
 
-    <div id="statusBox" class="status-msg"></div>
+                <div class="form-group">
+                    <label id="lbl_new_speed" for="new_bandwidth_speed">New Upgraded Speed *</label>
+                    <input type="text" id="new_bandwidth_speed" name="new_bandwidth_speed" placeholder="e.g., 100 Mbps" required>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="effective_date">Effective Activation Date *</label>
+                    <input type="date" id="effective_date" name="effective_date" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="section-heading"><i class="fa-solid fa-envelope-open-text"></i> Target Routing Boundaries</div>
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label for="customer_email">Customer Destination Emails (Comma Separated) *</label>
+                    <input type="text" id="customer_email" name="customer_email" placeholder="manager@client.com, executive@client.com" required>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="cc_emails">Mail CC Options (Comma Separated)</label>
+                    <input type="text" id="cc_emails" name="cc_emails" placeholder="noc-alerts@teleglobal.in">
+                </div>
+            </div>
+        </div>
+
+        <!-- Master Dispatch Action Fire Button -->
+        <button type="submit" id="submitBtn" class="btn btn-primary">
+            <i class="fa-solid fa-paper-plane"></i> Process Upgradation Notification Package
+        </button>
+    </form>
 </div>
 
+<!-- Dynamic Interactivity Operations Framework -->
 <script>
+    // 1. System Theme Toggle Implementation
+    const themeToggleBtn = document.getElementById('themeToggle');
+    
+    function updateToggleIcon(theme) {
+        const icon = themeToggleBtn.querySelector('i');
+        if (theme === 'light') {
+            icon.className = 'fa-solid fa-moon';
+        } else {
+            icon.className = 'fa-solid fa-sun';
+        }
+    }
+    
+    updateToggleIcon(document.documentElement.getAttribute('data-theme'));
+
+    themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('noc-theme', newTheme);
+        updateToggleIcon(newTheme);
+    });
+
+    // 2. Task Path UI Theme Adjustments (Upgradation vs Downgradation)
     function adjustUITheme() {
         const type = document.getElementById('change_type').value;
         const lblNewSpeed = document.getElementById('lbl_new_speed');
         const submitBtn = document.getElementById('submitBtn');
         
-        if(type === 'upgrade') {
+        if (type === 'upgrade') {
             lblNewSpeed.innerText = 'New Upgraded Speed *';
-            submitBtn.innerText = 'Process Upgradation Notification Package';
-            submitBtn.style.backgroundColor = '#16a34a';
+            submitBtn.className = 'btn btn-primary';
+            submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Process Upgradation Notification Package`;
         } else {
             lblNewSpeed.innerText = 'New Downgraded Speed *';
-            submitBtn.innerText = 'Process Downgradation Notification Package';
-            submitBtn.style.backgroundColor = '#dc2626';
+            submitBtn.className = 'btn btn-primary downgrade-mode';
+            submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Process Downgradation Notification Package`;
         }
     }
 
+    // 3. Status Alert Messaging System
+    function displayStatus(message, type = 'success') {
+        const banner = document.getElementById('statusAlert');
+        banner.className = `status-banner ${type}`;
+        
+        let icon = 'fa-circle-check';
+        if (type === 'error') icon = 'fa-triangle-exclamation';
+        if (type === 'info') icon = 'fa-circle-notch fa-spin';
+
+        banner.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+        banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // 4. Dynamic Inventory Circuit Data Fetch API Call
     async function fetchCircuitData() {
         const searchId = document.getElementById('lookup_circuit_id').value.trim();
-        const statusBox = document.getElementById('statusBox');
+        const btn = document.getElementById('searchBtn');
+
         if (!searchId) {
             alert('Please specify an operational Circuit ID string.');
             return;
         }
+
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Fetching...`;
 
         try {
             const response = await fetch(`/api/circuit/${encodeURIComponent(searchId)}`);
@@ -121,27 +632,30 @@
             const record = Array.isArray(data) ? data[0] : data;
 
             document.getElementById('circuit_id').value = record.circuit_id || '';
-            document.getElementById('company_name').value = record.customer_name || '';
+            document.getElementById('company_name').value = record.customer_name || record.company_name || '';
             document.getElementById('customer_email').value = record.customer_email || '';
+            document.getElementById('old_bandwidth_speed').value = record.bandwidth || record.bandwidth_speed || '';
             
-            statusBox.style.display = 'block';
-            statusBox.className = 'status-msg success';
-            statusBox.innerText = 'Circuit layout properties synchronized directly from active database registers.';
+            displayStatus('Circuit layout properties synchronized directly from active database registers.', 'success');
         } catch (err) {
-            statusBox.style.display = 'block';
-            statusBox.className = 'status-msg error';
-            statusBox.innerText = err.message;
+            displayStatus(err.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fa-solid fa-bolt"></i> Fetch Details`;
         }
     }
 
+    // 5. Form Post Action Handling Pipeline
     document.getElementById('bandwidthMailForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const statusBox = document.getElementById('statusBox');
-        statusBox.style.display = 'block';
-        statusBox.className = 'status-msg';
-        statusBox.style.backgroundColor = '#f1f5f9';
-        statusBox.style.color = '#334155';
-        statusBox.innerText = 'Transmitting execution changes across networks engines... Please wait...';
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const type = document.getElementById('change_type').value;
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Processing Transmission...`;
+
+        displayStatus('Transmitting execution changes across network engines... Please wait...', 'info');
 
         const formData = new FormData(e.target);
 
@@ -154,15 +668,17 @@
             const result = await response.json();
             if (!response.ok) throw new Error(result.detail || 'Processing breakdown on system mail pipeline.');
 
-            statusBox.className = 'status-msg success';
-            statusBox.innerText = result.message;
+            displayStatus(result.message || 'Bandwidth modification package successfully dispatched.', 'success');
             e.target.reset();
             adjustUITheme();
         } catch (err) {
-            statusBox.className = 'status-msg error';
-            statusBox.innerText = err.message;
+            displayStatus(err.message, 'error');
+        } finally {
+            submitBtn.disabled = false;
+            adjustUITheme();
         }
     });
 </script>
+
 </body>
 </html>
