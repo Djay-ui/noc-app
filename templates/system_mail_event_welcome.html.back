@@ -4,8 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event Welcome Mailer Engine | TeleGlobal NOC</title>
-    <!-- FontAwesome for Premium Icons -->
+    <!-- Fonts & FontAwesome Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         /* Base Themes Properties Configurations */
         :root[data-theme="dark"] {
@@ -18,6 +22,7 @@
             --text-muted: #9ca3af;
             --accent: #38bdf8;
             --accent-hover: #0ea5e9;
+            --accent-glow: rgba(56, 189, 248, 0.15);
             --success: #10b981;
             --success-hover: #059669;
             --danger: #ef4444;
@@ -25,7 +30,7 @@
             --section-bg: rgba(31, 41, 55, 0.2);
             --lookup-bg: rgba(15, 23, 42, 0.4);
             --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.5);
-            --btn-logs-bg: rgba(71, 85, 105, 0.4);
+            --btn-action-bg: rgba(31, 41, 55, 0.6);
             --btn-primary-text: #090d16;
         }
 
@@ -39,6 +44,7 @@
             --text-muted: #64748b;
             --accent: #0ea5e9;
             --accent-hover: #0284c7;
+            --accent-glow: rgba(14, 165, 233, 0.15);
             --success: #10b981;
             --success-hover: #059669;
             --danger: #ef4444;
@@ -46,12 +52,14 @@
             --section-bg: #f8fafc;
             --lookup-bg: #f1f5f9;
             --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
-            --btn-logs-bg: #e2e8f0;
+            --btn-action-bg: #f8fafc;
             --btn-primary-text: #ffffff;
         }
 
+        * { box-sizing: border-box; }
+
         body {
-            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
             padding: 40px 20px;
@@ -66,9 +74,15 @@
             margin: 0 auto;
             padding: 40px;
             border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
             box-shadow: var(--shadow);
             transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Top Header Action Bar */
@@ -85,21 +99,24 @@
 
         .header-title h2 {
             margin: 0;
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 700;
             color: var(--text-main);
             letter-spacing: -0.025em;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
         .header-title h2 i {
             color: var(--accent);
+            background: var(--accent-glow);
+            padding: 10px;
+            border-radius: 10px;
         }
 
         .header-title p {
-            margin: 6px 0 0;
+            margin: 6px 0 0 0;
             font-size: 12px;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -107,32 +124,20 @@
             font-weight: 600;
         }
 
-        .header-actions {
+        .header-right {
             display: flex;
             align-items: center;
             gap: 12px;
+            flex-wrap: wrap;
         }
 
-        .badge {
-            background: rgba(56, 189, 248, 0.08);
-            color: var(--accent);
-            padding: 6px 14px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            border: 1px solid rgba(56, 189, 248, 0.2);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        /* Functional Top Bar Action Buttons */
-        .btn-logs {
-            background: var(--btn-logs-bg);
+        /* Action Controls & Navigation */
+        .back-btn, .btn-logs {
+            background: var(--btn-action-bg);
             color: var(--text-main);
             border: 1px solid var(--border);
-            padding: 8px 16px;
-            border-radius: 8px;
+            padding: 10px 16px;
+            border-radius: 10px;
             font-size: 13px;
             font-weight: 600;
             text-decoration: none;
@@ -142,29 +147,30 @@
             transition: all 0.2s ease;
         }
 
-        .btn-logs:hover {
-            border-color: var(--text-muted);
+        .back-btn:hover, .btn-logs:hover {
+            border-color: var(--accent);
+            color: var(--accent);
             transform: translateY(-1px);
         }
 
-        /* Premium Theme Changer Controller Toggle */
         .theme-toggle-btn {
-            background: var(--btn-logs-bg);
+            background: var(--btn-action-bg);
             color: var(--text-main);
             border: 1px solid var(--border);
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s ease;
-            font-size: 14px;
+            font-size: 15px;
         }
 
         .theme-toggle-btn:hover {
-            border-color: var(--text-muted);
+            border-color: var(--accent);
+            color: var(--accent);
             transform: translateY(-1px);
         }
 
@@ -180,7 +186,9 @@
         }
 
         .lookup-card label {
-            display: block;
+            display: flex;
+            align-items: center;
+            gap: 8px;
             font-size: 11px;
             font-weight: 700;
             color: var(--accent);
@@ -198,7 +206,7 @@
             flex: 1;
             background: var(--input-bg);
             border: 1px solid var(--border);
-            padding: 14px 18px;
+            padding: 12px 16px;
             color: var(--text-main);
             border-radius: 8px;
             font-size: 14px;
@@ -208,13 +216,13 @@
         .lookup-group input:focus {
             outline: none;
             border-color: var(--border-focus);
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+            box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
         /* Forms Layout & Section Splitters */
         .form-section {
             background: var(--section-bg);
-            border: 1px solid rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
             border-radius: 12px;
             padding: 24px;
             margin-bottom: 24px;
@@ -242,7 +250,7 @@
             content: '';
             flex: 1;
             height: 1px;
-            background: rgba(255, 255, 255, 0.08);
+            background: var(--border);
         }
 
         .form-grid {
@@ -280,10 +288,10 @@
         .form-group input:focus {
             outline: none;
             border-color: var(--border-focus);
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+            box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
-        /* Interactive Standard Buttons */
+        /* Buttons */
         .btn {
             padding: 12px 24px;
             font-size: 14px;
@@ -315,13 +323,12 @@
             padding: 16px;
             margin-top: 16px;
             font-weight: 700;
-            box-shadow: 0 4px 20px rgba(56, 189, 248, 0.15);
+            box-shadow: 0 4px 20px var(--accent-glow);
         }
 
         .btn-primary:hover {
             background: var(--accent-hover);
             transform: translateY(-1px);
-            box-shadow: 0 6px 24px rgba(56, 189, 248, 0.25);
         }
 
         .btn:disabled {
@@ -342,41 +349,28 @@
             align-items: center;
             gap: 10px;
         }
+
         .status-banner.success {
-            background: rgba(16, 185, 129, 0.1);
+            background: rgba(16, 185, 129, 0.15);
             border: 1px solid rgba(16, 185, 129, 0.3);
             color: #34d399;
             display: flex;
         }
+
         .status-banner.error {
-            background: rgba(239, 68, 68, 0.1);
+            background: rgba(239, 68, 68, 0.15);
             border: 1px solid rgba(239, 68, 68, 0.3);
             color: #f87171;
             display: flex;
         }
 
         @media (max-width: 768px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            .full-width {
-                grid-column: span 1;
-            }
-            body {
-                padding: 16px 8px;
-            }
-            .container {
-                padding: 24px 16px;
-            }
-            .header-block {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .header-actions {
-                width: 100%;
-                justify-content: flex-start;
-                flex-wrap: wrap;
-            }
+            .form-grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
+            body { padding: 16px 8px; }
+            .container { padding: 24px 16px; }
+            .header-block { flex-direction: column; align-items: flex-start; }
+            .header-right { width: 100%; justify-content: flex-start; }
         }
     </style>
 </head>
@@ -389,21 +383,22 @@
 </script>
 
 <div class="container">
-    <!-- Repositioned and stylized top bar header area -->
+    <!-- Header Block -->
     <div class="header-block">
         <div class="header-title">
             <h2><i class="fa-solid fa-paper-plane"></i> Event Welcome Mailer Engine</h2>
             <p>TeleGlobal Automation Framework</p>
         </div>
-        <div class="header-actions">
-            <!-- Theme Changer Control Toggle Layout Element -->
-            <button type="button" id="themeToggle" class="theme-toggle-btn" title="Toggle System Visual Profile Layout">
+        <div class="header-right">
+            <button type="button" id="themeToggle" class="theme-toggle-btn" title="Toggle System Visual Mode">
                 <i class="fa-solid fa-sun"></i>
-            </button>		
+            </button>
             <a href="/api/reports/download-event-welcome-logs" class="btn-logs">
                 <i class="fa-solid fa-download"></i> Download CSV Logs
             </a>
-            <div class="badge"><i class="fa-solid fa-circle-nodes"></i> NOC Node <a href="/" class="back-btn">← Back to Dashboard Engine</a></div>
+            <a href="/" class="back-btn">
+                <i class="fa-solid fa-arrow-left"></i> Back to Dashboard Engine
+            </a>
         </div>
     </div>
 
@@ -412,11 +407,11 @@
     
     <!-- Core Automated Database Lookup UI -->
     <div class="lookup-card">
-        <label for="search_query">Automated Inventory Core Lookup</label>
+        <label for="search_query"><i class="fa-solid fa-magnifying-glass"></i> Automated Inventory Core Lookup</label>
         <div class="lookup-group">
             <input type="text" id="search_query" placeholder="Enter Circuit ID or Customer Name...">
             <button type="button" id="searchBtn" onclick="searchCircuit()" class="btn btn-success">
-                <i class="fa-solid fa-magnifying-glass"></i> Search Inventory
+                <i class="fa-solid fa-bolt"></i> Search Inventory
             </button>
         </div>
     </div>
@@ -551,7 +546,7 @@
             displayStatus("Network exception encountered routing request to search server.", false);
         } finally {
             btn.disabled = false;
-            btn.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> Search Inventory`;
+            btn.innerHTML = `<i class="fa-solid fa-bolt"></i> Search Inventory`;
         }
     }
 

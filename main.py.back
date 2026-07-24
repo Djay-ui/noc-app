@@ -223,6 +223,10 @@ class UserCreateModel(BaseModel):
     role: str
     password: str
 
+class ChangePasswordPayload(BaseModel):
+    current_password: str
+    new_password: str
+
 class ReportPayload(BaseModel):
     report_type: str
     start_date: Optional[str] = None
@@ -326,6 +330,16 @@ async def route_system_mail_rfo_page(request: Request, user=Depends(get_optional
         context={"user": user}
     )
 
+# =========================================================================
+# ROUTE TO RENDER CUSTOM MAIL PAGE
+# =========================================================================
+@app.get("/system-mail/custom", response_class=HTMLResponse)
+async def route_system_mail_custom_page(request: Request, user=Depends(get_optional_user)):
+    """Renders the Custom Mail dynamic operational interface."""
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+    return templates.TemplateResponse(request=request, name="system_mail_custom.html", context={"user": user})
+
 @app.get("/admin/users", response_class=HTMLResponse)
 async def route_user_management_page(request: Request, user=Depends(get_optional_user)):
     if not user:
@@ -340,6 +354,7 @@ async def get_reports_page(request: Request, user=Depends(get_optional_user)):
         return RedirectResponse(url="/login", status_code=303)
     return templates.TemplateResponse(request=request, name="reports.html", context={"user": user})
 
+
 # Auth Actions
 @app.post("/api/auth/login")
 async def api_login(username: str = Form(...), password: str = Form(...)):
@@ -351,9 +366,13 @@ async def api_login(username: str = Form(...), password: str = Form(...)):
 
     if not user or user["password_hash"] != hash_password(password):
         return HTMLResponse("<html><body><script>alert('Invalid operational credentials.'); window.location.href='/login';</script></body></html>", status_code=400)
-    
+
     token = generate_session_token(user)
-    response = RedirectResponse(url="/", status_code=303)
+    
+    # Redirect to password change page if it's their first login, otherwise go home
+    redirect_target = "/change-password" if user.get("is_first_login", True) else "/"
+    
+    response = RedirectResponse(url=redirect_target, status_code=303)
     response.set_cookie(key=COOKIE_NAME, value=token, httponly=True, max_age=43200, samesite="lax")
     return response
 
@@ -366,6 +385,8 @@ async def api_logout():
 @app.get("/api/auth/me")
 async def api_get_me(user=Depends(get_current_user)):
     return user
+
+
 
 # =========================================================================
 # WELCOME MAIL PIPELINE 
@@ -743,17 +764,25 @@ async def api_save_circuit(request: Request, user=Depends(get_current_user)):
             conn.close()
 
 
+##User_Auth
+
 @app.get("/api/admin/users/all")
 async def api_get_all_users(user=Depends(get_current_user)):
     if user["role"] != "admin":
         raise HTTPException(status_code=403, detail="Admin authorization required.")
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
-    cursor.execute("SELECT id, username, full_name, role FROM users ORDER BY id ASC")
+    
+    # FIXED: Added email_id, employee_id, and is_first_login to the SELECT query
+    cursor.execute("""
+        SELECT id, username, email_id, full_name, employee_id, role, is_first_login 
+        FROM users 
+        ORDER BY id ASC
+    """)
     user_records = cursor.fetchall()
-    cursor.close(); conn.close()
+    cursor.close()
+    conn.close()
     return user_records
-
 
 @app.post("/api/admin/users/update")
 async def api_update_user_profile(payload: UserUpdateModel, user=Depends(get_current_user)):
@@ -953,13 +982,18 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 # --- SCALABLE ALARM CONFIGURATION MATRIX ---
+
 def determine_email_template(issue_category: str, status: str) -> str:
     if not issue_category:
         cat = ""
     else:
         cat = issue_category.strip().lower()
 
-    # Exact matching logic (case-insensitive & whitespace trimmed)
+    # APPEND THIS MATCHING LOGIC FOR CUSTOM MAIL
+    if cat in ["custom mail", "custom mail dispatch", "custom notification"]:
+        return "custom_mail.html"
+
+    # Existing template conditionals
     if cat in ["primary default update", "primary default", "primary", "general issue"]:
         return "primary_up.html" if status == "Closed" else "primary.html"
     elif cat == "ip is not pingable":
@@ -971,7 +1005,6 @@ def determine_email_template(issue_category: str, status: str) -> str:
     elif cat == "high bandwidth utilization":
         return "high.html"
 
-    # Default fallbacks
     if status == "Closed":
         return "link_up.html"
     elif status == "In Monitoring":
@@ -1033,11 +1066,23 @@ async def process_raise_ticket(
                 time_delta = closed_at_timestamp - inserted_row['created_at'].replace(tzinfo=None)
                 duration_minutes = max(1, int(time_delta.total_seconds() / 60))
                 cursor.execute("UPDATE tickets SET resolution_minutes = %s WHERE ticket_id = %s", (duration_minutes, ticket_id))
-                
+
+            # --- DAILY RESET TICKET ID LOGIC ---
+            cursor.execute(
+                "SELECT COUNT(*) as daily_count FROM tickets WHERE created_at::date = CURRENT_DATE"
+            )
+            daily_count = cursor.fetchone()['daily_count']
+
             conn.commit()
-            formatted_ticket_id = f"TCPL{inserted_row['created_at'].strftime('%d%m%y')}{ticket_id:02d}"
+            formatted_ticket_id = f"TCPL{inserted_row['created_at'].strftime('%d%m%y')}{daily_count:02d}"
         else:
-            formatted_ticket_id = f"DIRECT-{datetime.now().strftime('%d%m%y%H%M%S')}"
+            # --- DIRECT EMAIL MODE FIXED LOGIC ---
+            # Generate uniform TCPL reference ID using today's total ticket count sequence
+            now = datetime.now()
+            cursor.execute("SELECT COUNT(*) as count FROM tickets WHERE created_at::date = CURRENT_DATE")
+            count_today = cursor.fetchone()['count'] + 1
+            formatted_ticket_id = f"TCPL{now.strftime('%d%m%y')}{count_today:02d}"
+
     except Exception as db_err:
         conn.rollback()
         raise HTTPException(status_code=500, detail=f"Database Logging Error: {str(db_err)}")
@@ -1053,7 +1098,9 @@ async def process_raise_ticket(
             if c_email not in recipients_cc:
                 recipients_cc.append(c_email)
 
-    resolved_customer_name = customer["customer_name"] if customer and "customer_name" in customer else "Valued Client"
+    # Determine Customer & Company Name
+    resolved_customer_name = customer.get("customer_name") if customer and customer.get("customer_name") else "Valued Client"
+    resolved_company_name = customer.get("company_name") or customer.get("customer_name") or "Valued Client"
 
     # Read attached file bytes (if provided)
     attachment_bytes = None
@@ -1104,7 +1151,8 @@ async def process_raise_ticket(
 
     # Construct and dispatch MIME email message
     if customer and customer.get("customer_email"):
-        subject_line = f"[NOC Ticket #{formatted_ticket_id}] {issue_category} | Circuit ID: {circuit_id}"
+        # Updated Subject Line including Company Name
+        subject_line = f"[NOC Ticket #{formatted_ticket_id}] {issue_category} | {resolved_company_name} | Circuit ID: {circuit_id}"
         
         msg = build_email_message(
             sender=SMTP_USER,
@@ -1154,7 +1202,7 @@ async def update_ticket_status(payload: dict, background_tasks: BackgroundTasks,
         else:
             cursor.execute("UPDATE tickets SET status = %s, closed_by_name = NULL, closed_at = NULL, resolution_minutes = 0 WHERE ticket_id = %s", (target_status, ticket_id))
             
-        cursor.execute("SELECT customer_name, customer_email FROM customers WHERE LOWER(TRIM(circuit_id)) = LOWER(TRIM(%s))", (ticket_meta["circuit_id"],))
+        cursor.execute("SELECT customer_name, company_name, customer_email FROM customers WHERE LOWER(TRIM(circuit_id)) = LOWER(TRIM(%s))", (ticket_meta["circuit_id"],))
         customer_meta = cursor.fetchone()
         conn.commit()
     except Exception as db_err:
@@ -1182,7 +1230,10 @@ async def update_ticket_status(payload: dict, background_tasks: BackgroundTasks,
 
     recipients_cc = list(GLOBAL_MANDATORY_CC)
     formatted_ticket_id = f"TCPL{ticket_meta['created_at'].strftime('%d%m%y')}{ticket_id:02d}"
-    resolved_customer_name = customer_meta["customer_name"] if customer_meta else "Valued Client"
+    
+    # Resolve Customer Name & Company Name
+    resolved_customer_name = customer_meta["customer_name"] if customer_meta and customer_meta.get("customer_name") else "Valued Client"
+    resolved_company_name = customer_meta.get("company_name") or resolved_customer_name if customer_meta else "Valued Client"
 
     final_html_body = html_template_data\
         .replace("{customer_name}", str(resolved_customer_name))\
@@ -1201,22 +1252,31 @@ async def update_ticket_status(payload: dict, background_tasks: BackgroundTasks,
         msg['From'] = SMTP_USER
         msg['To'] = customer_meta["customer_email"]
         msg['Cc'] = ", ".join(recipients_cc)
-        msg['Subject'] = f"Internet Link Status Notice [{target_status}] - Circuit ID: {ticket_meta['circuit_id']}"
+        
+        # Updated Subject Line with Company Name and Ticket ID
+        msg['Subject'] = f"[NOC Ticket #{formatted_ticket_id}] {resolved_company_name} | Internet Link Status Notice [{target_status}] - Circuit ID: {ticket_meta['circuit_id']}"
+        
         msg.attach(MIMEText(append_signature(final_html_body, user), 'html'))
         background_tasks.add_task(send_smtp_email_background, msg.as_string(), [customer_meta["customer_email"]] + recipients_cc)
 
     return {"status": "success"}
 
 @app.get("/api/tickets/recent")
-async def read_recent_tickets(limit: int = 10, search: str = "", status: str = "", user=Depends(get_current_user)):
+async def read_recent_tickets(limit: int = 100000, search: str = "", status: str = "", user=Depends(get_current_user)):
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     query = """
+        WITH daily_tickets AS (
+            SELECT ticket_id, circuit_id, issue_category, status, assigned_team, open_by_name,
+                   closed_by_name, created_at, closed_at, resolution_minutes,
+                   ROW_NUMBER() OVER (PARTITION BY created_at::date ORDER BY ticket_id ASC) as daily_seq
+            FROM tickets
+        )
         SELECT ticket_id, circuit_id, issue_category, status, assigned_team, open_by_name,
                COALESCE(closed_by_name, '--') as closed_by_name, created_at,
                TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI') as timestamp,
-               COALESCE(TO_CHAR(closed_at, 'YYYY-MM-DD HH24:MI'), '--') as closed_timestamp, resolution_minutes
-        FROM tickets WHERE 1=1
+               COALESCE(TO_CHAR(closed_at, 'YYYY-MM-DD HH24:MI'), '--') as closed_timestamp, resolution_minutes, daily_seq
+        FROM daily_tickets WHERE 1=1
     """
     params = []
     if search:
@@ -1237,7 +1297,7 @@ async def read_recent_tickets(limit: int = 10, search: str = "", status: str = "
     formatted_records = []
     for row in records:
         ticket_date = row['created_at']
-        custom_ticket_id = f"TCPL{ticket_date.strftime('%d%m%y')}{row['ticket_id']:02d}"
+        custom_ticket_id = f"TCPL{ticket_date.strftime('%d%m%y')}{row['daily_seq']:02d}"
         formatted_records.append({
             "ticket_id": custom_ticket_id, "raw_ticket_id": row['ticket_id'], "circuit_id": row['circuit_id'],
             "issue_category": row['issue_category'], "status": row['status'], "assigned_team": row['assigned_team'],
@@ -1394,14 +1454,21 @@ async def api_search_ticket_details(query_str: str, user=Depends(get_current_use
     
     # SQL query dynamically reconstructs standard ticket format 'TCPL' + 'DDMMYY' + 'XX' for comparison
     query = """
+        WITH daily_tickets AS (
+            SELECT ticket_id, circuit_id, issue_category, root_cause_segment, status, 
+                   assigned_team, open_by_name, closed_by_name, created_at, closed_at, resolution_minutes,
+                   ROW_NUMBER() OVER (PARTITION BY created_at::date ORDER BY ticket_id ASC) as daily_seq
+            FROM tickets
+        )
         SELECT ticket_id, circuit_id, issue_category, root_cause_segment, status, assigned_team, open_by_name,
                created_at,
                COALESCE(closed_by_name, '--') as closed_by_name,
                TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') as opened_at,
                COALESCE(TO_CHAR(closed_at, 'YYYY-MM-DD HH24:MI:SS'), '--') as closed_at,
-               resolution_minutes
-        FROM tickets 
-        WHERE LOWER('TCPL' || TO_CHAR(created_at, 'DDMMYY') || LPAD(CAST(ticket_id AS TEXT), 2, '0')) LIKE LOWER(%s)
+               resolution_minutes,
+               'TCPL' || TO_CHAR(created_at, 'DDMMYY') || LPAD(CAST(daily_seq AS TEXT), 2, '0') as custom_ticket_id
+        FROM daily_tickets 
+        WHERE LOWER('TCPL' || TO_CHAR(created_at, 'DDMMYY') || LPAD(CAST(daily_seq AS TEXT), 2, '0')) LIKE LOWER(%s)
            OR CAST(ticket_id AS TEXT) = %s
            OR LOWER(circuit_id) LIKE LOWER(%s)
         ORDER BY ticket_id DESC 
@@ -1415,11 +1482,11 @@ async def api_search_ticket_details(query_str: str, user=Depends(get_current_use
         formatted = []
         for row in records:
             # Structurally generate standardized ticket tracking sequence matching read_recent_tickets
-            ticket_date = row['created_at']
-            custom_ticket_id = f"TCPL{ticket_date.strftime('%d%m%y')}{row['ticket_id']:02d}"
+            #ticket_date = row['created_at']
+            #custom_ticket_id = f"TCPL{ticket_date.strftime('%d%m%y')}{row['ticket_id']:02d}"
             
             formatted.append({
-                "ticket_id": custom_ticket_id,
+                "ticket_id": row['custom_ticket_id'],
                 "raw_ticket_id": row['ticket_id'],
                 "circuit_id": row['circuit_id'],
                 "issue_category": row['issue_category'],
@@ -1782,3 +1849,220 @@ async def api_send_access_mail(
     
     return {"status": "success", "message": "Premises Access Request Mail dispatched successfully."}
 
+# =========================================================================
+# BATCH TICKET CLOSURE PIPELINE (NO MAIL / BYPASS MAIL)
+# =========================================================================
+
+class BulkCloseRequest(BaseModel):
+    ticket_ids: list[int]
+    remark_note: Optional[str] = "Bulk Closed without Email Dispatch"
+
+@app.post("/api/ticket/bulk-close-silent")
+async def api_bulk_close_tickets_silent(payload: BulkCloseRequest, user=Depends(get_current_user)):
+    """
+    Closes multiple tickets selected from the UI in bulk.
+    Bypasses sending any notification emails to customers.
+    """
+    if not payload.ticket_ids:
+        raise HTTPException(status_code=400, detail="No ticket IDs were provided for bulk closing.")
+
+    engineer_identity = user.get("full_name", user.get("username", "NOC Specialist"))
+    if "|" in engineer_identity:
+        engineer_identity = engineer_identity.split("|")[0].strip()
+
+    closed_at = datetime.now(timezone.utc)
+    
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    
+    try:
+        updated_count = 0
+        for ticket_id in payload.ticket_ids:
+            # Fetch ticket metadata for duration metrics calculation
+            cursor.execute("SELECT created_at FROM tickets WHERE ticket_id = %s", (ticket_id,))
+            ticket_meta = cursor.fetchone()
+            
+            if ticket_meta:
+                created_at_tz = ticket_meta['created_at'].replace(tzinfo=timezone.utc)
+                time_delta = closed_at - created_at_tz
+                duration_minutes = max(1, int(time_delta.total_seconds() / 60))
+
+                cursor.execute(
+                    """
+                    UPDATE tickets 
+                    SET status = 'Closed', 
+                        closed_by_name = %s, 
+                        closed_at = %s, 
+                        resolution_minutes = %s 
+                    WHERE ticket_id = %s
+                    """,
+                    (engineer_identity, closed_at, duration_minutes, ticket_id)
+                )
+                updated_count += cursor.rowcount
+
+        conn.commit()
+        return {
+            "status": "success", 
+            "message": f"Successfully closed {updated_count} ticket(s) silently without email notification."
+        }
+    except Exception as db_err:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Database execution error: {str(db_err)}")
+    finally:
+        cursor.close()
+        conn.close()
+
+# =========================================================================
+# FORCE PASSWORD CHANGE WORKFLOW
+# =========================================================================
+
+# Force Password Change Routes
+@app.get("/change-password", response_class=HTMLResponse)
+async def route_change_password_page(request: Request, user=Depends(get_optional_user)):
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+    return templates.TemplateResponse(request=request, name="change_password.html", context={"user": user})
+
+
+@app.post("/api/auth/change-password")
+async def api_change_password(payload: ChangePasswordPayload, user=Depends(get_current_user)):
+    if len(payload.new_password.strip()) < 6:
+        raise HTTPException(status_code=400, detail="New password must be at least 6 characters long.")
+
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    
+    try:
+        # 1. Verify existing password
+        cursor.execute("SELECT password_hash FROM users WHERE id = %s", (user["id"],))
+        db_user = cursor.fetchone()
+        
+        if not db_user or db_user["password_hash"] != hash_password(payload.current_password):
+            raise HTTPException(status_code=400, detail="Current password is incorrect.")
+
+        # 2. Update password hash and mark first login as False
+        new_hash = hash_password(payload.new_password.strip())
+        cursor.execute(
+            "UPDATE users SET password_hash = %s, is_first_login = FALSE WHERE id = %s",
+            (new_hash, user["id"])
+        )
+        conn.commit()
+        return {"status": "success", "message": "Password successfully updated!"}
+
+    except HTTPException as http_e:
+        raise http_e
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Database operational error: {str(e)}")
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.post("/api/admin/users/force-password-reset/{target_user_id}")
+async def api_admin_force_password_reset(target_user_id: int, user=Depends(get_current_user)):
+    # Check if performing user has admin privileges
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin privileges required.")
+
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    
+    try:
+        cursor.execute(
+            "UPDATE users SET is_first_login = TRUE WHERE id = %s",
+            (target_user_id,)
+        )
+        conn.commit()
+        return {"status": "success", "message": f"User ID {target_user_id} will be forced to change password on next login."}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# =========================================================================
+# CUSTOM MAIL DISPATCH PIPELINE
+# =========================================================================
+@app.post("/api/tools/send-custom-mail")
+async def api_send_custom_mail(
+    background_tasks: BackgroundTasks,
+    circuit_id: str = Form(...),
+    company_name: str = Form(...),
+    customer_email: str = Form(...),
+    mail_subject: str = Form(...),
+    mail_context: str = Form(...),
+    cc_emails: str = Form(""),
+    attachment: UploadFile = File(None),
+    user=Depends(get_current_user)
+):
+    """
+    Handles dynamic custom email broadcasts, hydration of templates/emails/custom_mail.html,
+    and background dispatch to target customer email lists.
+    """
+    engineer_identity = user.get("full_name", user.get("username", "NOC Specialist"))
+    if "|" in engineer_identity:
+        engineer_identity = engineer_identity.split("|")[0].strip()
+
+    # Normalize/Format custom text paragraphs to preserve line breaks in HTML
+    formatted_context = mail_context.strip().replace("\n", "<br>")
+
+    # Render Template Body
+    try:
+        template = templates.get_template("emails/custom_mail.html")
+        hydrated_body = template.render({
+            "circuit_id": circuit_id.strip(),
+            "company_name": company_name.strip(),
+            "mail_context": formatted_context,
+            "operator_name": engineer_identity
+        })
+    except Exception as render_err:
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed compiling custom mail template placeholders: {str(render_err)}"
+        )
+
+    # Email Dispatch Construction
+    msg = MIMEMultipart()
+    msg['From'] = SMTP_USER
+    to_recipients = [addr.strip() for addr in customer_email.split(",") if addr.strip()]
+    msg['To'] = ", ".join(to_recipients)
+    msg['Subject'] = mail_subject.strip()
+
+    # Build CC routing list
+    recipients = list(to_recipients)
+    cc_list = list(GLOBAL_MANDATORY_CC)
+    if cc_emails.strip():
+        for addr in cc_emails.split(","):
+            if addr.strip() and addr.strip() not in cc_list:
+                cc_list.append(addr.strip())
+    
+    if cc_list:
+        msg['Cc'] = ", ".join(cc_list)
+        recipients.extend(cc_list)
+
+    # Attach Hydrated Body with Engineer Signature
+    msg.attach(MIMEText(append_signature(hydrated_body, user), 'html'))
+
+    # Handle Attachments
+    if attachment and attachment.filename:
+        try:
+            attachment_bytes = await attachment.read()
+            if len(attachment_bytes) > 0:
+                part = MIMEApplication(attachment_bytes)
+                part['Content-Disposition'] = f'attachment; filename="{attachment.filename}"'
+                msg.attach(part)
+        except Exception as file_err:
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Error parsing custom attachment: {str(file_err)}"
+            )
+
+    # Trigger Non-blocking Background Queue Execution
+    background_tasks.add_task(send_smtp_email_background, msg.as_string(), recipients)
+
+    return {
+        "status": "success", 
+        "message": f"Custom email dispatched successfully to {customer_email}."
+    }

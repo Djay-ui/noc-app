@@ -1068,21 +1068,16 @@ async def process_raise_ticket(
                 cursor.execute("UPDATE tickets SET resolution_minutes = %s WHERE ticket_id = %s", (duration_minutes, ticket_id))
 
             # --- DAILY RESET TICKET ID LOGIC ---
+            # Calculate today's ticket sequence count for resetting daily
             cursor.execute(
                 "SELECT COUNT(*) as daily_count FROM tickets WHERE created_at::date = CURRENT_DATE"
             )
             daily_count = cursor.fetchone()['daily_count']
 
             conn.commit()
-            formatted_ticket_id = f"TCPL{inserted_row['created_at'].strftime('%d%m%y')}{daily_count:02d}"
+            formatted_ticket_id = f"TCPL{inserted_row['created_at'].strftime('%d%m%y')}{ticket_id:02d}"
         else:
-            # --- DIRECT EMAIL MODE FIXED LOGIC ---
-            # Generate uniform TCPL reference ID using today's total ticket count sequence
-            now = datetime.now()
-            cursor.execute("SELECT COUNT(*) as count FROM tickets WHERE created_at::date = CURRENT_DATE")
-            count_today = cursor.fetchone()['count'] + 1
-            formatted_ticket_id = f"TCPL{now.strftime('%d%m%y')}{count_today:02d}"
-
+            formatted_ticket_id = f"DIRECT-{datetime.now().strftime('%d%m%y%H%M%S')}"
     except Exception as db_err:
         conn.rollback()
         raise HTTPException(status_code=500, detail=f"Database Logging Error: {str(db_err)}")
@@ -1098,9 +1093,7 @@ async def process_raise_ticket(
             if c_email not in recipients_cc:
                 recipients_cc.append(c_email)
 
-    # Determine Customer & Company Name
-    resolved_customer_name = customer.get("customer_name") if customer and customer.get("customer_name") else "Valued Client"
-    resolved_company_name = customer.get("company_name") or customer.get("customer_name") or "Valued Client"
+    resolved_customer_name = customer["customer_name"] if customer and "customer_name" in customer else "Valued Client"
 
     # Read attached file bytes (if provided)
     attachment_bytes = None
@@ -1151,8 +1144,7 @@ async def process_raise_ticket(
 
     # Construct and dispatch MIME email message
     if customer and customer.get("customer_email"):
-        # Updated Subject Line including Company Name
-        subject_line = f"[NOC Ticket #{formatted_ticket_id}] {issue_category} | {resolved_company_name} | Circuit ID: {circuit_id}"
+        subject_line = f"[NOC Ticket #{formatted_ticket_id}] {issue_category} | Circuit ID: {circuit_id}"
         
         msg = build_email_message(
             sender=SMTP_USER,
@@ -1202,7 +1194,7 @@ async def update_ticket_status(payload: dict, background_tasks: BackgroundTasks,
         else:
             cursor.execute("UPDATE tickets SET status = %s, closed_by_name = NULL, closed_at = NULL, resolution_minutes = 0 WHERE ticket_id = %s", (target_status, ticket_id))
             
-        cursor.execute("SELECT customer_name, company_name, customer_email FROM customers WHERE LOWER(TRIM(circuit_id)) = LOWER(TRIM(%s))", (ticket_meta["circuit_id"],))
+        cursor.execute("SELECT customer_name, customer_email FROM customers WHERE LOWER(TRIM(circuit_id)) = LOWER(TRIM(%s))", (ticket_meta["circuit_id"],))
         customer_meta = cursor.fetchone()
         conn.commit()
     except Exception as db_err:
@@ -1230,10 +1222,7 @@ async def update_ticket_status(payload: dict, background_tasks: BackgroundTasks,
 
     recipients_cc = list(GLOBAL_MANDATORY_CC)
     formatted_ticket_id = f"TCPL{ticket_meta['created_at'].strftime('%d%m%y')}{ticket_id:02d}"
-    
-    # Resolve Customer Name & Company Name
-    resolved_customer_name = customer_meta["customer_name"] if customer_meta and customer_meta.get("customer_name") else "Valued Client"
-    resolved_company_name = customer_meta.get("company_name") or resolved_customer_name if customer_meta else "Valued Client"
+    resolved_customer_name = customer_meta["customer_name"] if customer_meta else "Valued Client"
 
     final_html_body = html_template_data\
         .replace("{customer_name}", str(resolved_customer_name))\
@@ -1252,10 +1241,7 @@ async def update_ticket_status(payload: dict, background_tasks: BackgroundTasks,
         msg['From'] = SMTP_USER
         msg['To'] = customer_meta["customer_email"]
         msg['Cc'] = ", ".join(recipients_cc)
-        
-        # Updated Subject Line with Company Name and Ticket ID
-        msg['Subject'] = f"[NOC Ticket #{formatted_ticket_id}] {resolved_company_name} | Internet Link Status Notice [{target_status}] - Circuit ID: {ticket_meta['circuit_id']}"
-        
+        msg['Subject'] = f"Internet Link Status Notice [{target_status}] - Circuit ID: {ticket_meta['circuit_id']}"
         msg.attach(MIMEText(append_signature(final_html_body, user), 'html'))
         background_tasks.add_task(send_smtp_email_background, msg.as_string(), [customer_meta["customer_email"]] + recipients_cc)
 

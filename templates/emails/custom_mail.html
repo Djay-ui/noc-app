@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Notice - TeleGlobal Communications</title>
+</head>
+<body style="margin:0; padding:0; background-color:#05070f; font-family:'Plus Jakarta Sans', Arial, sans-serif; color:#f8fafc;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#05070f; padding: 20px 0;">
+        <tr>
+            <td align="center">
+                <table width="650" cellpadding="0" cellspacing="0" border="0" style="background-color:#0b1120; border:1px solid #1e293b; border-radius:12px; overflow:hidden; box-shadow:0 10px 25px rgba(0,0,0,0.5);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #1e40af, #1e3a8a); padding: 25px 30px; border-bottom: 2px solid #38bdf8;">
+                            <h2 style="margin:0; color:#ffffff; font-size:20px; font-weight:800; letter-spacing:0.02em;">
+                                TELEGLOBAL COMMUNICATIONS PVT. LTD.
+                            </h2>
+                            <p style="margin: 5px 0 0 0; color:#93c5fd; font-size:13px; font-weight:600;">
+                                NOC Network Operations Desk | Communication Center
+                            </p>
+                        </td>
+                    </tr>
+                    <!-- Circuit & Reference Details -->
+                    <tr>
+                        <td style="padding: 20px 30px 10px 30px; background-color:#080d1a; border-bottom: 1px solid #1e293b;">
+                            <table width="100%" cellpadding="6" cellspacing="0" border="0" style="font-size:13px;">
+                                <tr>
+                                    <td width="30%" style="color:#64748b; font-weight:bold; text-transform:uppercase;">Circuit ID:</td>
+                                    <td width="70%" style="color:#38bdf8; font-family:monospace; font-weight:bold;">{{ circuit_id }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="color:#64748b; font-weight:bold; text-transform:uppercase;">Customer / Company:</td>
+                                    <td style="color:#f8fafc; font-weight:600;">{{ company_name }}</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- Dynamic Body Input Container -->
+                    <tr>
+                        <td style="padding: 30px; color:#cbd5e1; font-size:14px; line-height:1.7;">
+                            <div style="background-color:#131b2e; border:1px solid #1e293b; border-radius:8px; padding:20px; color:#f8fafc;">
+                                {{ mail_context | safe }}
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Operator Signature Anchor Placeholder -->
+                    <tr>
+                        <td style="padding: 0 30px 20px 30px; color:#94a3b8; font-size:13px;">
+                            {operator_name}
+                        </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color:#060a14; padding: 15px 30px; text-align:center; font-size:11px; color:#64748b; border-top:1px solid #1e293b;">
+                            This is an automated operational broadcast dispatch sent on behalf of Teleglobal NOC Operations Center.
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

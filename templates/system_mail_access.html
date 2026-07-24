@@ -3,54 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premises Access Request | Teleglobal NOC</title>
-    <!-- Fonts & Icons -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Premises Access Request Engine | TeleGlobal NOC</title>
+    <!-- FontAwesome Icons & Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root[data-theme="dark"] {
-            --bg-body: #0f172a;
-            --bg-container: #1e293b;
-            --bg-card: #0f172a;
-            --border: #334155;
+            --bg-body: #090d16;
+            --bg-container: #111827;
+            --bg-card: #1f2937;
+            --border: #374151;
+            --border-light: #172554;
             --border-focus: #10b981;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --text-highlight: #38bdf8;
             --accent: #10b981;
             --accent-hover: #059669;
-            --accent-glow: rgba(16, 185, 129, 0.2);
-            --input-bg: #0f172a;
-            --section-bg: rgba(30, 41, 59, 0.7);
-            --lookup-bg: #1e293b;
-            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-            --btn-action-bg: #0f172a;
+            --input-bg: #0b0f19;
+            --section-bg: rgba(31, 41, 55, 0.2);
+            --lookup-bg: rgba(15, 23, 42, 0.4);
+            --dropdown-bg: #131b2e;
+            --dropdown-hover: #0b1120;
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            --btn-logs-bg: rgba(71, 85, 105, 0.4);
+            --btn-primary-text: #ffffff;
         }
+
+	.nav-link-btn { 
+    background: #1d4ed8; 
+    color: white; 
+    padding: 10px 16px; 
+    border-radius: 8px; 
+    font-weight: 700; 
+    font-size: 13px; 
+    border: 1px solid rgba(255,255,255,0.05); 
+    text-decoration: none; 
+    cursor: pointer; 
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+}
+
+.nav-link-btn:hover { 
+    background: #1e40af;
+    transform: translateY(-2px); 
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
 
         :root[data-theme="light"] {
             --bg-body: #f1f5f9;
             --bg-container: #ffffff;
             --bg-card: #f8fafc;
             --border: #cbd5e1;
+            --border-light: #cbd5e1;
             --border-focus: #059669;
             --text-main: #0f172a;
             --text-muted: #64748b;
+            --text-highlight: #0284c7;
             --accent: #059669;
             --accent-hover: #047857;
-            --accent-glow: rgba(5, 150, 105, 0.15);
             --input-bg: #ffffff;
             --section-bg: #f8fafc;
-            --lookup-bg: #e2e8f0;
-            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-            --btn-action-bg: #f8fafc;
+            --lookup-bg: #f1f5f9;
+            --dropdown-bg: #ffffff;
+            --dropdown-hover: #f1f5f9;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            --btn-logs-bg: #e2e8f0;
+            --btn-primary-text: #ffffff;
         }
 
-        * { box-sizing: border-box; }
-
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
             padding: 40px 20px;
@@ -60,26 +85,19 @@
         }
 
         .container {
-            max-width: 920px;
+            max-width: 950px;
             background: var(--bg-container);
             margin: 0 auto;
             padding: 40px;
             border-radius: 16px;
-            border: 1px solid var(--border);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             box-shadow: var(--shadow);
-            animation: fadeIn 0.4s ease-out;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Header Block */
         .header-block {
-            border-bottom: 2px solid var(--border);
+            border-bottom: 1px solid var(--border);
             padding-bottom: 24px;
-            margin-bottom: 36px;
+            margin-bottom: 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -89,90 +107,57 @@
 
         .header-title h2 {
             margin: 0;
-            font-size: 24px;
+            font-size: 26px;
             font-weight: 700;
             color: var(--text-main);
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
-        .header-title h2 i {
-            color: var(--accent);
-            background: var(--accent-glow);
-            padding: 10px;
-            border-radius: 10px;
-        }
+        .header-title h2 i { color: var(--accent); }
 
         .header-title p {
-            margin: 6px 0 0 0;
-            font-size: 13px;
+            margin: 6px 0 0;
+            font-size: 12px;
             color: var(--text-muted);
-            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
         }
 
-        .header-right {
+        .header-actions {
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
-        .back-btn {
-            background: var(--btn-action-bg);
-            color: var(--text-main);
-            border: 1px solid var(--border);
-            padding: 10px 18px;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 14px;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s ease;
-        }
-
-        .back-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-            transform: translateY(-1px);
-        }
-
         .theme-toggle-btn {
-            background: var(--btn-action-bg);
+            background: var(--btn-logs-bg);
             color: var(--text-main);
             border: 1px solid var(--border);
-            width: 42px;
-            height: 42px;
-            border-radius: 10px;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
-            transition: all 0.2s ease;
         }
 
-        .theme-toggle-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-            transform: translateY(-1px);
-        }
-
-        /* Lookup Component */
+        /* --- Dynamic Search & Lookup Card Styles --- */
         .lookup-card {
             background: var(--lookup-bg);
             border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 20px 24px;
-            margin-bottom: 36px;
+            padding: 24px;
+            margin-bottom: 35px;
+            position: relative;
         }
 
         .lookup-card label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
+            display: block;
+            font-size: 11px;
             font-weight: 700;
             color: var(--accent);
             text-transform: uppercase;
@@ -180,59 +165,76 @@
             margin-bottom: 10px;
         }
 
-        .lookup-group {
-            display: flex;
-            gap: 12px;
+        .lookup-group { 
+            display: flex; 
+            gap: 12px; 
+            align-items: flex-end; 
         }
 
         .lookup-group input {
-            flex: 1;
             background: var(--input-bg);
             border: 1px solid var(--border);
-            padding: 12px 16px;
+            padding: 14px 18px;
             color: var(--text-main);
             border-radius: 8px;
             font-size: 14px;
+            height: 48px;
+            box-sizing: border-box;
+            width: 100%;
         }
 
-        .lookup-group input:focus {
-            outline: none;
-            border-color: var(--border-focus);
-            box-shadow: 0 0 0 3px var(--accent-glow);
+        .dropdown-selection-item { 
+            padding: 16px 20px; 
+            cursor: pointer; 
+            border-bottom: 1px solid var(--border-light); 
+            font-size: 13px; 
+            transition: background 0.15s ease; 
+            color: var(--text-main); 
         }
 
-        /* Form Sections */
         .form-section {
             background: var(--section-bg);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 28px;
-            margin-bottom: 36px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
         }
 
         .section-heading {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
-            color: var(--text-main);
+            color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.06em;
-            margin-bottom: 24px;
+            letter-spacing: 0.05em;
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
             gap: 10px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 12px;
         }
 
         .section-heading i { color: var(--accent); }
 
+        .section-heading::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
         .form-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 24px;
+            gap: 20px;
         }
 
         .full-width { grid-column: span 2; }
+
+        .engineer-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 12px;
+        }
 
         .form-group {
             display: flex;
@@ -246,98 +248,22 @@
             color: var(--text-main);
         }
 
-        .form-group input, 
-        .form-group textarea {
+        .form-group input, .form-group textarea {
             background: var(--input-bg);
             border: 1px solid var(--border);
             padding: 12px 16px;
             color: var(--text-main);
             border-radius: 8px;
             font-size: 14px;
-            font-family: inherit;
-            transition: all 0.2s ease;
         }
 
-        /* Dynamic Calendar Integration */
-        input[type="datetime-local"] {
-            color-scheme: dark light;
-            cursor: pointer;
-        }
-
-        .form-group input:focus, 
-        .form-group textarea:focus {
+        .form-group input:focus, .form-group textarea:focus {
             outline: none;
             border-color: var(--border-focus);
-            box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
-        /* Engineers Grid */
-        .engineer-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 18px;
-            margin-bottom: 20px;
-        }
-
-        .engineer-card:last-child { margin-bottom: 0; }
-
-        .engineer-badge {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            padding: 4px 10px;
-            border-radius: 6px;
-            background: var(--accent-glow);
-            color: var(--accent);
-            display: inline-block;
-            margin-bottom: 14px;
-        }
-
-        .engineer-badge.optional {
-            background: rgba(148, 163, 184, 0.15);
-            color: var(--text-muted);
-        }
-
-        .engineer-grid-3 {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-        }
-
-        .input-icon-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .input-icon-wrapper i {
-            position: absolute;
-            left: 14px;
-            color: var(--text-muted);
-            font-size: 14px;
-        }
-
-        .input-icon-wrapper input {
-            width: 100%;
-            background: var(--input-bg);
-            border: 1px solid var(--border);
-            padding: 11px 14px 11px 40px;
-            color: var(--text-main);
-            border-radius: 8px;
-            font-size: 13px;
-        }
-
-        .input-icon-wrapper input:focus {
-            outline: none;
-            border-color: var(--border-focus);
-            box-shadow: 0 0 0 3px var(--accent-glow);
-        }
-
-        /* Buttons */
         .btn {
-            padding: 12px 22px;
+            padding: 12px 24px;
             font-size: 14px;
             font-weight: 600;
             border-radius: 8px;
@@ -347,62 +273,52 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            transition: all 0.2s ease;
+            height: 48px;
         }
 
-        .btn-accent {
+        .btn-success { background: var(--accent); color: #fff; }
+        .btn-success:hover { background: var(--accent-hover); }
+
+        .btn-primary {
             background: var(--accent);
-            color: #ffffff;
-        }
-
-        .btn-accent:hover {
-            background: var(--accent-hover);
-        }
-
-        .btn-submit {
-            background: var(--accent);
-            color: #ffffff;
+            color: var(--btn-primary-text);
             width: 100%;
             font-size: 16px;
             padding: 16px;
-            border-radius: 10px;
+            margin-top: 16px;
             font-weight: 700;
+            height: auto;
         }
 
-        .btn-submit:hover {
-            background: var(--accent-hover);
-            box-shadow: 0 6px 20px var(--accent-glow);
-        }
+        .btn-primary:hover { background: var(--accent-hover); }
 
-        /* Status Banners */
         .status-banner {
             padding: 14px 18px;
-            border-radius: 10px;
+            border-radius: 8px;
             margin-bottom: 24px;
             font-size: 14px;
+            font-weight: 500;
             display: none;
             align-items: center;
             gap: 10px;
         }
-
         .status-banner.success {
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid rgba(16, 185, 129, 0.4);
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
             color: #34d399;
             display: flex;
         }
-
         .status-banner.error {
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.4);
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
             color: #f87171;
             display: flex;
         }
 
         @media (max-width: 768px) {
-            .engineer-grid-3 { grid-template-columns: 1fr; }
-            .form-grid { grid-template-columns: 1fr; }
+            .form-grid, .engineer-grid { grid-template-columns: 1fr; }
             .full-width { grid-column: span 1; }
+            .lookup-group { flex-direction: column; }
         }
     </style>
 </head>
@@ -414,151 +330,119 @@
 </script>
 
 <div class="container">
-    <!-- Header -->
     <div class="header-block">
         <div class="header-title">
-            <h2><i class="fa-solid fa-envelope-open-text"></i> Premises Access Request Engine</h2>
-            <p>Teleglobal Network Operations Center Dispatch</p>
+            <h2><i class="fa-solid fa-key"></i> Customer Premises Access Request</h2>
+            <p>TeleGlobal NOC Dispatch Automation</p>
         </div>
-        <div class="header-right">
-            <button type="button" id="themeToggle" class="theme-toggle-btn" title="Toggle Visual Mode">
+        <div class="header-actions">
+		<a href="/" class="nav-link-btn" title="Return to Main Dashboard">
+        <i class="fa-solid fa-chart-line"></i> Dashboard
+    </a>
+            <button type="button" id="themeToggle" class="theme-toggle-btn" title="Toggle System Visual Profile">
                 <i class="fa-solid fa-sun"></i>
             </button>
-            <a href="/" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard Engine</a>
         </div>
     </div>
 
     <div id="statusAlert" class="status-banner"></div>
-
-    <!-- Quick Auto-Fill Search -->
+    
+    <!-- Dynamic Network Circuit Lookup Deck -->
     <div class="lookup-card">
-        <label for="search_query"><i class="fa-solid fa-magnifying-glass"></i> Inventory Auto-Fill</label>
+        <label for="circuit_search">Automated Inventory Core Lookup</label>
         <div class="lookup-group">
-            <input type="text" id="search_query" placeholder="Enter Circuit ID or Customer Name...">
-            <button type="button" id="searchBtn" onclick="searchCircuit()" class="btn btn-accent">
-                <i class="fa-solid fa-bolt"></i> Fetch Details
-            </button>
+            <div style="flex: 3; position: relative;">
+                <input type="text" id="circuit_search" placeholder="Type Target Circuit ID, Customer Identity Reference, Company Name, or Contact Phone..." autocomplete="off">
+                <div id="circuit_selection_dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--dropdown-bg); border: 1px solid var(--border); border-radius: 8px; max-height: 240px; overflow-y: auto; z-index: 10000; box-shadow: var(--shadow); margin-top: 6px;"></div>
+            </div>
+            <div style="flex: 1;">
+                <button type="button" id="searchBtn" onclick="lookupNetworkCircuits()" class="btn btn-success" style="width: 100%;">
+                    <i class="fa-solid fa-magnifying-glass"></i> Search Inventory
+                </button>
+            </div>
         </div>
     </div>
 
     <form id="accessMailForm">
-        <!-- 1. Customer & Site Metadata -->
         <div class="form-section">
-            <div class="section-heading"><i class="fa-solid fa-building"></i> 1. Customer & Site Metadata</div>
+            <div class="section-heading"><i class="fa-solid fa-building"></i> Customer & Site Details</div>
             <div class="form-grid">
                 <div class="form-group">
                     <label for="company_name">Customer / Company Name</label>
                     <input type="text" name="company_name" id="company_name" placeholder="e.g., Enterprise Client Pvt Ltd" required>
                 </div>
-                
-                <!-- Calendar Option Pick -->
                 <div class="form-group">
-                    <label for="access_date">Planned Visit Date & Time</label>
-                    <input type="datetime-local" name="access_date" id="access_date" required>
+                    <label for="access_date">Planned Visit Date / Window</label>
+                    <input type="text" name="access_date" id="access_date" placeholder="e.g., 22nd July 2026 at 11:00 AM" required>
                 </div>
-
                 <div class="form-group">
-                    <label for="site_location">Site Location / Address</label>
+                    <label for="site_location">Site Address / Location</label>
                     <input type="text" name="site_location" id="site_location" placeholder="e.g., Server Room, 3rd Floor, Building B" required>
                 </div>
-
                 <div class="form-group">
-                    <label for="expected_duration">Estimated Duration</label>
+                    <label for="expected_duration">Expected Duration</label>
                     <input type="text" name="expected_duration" id="expected_duration" placeholder="e.g., 2 Hours" required>
                 </div>
-
                 <div class="form-group full-width">
                     <label for="purpose">Scope & Purpose of Visit</label>
-                    <textarea name="purpose" id="purpose" rows="2" placeholder="Completion of the backup fiber path." required>Completion of the backup fiber path.</textarea>
+                    <textarea name="purpose" id="purpose" rows="2" placeholder="e.g., Scheduled backup fiber maintenance and link commissioning." required></textarea>
                 </div>
             </div>
         </div>
 
-        <!-- 2. Engineer Details Roster -->
         <div class="form-section">
-            <div class="section-heading"><i class="fa-solid fa-users-gear"></i> 2. Visiting Engineers Roster</div>
+            <div class="section-heading"><i class="fa-solid fa-users"></i> Visiting Engineers Roster</div>
             
-            <!-- Primary Engineer -->
-            <div class="engineer-card">
-                <span class="engineer-badge"><i class="fa-solid fa-user-check"></i> Primary Field Engineer</span>
-                <div class="engineer-grid-3">
-                    <div class="input-icon-wrapper">
-                        <i class="fa-solid fa-user"></i>
-                        <input type="text" name="engineer_name_1" placeholder="Full Name *" required>
-                    </div>
-                    <div class="input-icon-wrapper">
-                        <i class="fa-solid fa-id-card"></i>
-                        <input type="text" name="employee_id_1" placeholder="Employee ID *" required>
-                    </div>
-                    <div class="input-icon-wrapper">
-                        <i class="fa-solid fa-phone"></i>
-                        <input type="text" name="contact_number_1" placeholder="Mobile Number *" required>
-                    </div>
-                </div>
+            <!-- Engineer 1 -->
+            <label style="font-size:12px; font-weight:700; color:var(--accent);">PRIMARY ENGINEER</label>
+            <div class="engineer-grid">
+                <input type="text" name="engineer_name_1" placeholder="Full Name" required>
+                <input type="text" name="employee_id_1" placeholder="Emp ID" required>
+                <input type="text" name="contact_number_1" placeholder="Contact Mobile" required>
+                <input type="text" name="id_proof_1" placeholder="ID Proof (Aadhaar/PAN)" required>
             </div>
 
-            <!-- Secondary Engineer -->
-            <div class="engineer-card">
-                <span class="engineer-badge optional"><i class="fa-solid fa-user-plus"></i> Secondary Engineer (Optional)</span>
-                <div class="engineer-grid-3">
-                    <div class="input-icon-wrapper">
-                        <i class="fa-solid fa-user"></i>
-                        <input type="text" name="engineer_name_2" placeholder="Full Name">
-                    </div>
-                    <div class="input-icon-wrapper">
-                        <i class="fa-solid fa-id-card"></i>
-                        <input type="text" name="employee_id_2" placeholder="Employee ID">
-                    </div>
-                    <div class="input-icon-wrapper">
-                        <i class="fa-solid fa-phone"></i>
-                        <input type="text" name="contact_number_2" placeholder="Mobile Number">
-                    </div>
-                </div>
+            <!-- Engineer 2 (Optional) -->
+            <label style="font-size:12px; font-weight:700; color:var(--text-muted); margin-top:10px;">SECOND ENGINEER (OPTIONAL)</label>
+            <div class="engineer-grid">
+                <input type="text" name="engineer_name_2" placeholder="Full Name">
+                <input type="text" name="employee_id_2" placeholder="Emp ID">
+                <input type="text" name="contact_number_2" placeholder="Contact Mobile">
+                <input type="text" name="id_proof_2" placeholder="ID Proof (Aadhaar/PAN)">
             </div>
 
-            <!-- Tertiary Engineer -->
-            <div class="engineer-card">
-                <span class="engineer-badge optional"><i class="fa-solid fa-user-plus"></i> Tertiary Engineer (Optional)</span>
-                <div class="engineer-grid-3">
-                    <div class="input-icon-wrapper">
-                        <i class="fa-solid fa-user"></i>
-                        <input type="text" name="engineer_name_3" placeholder="Full Name">
-                    </div>
-                    <div class="input-icon-wrapper">
-                        <i class="fa-solid fa-id-card"></i>
-                        <input type="text" name="employee_id_3" placeholder="Employee ID">
-                    </div>
-                    <div class="input-icon-wrapper">
-                        <i class="fa-solid fa-phone"></i>
-                        <input type="text" name="contact_number_3" placeholder="Mobile Number">
-                    </div>
-                </div>
+            <!-- Engineer 3 (Optional) -->
+            <label style="font-size:12px; font-weight:700; color:var(--text-muted); margin-top:10px;">THIRD ENGINEER (OPTIONAL)</label>
+            <div class="engineer-grid">
+                <input type="text" name="engineer_name_3" placeholder="Full Name">
+                <input type="text" name="employee_id_3" placeholder="Emp ID">
+                <input type="text" name="contact_number_3" placeholder="Contact Mobile">
+                <input type="text" name="id_proof_3" placeholder="ID Proof (Aadhaar/PAN)">
             </div>
         </div>
 
-        <!-- 3. Mail Routing -->
         <div class="form-section">
-            <div class="section-heading"><i class="fa-solid fa-paper-plane"></i> 3. Recipient Mail Routing</div>
+            <div class="section-heading"><i class="fa-solid fa-envelope-open-text"></i> Recipient Email Routing</div>
             <div class="form-grid">
                 <div class="form-group">
-                    <label for="customer_email">Primary Recipient Email</label>
+                    <label for="customer_email">Primary Customer Destination Email</label>
                     <input type="email" name="customer_email" id="customer_email" placeholder="client@domain.com" required>
                 </div>
                 <div class="form-group">
-                    <label for="cc_emails">CC Emails</label>
-                    <input type="text" name="cc_emails" id="cc_emails" placeholder="noc@teleglobal.com, manager@domain.com">
+                    <label for="cc_emails">Carbon Copy (CC) Emails</label>
+                    <input type="text" name="cc_emails" id="cc_emails" placeholder="comma separated additional emails...">
                 </div>
             </div>
         </div>
 
-        <button type="submit" id="submitBtn" class="btn btn-submit">
-            <i class="fa-solid fa-paper-plane"></i> Dispatch Outlook Access Request Mail
+        <button type="submit" id="submitBtn" class="btn btn-primary">
+            <i class="fa-solid fa-paper-plane"></i> Dispatch Access Request Mail
         </button>
     </form>
 </div>
 
 <script>
-    // Theme Switcher Logic
+    // Theme Switcher
     const themeToggleBtn = document.getElementById('themeToggle');
     function updateToggleIcon(theme) {
         themeToggleBtn.querySelector('i').className = theme === 'light' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
@@ -573,13 +457,6 @@
         updateToggleIcon(newTheme);
     });
 
-    // Set Default Calendar Date to 22 July 2026 10:00 AM
-    window.addEventListener('DOMContentLoaded', () => {
-        const accessDateInput = document.getElementById('access_date');
-        accessDateInput.value = '2026-07-22T10:00';
-    });
-
-    // Status Display Banner
     function displayStatus(message, isSuccess) {
         const banner = document.getElementById('statusAlert');
         banner.className = `status-banner ${isSuccess ? 'success' : 'error'}`;
@@ -589,41 +466,86 @@
         banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    // Auto-fill Circuit Inventory
-    async function searchCircuit() {
-        const query = document.getElementById('search_query').value.trim();
+    // --- Dynamic Network Lookup System (Configured like dashboard.html) ---
+    async function lookupNetworkCircuits() {
+        const inputVal = document.getElementById('circuit_search').value.trim();
+        const dropdown = document.getElementById('circuit_selection_dropdown');
         const btn = document.getElementById('searchBtn');
-        if (!query) return alert("Please enter a Circuit ID or Customer Name.");
         
+        if (!inputVal) {
+            dropdown.style.display = 'none';
+            alert('Please type a Circuit ID, Name, or Phone number.');
+            return;
+        }
+
         btn.disabled = true;
         btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Fetching...`;
-        
+
         try {
-            const response = await fetch(`/api/circuits/search?query=${encodeURIComponent(query)}`);
-            const data = await response.json();
-            
-            if (response.ok) {
-                document.getElementById('company_name').value = data.customer_name || '';
-                document.getElementById('customer_email').value = data.customer_email || '';
-                displayStatus("Customer information populated successfully.", true);
-            } else {
-                displayStatus("Inventory Lookup: " + (data.detail || "No matching record found."), false);
+            const res = await fetch(`/api/circuit/${encodeURIComponent(inputVal)}`);
+            if (!res.ok) {
+                dropdown.style.display = 'none';
+                throw new Error('No matching target parameters recognized inside Inventory.');
             }
+            
+            const records = await res.json();
+            if (records.length === 1) {
+                dropdown.style.display = 'none';
+                populateAccessFormWithCircuit(records[0]);
+                displayStatus("Customer metrics pulled successfully.", true);
+                return;
+            }
+
+            dropdown.innerHTML = '';
+            records.forEach((circuit) => {
+                const rowItem = document.createElement('div');
+                rowItem.className = 'dropdown-selection-item';
+                rowItem.onmouseover = () => rowItem.style.background = 'var(--dropdown-hover)';
+                rowItem.onmouseout = () => rowItem.style.background = 'transparent';
+                rowItem.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-weight:bold;">
+                        <span style="color: var(--text-highlight); font-family: 'JetBrains Mono', monospace;">${circuit.circuit_id}</span>
+                        <span style="color: var(--text-main);">${circuit.customer_name}</span>
+                    </div>
+                    <small style="color: var(--text-muted); display:block; margin-top:3px;">Company: ${circuit.company_name || 'N/A'} | Contact: ${circuit.phone_number || 'N/A'}</small>
+                `;
+                rowItem.onclick = () => {
+                    populateAccessFormWithCircuit(circuit);
+                    dropdown.style.display = 'none';
+                    displayStatus("Selected circuit parameters applied.", true);
+                };
+                dropdown.appendChild(rowItem);
+            });
+            dropdown.style.display = 'block';
         } catch (err) {
-            displayStatus("Unable to connect to inventory lookup service.", false);
+            displayStatus("Lookup Error: " + err.message, false);
         } finally {
             btn.disabled = false;
-            btn.innerHTML = `<i class="fa-solid fa-bolt"></i> Fetch Details`;
+            btn.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> Search Inventory`;
         }
     }
 
-    // Submit Request
+    function populateAccessFormWithCircuit(circuit) {
+        document.getElementById('circuit_search').value = circuit.circuit_id || '';
+        document.getElementById('company_name').value = circuit.company_name || circuit.customer_name || '';
+        document.getElementById('site_location').value = circuit.address || '';
+        document.getElementById('customer_email').value = circuit.customer_email || circuit.email || '';
+    }
+
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        const dropdown = document.getElementById('circuit_selection_dropdown');
+        if (dropdown && e.target.id !== 'circuit_search') {
+            dropdown.style.display = 'none';
+        }
+    });
+
     document.getElementById('accessMailForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const submitBtn = document.getElementById('submitBtn');
         submitBtn.disabled = true;
-        submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Sending Request...`;
+        submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Dispatching Access Mail...`;
 
         const formData = new FormData(this);
         const urlEncodedData = new URLSearchParams(formData);
@@ -638,15 +560,17 @@
             const data = await response.json();
 
             if (response.ok) {
-                displayStatus(data.message || "Access request email sent successfully.", true);
+                displayStatus(data.message || "Access request mail delivered successfully.", true);
+                this.reset();
+                document.getElementById('circuit_search').value = '';
             } else {
-                displayStatus("Failed to send mail: " + (data.detail || JSON.stringify(data)), false);
+                displayStatus("Mailer Core Error: " + (data.detail || JSON.stringify(data)), false);
             }
         } catch (error) {
-            displayStatus("Network error occurred while dispatching email.", false);
+            displayStatus("NOC Connection Failure: Network error during mail server sync.", false);
         } finally {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Dispatch Outlook Access Request Mail`;
+            submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Dispatch Access Request Mail`;
         }
     });
 </script>

@@ -342,13 +342,62 @@
         .dropdown-selection-item { padding: 16px 20px; cursor: pointer; border-bottom: 1px solid var(--border-light); font-size: 13px; transition: background 0.15s ease; color: var(--text-main); }
 
         /* --- Custom Interactive CC Notifications List Node Layout --- */
-        .cc-container { display: flex; flex-direction: column; gap: 10px; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 8px; padding: 14px; max-height: 240px; overflow-y: auto; }
-        .cc-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); background: var(--bg-card); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); user-select: none; color: var(--text-main); font-size: 13.5px; }
-        .cc-item:hover { background: var(--dropdown-hover); transform: translateX(2px); }
-        .cc-item.selected { background: var(--cc-selected-bg); border-color: var(--cc-selected-border); color: var(--cc-selected-text); font-weight: 700; box-shadow: 0 0 10px rgba(56,189,248,0.1); }
-        .cc-checkmark { font-size: 14px; font-weight: bold; display: none; color: var(--cc-selected-text); }
-        .cc-item.selected .cc-checkmark { display: block; }
+/* --- Compact Chip/Tag Based CC Selection Layout --- */
+        .cc-grid-container { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 10px; 
+            background: var(--bg-alt); 
+            border: 1px solid var(--border); 
+            border-radius: 10px; 
+            padding: 16px; 
+        }
 
+        .cc-chip { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 8px; 
+            padding: 8px 14px; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            border: 1px solid var(--border); 
+            background: var(--bg-card); 
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+            user-select: none; 
+            color: var(--text-main); 
+            font-size: 13px; 
+            font-weight: 600;
+        }
+
+        .cc-chip:hover { 
+            background: var(--dropdown-hover); 
+            border-color: var(--border-light);
+            transform: translateY(-1px); 
+        }
+
+        .cc-chip.selected { 
+            background: var(--cc-selected-bg); 
+            border-color: var(--cc-selected-border); 
+            color: var(--cc-selected-text); 
+            font-weight: 700; 
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.25); 
+        }
+
+        .cc-chip.locked { 
+            cursor: not-allowed; 
+            opacity: 0.85; 
+        }
+
+        .cc-chip-check { 
+            font-size: 12px; 
+            font-weight: bold; 
+            display: none; 
+            color: var(--cc-selected-text); 
+        }
+
+        .cc-chip.selected .cc-chip-check { 
+            display: inline-block; 
+        }
         /* --- Live Animated Incident Feed Data Tables Grid Layout Architecture --- */
         .table-responsive { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-alt); }
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -430,11 +479,15 @@
                     <a href="/system-mail/event-welcome" target="_blank" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; font-weight: 700;">
                         <i class="fa-solid fa-wand-magic-sparkles" style="margin-right: 8px;"></i> Event Welcome Mail
                     </a>
-		    <a href="/system-mail/access" class="dropdown-item">
-    			<i class="fa-solid fa-key"></i> Access Mail
-			</a>
+		            <a href="/system-mail/access" class="dropdown-item">
+    			        <i class="fa-solid fa-key"></i> Access Mail
+			        </a>
                     <a href="/system-mail/bandwidth"><i class="fa-solid fa-gauge-high" style="margin-right: 8px;"></i> Bandwidth Scale Sync</a>
                     <a href="/system-mail/terminate"><i class="fa-regular fa-circle-xmark" style="margin-right: 8px;"></i> Link Termination</a>
+	            <!-- APPEND THIS LINK TO THE NAV DROPDOWN CONTENT -->
+			<a href="/system-mail/custom" style="color: #38bdf8; font-weight: 700;">
+   				 <i class="fa-solid fa-envelope-open-text" style="margin-right: 8px;"></i> Custom Mail Dispatch
+			</a>
                     <a href="/system-mail/rfo" style="color: #38bdf8; font-weight: 700;"><i class="fa-solid fa-file-shield" style="margin-right: 8px;"></i> Dispatch RFO File</a>
                     <a href="/reports" style="background: rgba(22, 163, 74, 0.15); color: #4ade80; font-weight: 700;"><i class="fa-solid fa-cloud-arrow-down" style="margin-right: 8px;"></i> Operational Performance Logs</a>
                 </div>
@@ -554,29 +607,44 @@
             </div>
         </div>
 
-        <div class="card">
+<div class="card">
             <h3 style="margin-bottom: 12px;"><i class="fa-solid fa-share-nodes"></i> Select Notification CC Recipients</h3>
-            <label style="margin-bottom: 14px;">Click rows to instantly target and append recipient routing addresses</label>
-            <div class="cc-container">
-                <div class="cc-item selected" style="cursor: not-allowed; opacity: 0.8;">
-                    <span>noc@teleglobal.in (Mandatory Office Desk Address - Locked)</span>
-                    <span class="cc-checkmark">✓</span>
+            <label style="margin-bottom: 14px;">Click recipients to toggle CC notification routing</label>
+            <div class="cc-grid-container">
+                <!-- Locked Default NOC Desk Mail -->
+                <div class="cc-chip selected locked" title="noc@teleglobal.in">
+                    <span class="cc-chip-label"><i class="fa-solid fa-lock" style="font-size:11px; margin-right:4px; opacity:0.7;"></i> NOC Ops Desk</span>
+                    <span class="cc-chip-check">✓</span>
                 </div>
-                <div class="cc-item" onclick="toggleCcChoice(this, 'teleglobal2016@gmail.com')">
-                    <span>teleglobal2016@gmail.com (Backup Log Archiver)</span>
-                    <span class="cc-checkmark">✓</span>
+                
+                <!-- Compact Recipient Chips -->
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'Ashish.Kumar@teleglobals.com')" title="Ashish.Kumar@teleglobals.com">
+                    <span class="cc-chip-label">Ashish Kumar</span>
+                    <span class="cc-chip-check">✓</span>
                 </div>
-                <div class="cc-item" onclick="toggleCcChoice(this, 'operational-desk@domain.com')">
-                    <span>operational-desk@domain.com (Client Escalation Ops)</span>
-                    <span class="cc-checkmark">✓</span>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'kamlesh.kumar@teleglobals.com')" title="kamlesh.kumar@teleglobals.com">
+                    <span class="cc-chip-label">Kamlesh Kumar</span>
+                    <span class="cc-chip-check">✓</span>
                 </div>
-                <div class="cc-item" onclick="toggleCcChoice(this, 'engineer@client.com')">
-                    <span>engineer@client.com (Client Field Representative)</span>
-                    <span class="cc-checkmark">✓</span>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'Mrugendra.Narwade@teleglobals.com')" title="Mrugendra.Narwade@teleglobals.com">
+                    <span class="cc-chip-label">Mrugendra Narwade</span>
+                    <span class="cc-chip-check">✓</span>
                 </div>
-                <div class="cc-item" onclick="toggleCcChoice(this, 'management@teleglobal.in')">
-                    <span>management@teleglobal.in (NOC Management Desk)</span>
-                    <span class="cc-checkmark">✓</span>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'parimmal.n@teleglobals.com')" title="parimmal.n@teleglobals.com">
+                    <span class="cc-chip-label">Parimmal N</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'yogesh@teleglobal.in')" title="yogesh@teleglobal.in">
+                    <span class="cc-chip-label">Yogesh</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'accounts@teleglobals.com')" title="accounts@teleglobals.com">
+                    <span class="cc-chip-label">Accounts Team</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'ashok.pandey@teleglobals.com')" title="ashok.pandey@teleglobals.com">
+                    <span class="cc-chip-label">Ashok Pandey</span>
+                    <span class="cc-chip-check">✓</span>
                 </div>
             </div>
         </div>
@@ -750,8 +818,10 @@ async function submitTicket(e) {
             document.getElementById('cust_address').value = '';
             
             activeSelectedCcs = ['noc@teleglobal.in'];
-            document.querySelectorAll('.cc-item').forEach(el => {
-                if(!el.textContent.includes('noc@teleglobal.in')) el.classList.remove('selected');
+            document.querySelectorAll('.cc-chip').forEach(el => {
+                if (!el.classList.contains('locked')) {
+			el.classList.remove('selected');
+		}
             });
             refreshDashboardLogs();
         } else { 

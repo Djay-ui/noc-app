@@ -7,7 +7,7 @@
     <!-- Fonts & FontAwesome Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -17,9 +17,11 @@
             --bg-container: #111827;
             --bg-card: #1f2937;
             --border: #374151;
+            --border-light: #172554;
             --border-focus: #38bdf8;
             --text-main: #f9fafb;
             --text-muted: #9ca3af;
+            --text-highlight: #38bdf8;
             --accent: #38bdf8;
             --accent-hover: #0ea5e9;
             --accent-glow: rgba(56, 189, 248, 0.15);
@@ -29,6 +31,8 @@
             --input-bg: #0b0f19;
             --section-bg: rgba(31, 41, 55, 0.2);
             --lookup-bg: rgba(15, 23, 42, 0.4);
+            --dropdown-bg: #131b2e;
+            --dropdown-hover: #0b1120;
             --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.5);
             --btn-action-bg: rgba(31, 41, 55, 0.6);
             --btn-primary-text: #090d16;
@@ -39,9 +43,11 @@
             --bg-container: #ffffff;
             --bg-card: #f8fafc;
             --border: #cbd5e1;
+            --border-light: #cbd5e1;
             --border-focus: #0ea5e9;
             --text-main: #0f172a;
             --text-muted: #64748b;
+            --text-highlight: #0284c7;
             --accent: #0ea5e9;
             --accent-hover: #0284c7;
             --accent-glow: rgba(14, 165, 233, 0.15);
@@ -51,6 +57,8 @@
             --input-bg: #ffffff;
             --section-bg: #f8fafc;
             --lookup-bg: #f1f5f9;
+            --dropdown-bg: #ffffff;
+            --dropdown-hover: #f1f5f9;
             --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
             --btn-action-bg: #f8fafc;
             --btn-primary-text: #ffffff;
@@ -200,16 +208,19 @@
         .lookup-group {
             display: flex;
             gap: 12px;
+            align-items: flex-end;
         }
 
         .lookup-group input {
-            flex: 1;
             background: var(--input-bg);
             border: 1px solid var(--border);
-            padding: 12px 16px;
+            padding: 14px 18px;
             color: var(--text-main);
             border-radius: 8px;
             font-size: 14px;
+            height: 48px;
+            box-sizing: border-box;
+            width: 100%;
             transition: all 0.2s ease;
         }
 
@@ -217,6 +228,15 @@
             outline: none;
             border-color: var(--border-focus);
             box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .dropdown-selection-item { 
+            padding: 16px 20px; 
+            cursor: pointer; 
+            border-bottom: 1px solid var(--border-light); 
+            font-size: 13px; 
+            transition: background 0.15s ease; 
+            color: var(--text-main); 
         }
 
         /* Forms Layout & Section Splitters */
@@ -304,6 +324,7 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            height: 48px;
         }
 
         .btn-success {
@@ -323,6 +344,7 @@
             padding: 16px;
             margin-top: 16px;
             font-weight: 700;
+            height: auto;
             box-shadow: 0 4px 20px var(--accent-glow);
         }
 
@@ -371,6 +393,7 @@
             .container { padding: 24px 16px; }
             .header-block { flex-direction: column; align-items: flex-start; }
             .header-right { width: 100%; justify-content: flex-start; }
+            .lookup-group { flex-direction: column; }
         }
     </style>
 </head>
@@ -409,10 +432,15 @@
     <div class="lookup-card">
         <label for="search_query"><i class="fa-solid fa-magnifying-glass"></i> Automated Inventory Core Lookup</label>
         <div class="lookup-group">
-            <input type="text" id="search_query" placeholder="Enter Circuit ID or Customer Name...">
-            <button type="button" id="searchBtn" onclick="searchCircuit()" class="btn btn-success">
-                <i class="fa-solid fa-bolt"></i> Search Inventory
-            </button>
+            <div style="flex: 3; position: relative;">
+                <input type="text" id="search_query" placeholder="Type Circuit ID, Customer Name, Company Name, or Phone..." autocomplete="off">
+                <div id="circuit_selection_dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--dropdown-bg); border: 1px solid var(--border); border-radius: 8px; max-height: 240px; overflow-y: auto; z-index: 10000; box-shadow: var(--shadow); margin-top: 6px;"></div>
+            </div>
+            <div style="flex: 1;">
+                <button type="button" id="searchBtn" onclick="searchCircuit()" class="btn btn-success" style="width: 100%;">
+                    <i class="fa-solid fa-bolt"></i> Search Inventory
+                </button>
+            </div>
         </div>
     </div>
 
@@ -516,39 +544,93 @@
         banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    // 3. Dynamic Inventory API Search Handler
+    // 3. Dynamic Inventory API Search Handler (Multi-match Dropdown)
     async function searchCircuit() {
         const query = document.getElementById('search_query').value.trim();
+        const dropdown = document.getElementById('circuit_selection_dropdown');
         const btn = document.getElementById('searchBtn');
         
-        if (!query) return alert("Please enter an active search criteria term.");
+        if (!query) {
+            dropdown.style.display = 'none';
+            return alert("Please enter an active search criteria term.");
+        }
         
         btn.disabled = true;
         btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Fetching Database...`;
         
         try {
-            const response = await fetch(`/api/circuits/search?query=${encodeURIComponent(query)}`);
-            const data = await response.json();
-            
-            if (response.ok) {
-                document.getElementById('circuit_id').value = data.circuit_id || '';
-                document.getElementById('customer_name').value = data.customer_name || '';
-                document.getElementById('customer_email').value = data.customer_email || '';
-                document.getElementById('bandwidth').value = data.bandwidth || '';
-                document.getElementById('usable_ip').value = data.usable_ip || '';
-                document.getElementById('gateway').value = data.gateway || '';
-                document.getElementById('subnet').value = data.subnet || '';
-                displayStatus("Inventory profile successfully matched and loaded.", true);
-            } else {
-                displayStatus("Lookup Error: " + (data.detail || "No matched metrics found."), false);
+            const response = await fetch(`/api/circuit/${encodeURIComponent(query)}`);
+            if (!response.ok) {
+                dropdown.style.display = 'none';
+                throw new Error("No matched metrics found in system registers.");
             }
+
+            const data = await response.json();
+            const records = Array.isArray(data) ? data : [data];
+
+            if (records.length === 0) {
+                dropdown.style.display = 'none';
+                displayStatus("No matching records found.", false);
+                return;
+            }
+
+            // Single Record Auto-Populate
+            if (records.length === 1) {
+                dropdown.style.display = 'none';
+                populateEventFormWithCircuit(records[0]);
+                displayStatus("Inventory profile successfully matched and loaded.", true);
+                return;
+            }
+
+            // Multiple Records Multi-match Dropdown Rendering
+            dropdown.innerHTML = '';
+            records.forEach((record) => {
+                const rowItem = document.createElement('div');
+                rowItem.className = 'dropdown-selection-item';
+                rowItem.onmouseover = () => rowItem.style.background = 'var(--dropdown-hover)';
+                rowItem.onmouseout = () => rowItem.style.background = 'transparent';
+                rowItem.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-weight:bold;">
+                        <span style="color: var(--text-highlight); font-family: 'JetBrains Mono', monospace;">${record.circuit_id}</span>
+                        <span style="color: var(--text-main);">${record.customer_name || 'N/A'}</span>
+                    </div>
+                    <small style="color: var(--text-muted); display:block; margin-top:3px;">Company: ${record.company_name || 'N/A'} | Bandwidth: ${record.bandwidth || record.bandwidth_speed || 'N/A'}</small>
+                `;
+                rowItem.onclick = () => {
+                    populateEventFormWithCircuit(record);
+                    dropdown.style.display = 'none';
+                    displayStatus("Inventory profile successfully matched and loaded.", true);
+                };
+                dropdown.appendChild(rowItem);
+            });
+            dropdown.style.display = 'block';
+
         } catch (err) {
-            displayStatus("Network exception encountered routing request to search server.", false);
+            displayStatus("Lookup Error: " + (err.message || "Unable to retrieve records."), false);
         } finally {
             btn.disabled = false;
             btn.innerHTML = `<i class="fa-solid fa-bolt"></i> Search Inventory`;
         }
     }
+
+    function populateEventFormWithCircuit(record) {
+        document.getElementById('search_query').value = record.circuit_id || '';
+        document.getElementById('circuit_id').value = record.circuit_id || '';
+        document.getElementById('customer_name').value = record.customer_name || '';
+        document.getElementById('customer_email').value = record.customer_email || record.email || '';
+        document.getElementById('bandwidth').value = record.bandwidth || record.bandwidth_speed || '';
+        document.getElementById('usable_ip').value = record.usable_ip || record.usable_ips || '';
+        document.getElementById('gateway').value = record.gateway || record.default_gateway || '';
+        document.getElementById('subnet').value = record.subnet || record.subnet_mask || '';
+    }
+
+    // Hide search dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        const dropdown = document.getElementById('circuit_selection_dropdown');
+        if (dropdown && e.target.id !== 'search_query') {
+            dropdown.style.display = 'none';
+        }
+    });
 
     // 4. Intercept Event Form Post submission to backend endpoints
     document.getElementById('eventMailForm').addEventListener('submit', async function(e) {
@@ -575,6 +657,7 @@
             if (response.ok) {
                 displayStatus(data.message || "Event Welcome Mail successfully delivered to pipeline.", true);
                 this.reset();
+                document.getElementById('search_query').value = '';
             } else {
                 displayStatus("Mailer Core Error: " + (data.detail || JSON.stringify(data)), false);
             }

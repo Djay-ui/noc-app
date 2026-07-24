@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Termination Management Hub | TeleGlobal NOC</title>
+    <!-- Fonts & FontAwesome Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #f4f7fa; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 750px; background: #fff; margin: 0 auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h2 { color: #b71c1c; border-bottom: 2px solid #b71c1c; padding-bottom: 10px; margin-top: 0; }
+        .search-section { background: #fdf2f2; padding: 15px; border-radius: 6px; margin-bottom: 25px; display: flex; gap: 10px; align-items: flex-end; border: 1px solid #fee2e2; }
+        .search-section input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; box-sizing: border-box; width: 100%; }
+        .btn { background: #b71c1c; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; transition: background 0.2s; }
+        .btn:hover { background: #961515; }
+        .btn-secondary { background: #64748b; }
+        .btn-secondary:hover { background: #475569; }
+        .dropdown-selection-item { 
+            padding: 12px 16px; 
+            cursor: pointer; 
+            border-bottom: 1px solid #fee2e2; 
+            font-size: 13px; 
+            transition: background 0.15s ease; 
+            color: #1e293b; 
+        }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group.full-width { grid-column: span 2; }
+        label { font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #475569; }
+        input[type="text"], input[type="date"] { padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; box-sizing: border-box; width: 100%; }
+        input:focus { outline: none; border-color: #b71c1c; box-shadow: 0 0 0 3px rgba(183,28,28,0.1); }
+        .status-msg { margin-top: 15px; padding: 12px; border-radius: 4px; display: none; font-weight: 500; }
+        .success { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        
+        @media (max-width: 600px) {
+            .search-section { flex-direction: column; align-items: stretch; }
+            .grid { grid-template-columns: 1fr; }
+            .form-group.full-width { grid-column: span 1; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Link Termination Processing Hub</h2>
+
+    <div class="search-section">
+        <div style="flex: 1; position: relative;">
+            <label style="display:block; font-size: 11px; font-weight: 700; color: #b71c1c; text-transform: uppercase; margin-bottom: 6px;">Automated Inventory Core Lookup</label>
+            <input type="text" id="lookup_circuit_id" placeholder="Type Circuit ID, Customer Name, Company Name, or Phone..." autocomplete="off">
+            <div id="circuit_selection_dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; max-height: 240px; overflow-y: auto; z-index: 10000; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); margin-top: 4px;"></div>
+        </div>
+        <button type="button" id="searchBtn" class="btn btn-secondary" onclick="fetchCircuitData()">Fetch Details</button>
+    </div>
+
+    <form id="terminationMailForm">
+        <div class="grid">
+            <div class="form-group">
+                <label for="circuit_id">Circuit ID *</label>
+                <input type="text" id="circuit_id" name="circuit_id" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="company_name">Company Name *</label>
+                <input type="text" id="company_name" name="company_name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="termination_date">Official Termination Date *</label>
+                <input type="date" id="termination_date" name="termination_date" required>
+            </div>
+
+            <div class="form-group">
+                <label for="cc_emails">Mail CC Options (Comma Separated)</label>
+                <input type="text" id="cc_emails" name="cc_emails" placeholder="noc-alerts@teleglobal.in">
+            </div>
+
+            <div class="form-group full-width">
+                <label for="customer_email">Customer Destination Emails (Comma Separated) *</label>
+                <input type="text" id="customer_email" name="customer_email" placeholder="client-it@company.com" required>
+            </div>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn" style="width: 100%; padding: 13px; font-size: 16px;">Process Link Termination Package</button>
+    </form>
+
+    <div id="statusBox" class="status-msg"></div>
+</div>
+
+<script>
+    async function fetchCircuitData() {
+        const searchId = document.getElementById('lookup_circuit_id').value.trim();
+        const dropdown = document.getElementById('circuit_selection_dropdown');
+        const statusBox = document.getElementById('statusBox');
+        const searchBtn = document.getElementById('searchBtn');
+
+        if (!searchId) {
+            dropdown.style.display = 'none';
+            alert('Please specify a valid search criteria.');
+            return;
+        }
+
+        searchBtn.disabled = true;
+        searchBtn.innerText = 'Fetching...';
+
+        try {
+            const response = await fetch(`/api/circuit/${encodeURIComponent(searchId)}`);
+            if (!response.ok) {
+                dropdown.style.display = 'none';
+                throw new Error('No matching client record located in system inventory registers.');
+            }
+            
+            const data = await response.json();
+            const records = Array.isArray(data) ? data : [data];
+
+            if (records.length === 0) {
+                dropdown.style.display = 'none';
+                statusBox.style.display = 'block';
+                statusBox.className = 'status-msg error';
+                statusBox.innerText = 'No matching records found.';
+                return;
+            }
+
+            // Single Record Auto-Populate
+            if (records.length === 1) {
+                dropdown.style.display = 'none';
+                populateTerminationFormWithCircuit(records[0]);
+                statusBox.style.display = 'block';
+                statusBox.className = 'status-msg success';
+                statusBox.innerText = 'Circuit properties synchronized directly from database.';
+                return;
+            }
+
+            // Multiple Records Multi-match Dropdown Rendering
+            dropdown.innerHTML = '';
+            records.forEach((record) => {
+                const rowItem = document.createElement('div');
+                rowItem.className = 'dropdown-selection-item';
+                rowItem.onmouseover = () => rowItem.style.background = '#fef2f2';
+                rowItem.onmouseout = () => rowItem.style.background = 'transparent';
+                rowItem.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-weight:bold;">
+                        <span style="color: #b71c1c; font-family: 'JetBrains Mono', monospace;">${record.circuit_id}</span>
+                        <span style="color: #1e293b;">${record.customer_name || record.company_name || 'N/A'}</span>
+                    </div>
+                    <small style="color: #64748b; display:block; margin-top:3px;">Company: ${record.company_name || record.customer_name || 'N/A'} | Email: ${record.customer_email || record.email || 'N/A'}</small>
+                `;
+                rowItem.onclick = () => {
+                    populateTerminationFormWithCircuit(record);
+                    dropdown.style.display = 'none';
+                    statusBox.style.display = 'block';
+                    statusBox.className = 'status-msg success';
+                    statusBox.innerText = 'Circuit properties synchronized directly from database.';
+                };
+                dropdown.appendChild(rowItem);
+            });
+            dropdown.style.display = 'block';
+
+        } catch (err) {
+            statusBox.style.display = 'block';
+            statusBox.className = 'status-msg error';
+            statusBox.innerText = err.message;
+        } finally {
+            searchBtn.disabled = false;
+            searchBtn.innerText = 'Fetch Details';
+        }
+    }
+
+    function populateTerminationFormWithCircuit(record) {
+        document.getElementById('lookup_circuit_id').value = record.circuit_id || '';
+        document.getElementById('circuit_id').value = record.circuit_id || '';
+        document.getElementById('company_name').value = record.customer_name || record.company_name || '';
+        document.getElementById('customer_email').value = record.customer_email || record.email || '';
+    }
+
+    // Hide search dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        const dropdown = document.getElementById('circuit_selection_dropdown');
+        if (dropdown && e.target.id !== 'lookup_circuit_id') {
+            dropdown.style.display = 'none';
+        }
+    });
+
+    document.getElementById('terminationMailForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const statusBox = document.getElementById('statusBox');
+        const submitBtn = document.getElementById('submitBtn');
+
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Processing Transmission...';
+
+        statusBox.style.display = 'block';
+        statusBox.className = 'status-msg';
+        statusBox.style.backgroundColor = '#f1f5f9';
+        statusBox.style.color = '#334155';
+        statusBox.innerText = 'Transmitting execution changes across network engines...';
+
+        const formData = new FormData(e.target);
+
+        try {
+            const response = await fetch('/api/tools/send-termination-mail', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.detail || 'Processing breakdown on system mail pipeline.');
+
+            statusBox.className = 'status-msg success';
+            statusBox.innerText = result.message || 'Link termination package successfully processed.';
+            e.target.reset();
+            document.getElementById('lookup_circuit_id').value = '';
+        } catch (err) {
+            statusBox.className = 'status-msg error';
+            statusBox.innerText = err.message;
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Process Link Termination Package';
+        }
+    });
+</script>
+</body>
+</html>
