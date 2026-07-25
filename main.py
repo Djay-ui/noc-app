@@ -263,7 +263,6 @@ class TicketResponse(TicketBase):
     class Config:
         from_attributes = True  # Handles native ORM row object mappings
 
-
 # Page Routing Interceptors
 @app.get("/login", response_class=HTMLResponse)
 async def route_login_page(request: Request, user=Depends(get_optional_user)):
@@ -276,6 +275,18 @@ async def route_dashboard(request: Request, user=Depends(get_optional_user)):
     if not user:
         return RedirectResponse(url="/login", status_code=303)
     return templates.TemplateResponse(request=request, name="dashboard.html", context={"user": user})
+
+# Place your roster route right here alongside other UI page routes:
+@app.get("/roster", response_class=HTMLResponse)
+async def route_roster_page(request: Request, user=Depends(get_optional_user)):
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="roster.html",
+        context={"user": user}
+    )
 
 @app.get("/tickets", response_class=HTMLResponse)
 async def route_tickets_page(request: Request, user=Depends(get_optional_user)):

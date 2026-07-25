@@ -3,60 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Termination Management Hub | TeleGlobal NOC</title>
-    <!-- Fonts & FontAwesome Icons -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <title>Link Termination Management Hub</title>
+    <!-- Font Awesome Icons Integration -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #f4f7fa; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 750px; background: #fff; margin: 0 auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        h2 { color: #b71c1c; border-bottom: 2px solid #b71c1c; padding-bottom: 10px; margin-top: 0; }
-        .search-section { background: #fdf2f2; padding: 15px; border-radius: 6px; margin-bottom: 25px; display: flex; gap: 10px; align-items: flex-end; border: 1px solid #fee2e2; }
-        .search-section input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; box-sizing: border-box; width: 100%; }
-        .btn { background: #b71c1c; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; transition: background 0.2s; }
-        .btn:hover { background: #961515; }
+        :root {
+            --bg-body: #f4f7fa;
+            --bg-card: #ffffff;
+            --border: #cbd5e1;
+            --border-light: #fee2e2;
+            --text-main: #333333;
+            --text-muted: #475569;
+            --primary: #b71c1c;
+            --primary-hover: #961515;
+            --dropdown-hover: #f1f5f9;
+            --cc-selected-bg: #e0f2fe;
+            --cc-selected-border: #0284c7;
+            --cc-selected-text: #0369a1;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-body); 
+            margin: 0; 
+            padding: 20px; 
+            color: var(--text-main); 
+        }
+
+        .container { 
+            max-width: 780px; 
+            background: var(--bg-card); 
+            margin: 0 auto; 
+            padding: 30px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+        }
+
+        h2 { 
+            color: var(--primary); 
+            border-bottom: 2px solid var(--primary); 
+            padding-bottom: 10px; 
+            margin-top: 0; 
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-section { 
+            background: #fdf2f2; 
+            padding: 15px; 
+            border-radius: 6px; 
+            margin-bottom: 25px; 
+            display: flex; 
+            gap: 10px; 
+            align-items: center; 
+            border: 1px solid var(--border-light); 
+        }
+
+        .search-section input { 
+            flex: 1; 
+            padding: 10px; 
+            border: 1px solid var(--border); 
+            border-radius: 4px; 
+            font-size: 14px; 
+        }
+
+        .btn { 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 14px; 
+            transition: background 0.2s; 
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover { background: var(--primary-hover); }
         .btn-secondary { background: #64748b; }
         .btn-secondary:hover { background: #475569; }
-        .dropdown-selection-item { 
-            padding: 12px 16px; 
-            cursor: pointer; 
-            border-bottom: 1px solid #fee2e2; 
-            font-size: 13px; 
-            transition: background 0.15s ease; 
-            color: #1e293b; 
-        }
+
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .form-group { display: flex; flex-direction: column; }
         .form-group.full-width { grid-column: span 2; }
-        label { font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #475569; }
-        input[type="text"], input[type="date"] { padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; box-sizing: border-box; width: 100%; }
-        input:focus { outline: none; border-color: #b71c1c; box-shadow: 0 0 0 3px rgba(183,28,28,0.1); }
+        
+        label { font-size: 13px; font-weight: 600; margin-bottom: 5px; color: var(--text-muted); }
+        
+        input[type="text"], input[type="date"] { 
+            padding: 10px; 
+            border: 1px solid var(--border); 
+            border-radius: 4px; 
+            font-size: 14px; 
+            box-sizing: border-box; 
+            width: 100%; 
+        }
+
+        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(183,28,28,0.1); }
+
+        /* --- CC Card & Chip Styles --- */
+        .card { 
+            background: #f8fafc; 
+            border: 1px solid var(--border); 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
+        }
+
+        .card h3 { 
+            margin: 0 0 8px 0; 
+            font-size: 14px; 
+            font-weight: 700; 
+            color: #0284c7; 
+            text-transform: uppercase; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+        }
+
+        .cc-grid-container { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 8px; 
+            background: #ffffff; 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            padding: 12px; 
+        }
+
+        .cc-chip { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 6px; 
+            padding: 6px 12px; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            border: 1px solid var(--border); 
+            background: #f1f5f9; 
+            transition: all 0.2s ease; 
+            user-select: none; 
+            color: var(--text-main); 
+            font-size: 12.5px; 
+            font-weight: 600; 
+        }
+
+        .cc-chip:hover { 
+            background: var(--dropdown-hover); 
+            transform: translateY(-1px); 
+        }
+
+        .cc-chip.selected { 
+            background: var(--cc-selected-bg); 
+            border-color: var(--cc-selected-border); 
+            color: var(--cc-selected-text); 
+            font-weight: 700; 
+            box-shadow: 0 0 6px rgba(2, 132, 199, 0.2); 
+        }
+
+        .cc-chip.locked { 
+            cursor: not-allowed; 
+            opacity: 0.85; 
+        }
+
+        .cc-chip-check { 
+            font-size: 11px; 
+            font-weight: bold; 
+            display: none; 
+            color: var(--cc-selected-text); 
+        }
+
+        .cc-chip.selected .cc-chip-check { 
+            display: inline-block; 
+        }
+
         .status-msg { margin-top: 15px; padding: 12px; border-radius: 4px; display: none; font-weight: 500; }
         .success { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
         .error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-        
-        @media (max-width: 600px) {
-            .search-section { flex-direction: column; align-items: stretch; }
-            .grid { grid-template-columns: 1fr; }
-            .form-group.full-width { grid-column: span 1; }
-        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Link Termination Processing Hub</h2>
+    <h2><i class="fa-regular fa-circle-xmark"></i> Link Termination Processing Hub</h2>
 
     <div class="search-section">
-        <div style="flex: 1; position: relative;">
-            <label style="display:block; font-size: 11px; font-weight: 700; color: #b71c1c; text-transform: uppercase; margin-bottom: 6px;">Automated Inventory Core Lookup</label>
-            <input type="text" id="lookup_circuit_id" placeholder="Type Circuit ID, Customer Name, Company Name, or Phone..." autocomplete="off">
-            <div id="circuit_selection_dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; max-height: 240px; overflow-y: auto; z-index: 10000; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); margin-top: 4px;"></div>
-        </div>
-        <button type="button" id="searchBtn" class="btn btn-secondary" onclick="fetchCircuitData()">Fetch Details</button>
+        <input type="text" id="lookup_circuit_id" placeholder="Enter Circuit ID to fetch matching customer details...">
+        <button type="button" class="btn btn-secondary" onclick="fetchCircuitData()"><i class="fa-solid fa-magnifying-glass"></i> Fetch Details</button>
     </div>
 
     <form id="terminationMailForm">
@@ -77,8 +213,8 @@
             </div>
 
             <div class="form-group">
-                <label for="cc_emails">Mail CC Options (Comma Separated)</label>
-                <input type="text" id="cc_emails" name="cc_emails" placeholder="noc-alerts@teleglobal.in">
+                <label for="cc_emails">Mail CC Options (Comma Separated / Auto-filled)</label>
+                <input type="text" id="cc_emails" name="cc_emails" placeholder="noc@teleglobal.in">
             </div>
 
             <div class="form-group full-width">
@@ -87,120 +223,147 @@
             </div>
         </div>
 
-        <button type="submit" id="submitBtn" class="btn" style="width: 100%; padding: 13px; font-size: 16px;">Process Link Termination Package</button>
+        <!-- Select Notification CC Recipients Section -->
+        <div class="card">
+            <h3><i class="fa-solid fa-share-nodes"></i> Select Notification CC Recipients</h3>
+            <label style="margin-bottom: 10px; display:block; font-size:12px;">Click recipients to toggle CC notification routing</label>
+            <div class="cc-grid-container">
+                <!-- Locked Default NOC Desk Mail -->
+                <div class="cc-chip selected locked" title="noc@teleglobal.in">
+                    <span class="cc-chip-label"><i class="fa-solid fa-lock" style="font-size:11px; margin-right:4px; opacity:0.7;"></i> NOC Ops Desk</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                
+                <!-- Existing Recipient Chips -->
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'Ashish.Kumar@teleglobals.com')" title="Ashish.Kumar@teleglobals.com">
+                    <span class="cc-chip-label">Ashish Kumar</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'kamlesh.kumar@teleglobals.com')" title="kamlesh.kumar@teleglobals.com">
+                    <span class="cc-chip-label">Kamlesh Kumar</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'Mrugendra.Narwade@teleglobals.com')" title="Mrugendra.Narwade@teleglobals.com">
+                    <span class="cc-chip-label">Mrugendra Narwade</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'parimmal.n@teleglobals.com')" title="parimmal.n@teleglobals.com">
+                    <span class="cc-chip-label">Parimmal N</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'yogesh@teleglobal.in')" title="yogesh@teleglobal.in">
+                    <span class="cc-chip-label">Yogesh</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'accounts@teleglobals.com')" title="accounts@teleglobals.com">
+                    <span class="cc-chip-label">Accounts Team</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'ashok.pandey@teleglobals.com')" title="ashok.pandey@teleglobals.com">
+                    <span class="cc-chip-label">Ashok Pandey</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+
+                <!-- Newly Added Recipient Chips -->
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'vijay.bogam@teleglobals.com')" title="vijay.bogam@teleglobals.com">
+                    <span class="cc-chip-label">Vijay Bogam</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'manoj.pawar@teleglobals.com')" title="manoj.pawar@teleglobals.com">
+                    <span class="cc-chip-label">Manoj Pawar</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'prateek.sharma@teleglobals.com')" title="prateek.sharma@teleglobals.com">
+                    <span class="cc-chip-label">Prateek Sharma</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'akash.umap@teleglobals.com')" title="akash.umap@teleglobals.com">
+                    <span class="cc-chip-label">Akash Umap</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'ajay.jagtap@teleglobal.in')" title="ajay.jagtap@teleglobal.in">
+                    <span class="cc-chip-label">Ajay Jagtap</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn" style="width: 100%; padding: 13px; font-size: 16px;"><i class="fa-solid fa-paper-plane"></i> Process Link Termination Package</button>
     </form>
 
     <div id="statusBox" class="status-msg"></div>
 </div>
 
 <script>
+    // CC Selection Logic
+    let activeSelectedCcs = ['noc@teleglobal.in'];
+
+    function updateCcInputField() {
+        const customInputVal = document.getElementById('cc_emails').value;
+        const manualEntries = customInputVal
+            .split(',')
+            .map(e => e.trim())
+            .filter(e => e && !activeSelectedCcs.includes(e));
+
+        const combinedList = [...activeSelectedCcs, ...manualEntries];
+        document.getElementById('cc_emails').value = combinedList.join(', ');
+    }
+
+    function toggleCcChoice(element, emailAddress) {
+        if (activeSelectedCcs.includes(emailAddress)) {
+            activeSelectedCcs = activeSelectedCcs.filter(item => item !== emailAddress);
+            element.classList.remove('selected');
+        } else {
+            activeSelectedCcs.push(emailAddress);
+            element.classList.add('selected');
+        }
+        updateCcInputField();
+    }
+
+    // Initial setup for CC input
+    document.addEventListener('DOMContentLoaded', () => {
+        updateCcInputField();
+    });
+
     async function fetchCircuitData() {
         const searchId = document.getElementById('lookup_circuit_id').value.trim();
-        const dropdown = document.getElementById('circuit_selection_dropdown');
         const statusBox = document.getElementById('statusBox');
-        const searchBtn = document.getElementById('searchBtn');
-
         if (!searchId) {
-            dropdown.style.display = 'none';
-            alert('Please specify a valid search criteria.');
+            alert('Please specify a valid Circuit ID.');
             return;
         }
 
-        searchBtn.disabled = true;
-        searchBtn.innerText = 'Fetching...';
-
         try {
             const response = await fetch(`/api/circuit/${encodeURIComponent(searchId)}`);
-            if (!response.ok) {
-                dropdown.style.display = 'none';
-                throw new Error('No matching client record located in system inventory registers.');
-            }
+            if (!response.ok) throw new Error('No matching client record located in system inventory registers.');
             
             const data = await response.json();
-            const records = Array.isArray(data) ? data : [data];
+            const record = Array.isArray(data) ? data[0] : data;
 
-            if (records.length === 0) {
-                dropdown.style.display = 'none';
-                statusBox.style.display = 'block';
-                statusBox.className = 'status-msg error';
-                statusBox.innerText = 'No matching records found.';
-                return;
-            }
-
-            // Single Record Auto-Populate
-            if (records.length === 1) {
-                dropdown.style.display = 'none';
-                populateTerminationFormWithCircuit(records[0]);
-                statusBox.style.display = 'block';
-                statusBox.className = 'status-msg success';
-                statusBox.innerText = 'Circuit properties synchronized directly from database.';
-                return;
-            }
-
-            // Multiple Records Multi-match Dropdown Rendering
-            dropdown.innerHTML = '';
-            records.forEach((record) => {
-                const rowItem = document.createElement('div');
-                rowItem.className = 'dropdown-selection-item';
-                rowItem.onmouseover = () => rowItem.style.background = '#fef2f2';
-                rowItem.onmouseout = () => rowItem.style.background = 'transparent';
-                rowItem.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:center; font-weight:bold;">
-                        <span style="color: #b71c1c; font-family: 'JetBrains Mono', monospace;">${record.circuit_id}</span>
-                        <span style="color: #1e293b;">${record.customer_name || record.company_name || 'N/A'}</span>
-                    </div>
-                    <small style="color: #64748b; display:block; margin-top:3px;">Company: ${record.company_name || record.customer_name || 'N/A'} | Email: ${record.customer_email || record.email || 'N/A'}</small>
-                `;
-                rowItem.onclick = () => {
-                    populateTerminationFormWithCircuit(record);
-                    dropdown.style.display = 'none';
-                    statusBox.style.display = 'block';
-                    statusBox.className = 'status-msg success';
-                    statusBox.innerText = 'Circuit properties synchronized directly from database.';
-                };
-                dropdown.appendChild(rowItem);
-            });
-            dropdown.style.display = 'block';
-
+            document.getElementById('circuit_id').value = record.circuit_id || '';
+            document.getElementById('company_name').value = record.customer_name || '';
+            document.getElementById('customer_email').value = record.customer_email || '';
+            
+            statusBox.style.display = 'block';
+            statusBox.className = 'status-msg success';
+            statusBox.innerText = 'Circuit properties synchronized directly from database.';
         } catch (err) {
             statusBox.style.display = 'block';
             statusBox.className = 'status-msg error';
             statusBox.innerText = err.message;
-        } finally {
-            searchBtn.disabled = false;
-            searchBtn.innerText = 'Fetch Details';
         }
     }
-
-    function populateTerminationFormWithCircuit(record) {
-        document.getElementById('lookup_circuit_id').value = record.circuit_id || '';
-        document.getElementById('circuit_id').value = record.circuit_id || '';
-        document.getElementById('company_name').value = record.customer_name || record.company_name || '';
-        document.getElementById('customer_email').value = record.customer_email || record.email || '';
-    }
-
-    // Hide search dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-        const dropdown = document.getElementById('circuit_selection_dropdown');
-        if (dropdown && e.target.id !== 'lookup_circuit_id') {
-            dropdown.style.display = 'none';
-        }
-    });
 
     document.getElementById('terminationMailForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const statusBox = document.getElementById('statusBox');
-        const submitBtn = document.getElementById('submitBtn');
-
-        submitBtn.disabled = true;
-        submitBtn.innerText = 'Processing Transmission...';
-
         statusBox.style.display = 'block';
         statusBox.className = 'status-msg';
         statusBox.style.backgroundColor = '#f1f5f9';
         statusBox.style.color = '#334155';
         statusBox.innerText = 'Transmitting execution changes across network engines...';
 
+        updateCcInputField(); // Ensure CC input is fresh before payload compilation
         const formData = new FormData(e.target);
 
         try {
@@ -213,15 +376,20 @@
             if (!response.ok) throw new Error(result.detail || 'Processing breakdown on system mail pipeline.');
 
             statusBox.className = 'status-msg success';
-            statusBox.innerText = result.message || 'Link termination package successfully processed.';
+            statusBox.innerText = result.message;
             e.target.reset();
-            document.getElementById('lookup_circuit_id').value = '';
+
+            // Reset CC chips selection
+            activeSelectedCcs = ['noc@teleglobal.in'];
+            document.querySelectorAll('.cc-chip').forEach(el => {
+                if (!el.classList.contains('locked')) {
+                    el.classList.remove('selected');
+                }
+            });
+            updateCcInputField();
         } catch (err) {
             statusBox.className = 'status-msg error';
             statusBox.innerText = err.message;
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerText = 'Process Link Termination Package';
         }
     });
 </script>

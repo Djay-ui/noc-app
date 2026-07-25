@@ -38,6 +38,9 @@
             --btn-action-bg: rgba(31, 41, 55, 0.6);
             --btn-primary-text: #090d16;
             --file-box-bg: rgba(11, 15, 25, 0.6);
+            --cc-selected-bg: rgba(56, 189, 248, 0.2);
+            --cc-selected-border: #38bdf8;
+            --cc-selected-text: #38bdf8;
         }
 
         :root[data-theme="light"] {
@@ -65,6 +68,9 @@
             --btn-action-bg: #f8fafc;
             --btn-primary-text: #ffffff;
             --file-box-bg: #f8fafc;
+            --cc-selected-bg: #e0f2fe;
+            --cc-selected-border: #0ea5e9;
+            --cc-selected-text: #0284c7;
         }
 
         * { box-sizing: border-box; }
@@ -321,6 +327,62 @@
             box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
+        /* CC Selection Chips Styles */
+        .cc-grid-container { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 8px; 
+            background: var(--input-bg); 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            padding: 14px; 
+        }
+
+        .cc-chip { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 6px; 
+            padding: 6px 12px; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            border: 1px solid var(--border); 
+            background: var(--section-bg); 
+            transition: all 0.2s ease; 
+            user-select: none; 
+            color: var(--text-main); 
+            font-size: 12.5px; 
+            font-weight: 600; 
+        }
+
+        .cc-chip:hover { 
+            background: var(--dropdown-hover); 
+            transform: translateY(-1px); 
+        }
+
+        .cc-chip.selected { 
+            background: var(--cc-selected-bg); 
+            border-color: var(--cc-selected-border); 
+            color: var(--cc-selected-text); 
+            font-weight: 700; 
+            box-shadow: 0 0 6px var(--accent-glow); 
+        }
+
+        .cc-chip.locked { 
+            cursor: not-allowed; 
+            opacity: 0.85; 
+        }
+
+        .cc-chip-check { 
+            font-size: 11px; 
+            font-weight: bold; 
+            display: none; 
+            color: var(--cc-selected-text); 
+        }
+
+        .cc-chip.selected .cc-chip-check { 
+            display: inline-block; 
+        }
+
         /* File Upload Components */
         .file-box {
             background: var(--file-box-bg);
@@ -549,6 +611,73 @@
                     <label for="customer_email">Customer Destination Emails (Comma Separated) *</label>
                     <input type="text" id="customer_email" name="customer_email" placeholder="client1@company.com, client2@company.com" required>
                 </div>
+                <div class="form-group full-width">
+                    <label for="cc_emails">Additional CC Routing Addresses</label>
+                    <input type="text" id="cc_emails" name="cc_emails" placeholder="noc-alerts@teleglobal.in">
+                </div>
+            </div>
+        </div>
+
+        <!-- Select Notification CC Recipients Section -->
+        <div class="form-section">
+            <div class="section-heading"><i class="fa-solid fa-share-nodes"></i> Select Notification CC Recipients</div>
+            <label style="margin-bottom: 12px; display:block; font-size: 13px; font-weight: 600; color: var(--text-muted);">Click recipients to toggle CC notification routing</label>
+            <div class="cc-grid-container">
+                <!-- Locked Default NOC Desk Mail -->
+                <div class="cc-chip selected locked" title="noc@teleglobal.in">
+                    <span class="cc-chip-label"><i class="fa-solid fa-lock" style="font-size:11px; margin-right:4px; opacity:0.7;"></i> NOC Ops Desk</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                
+                <!-- Recipient Chips -->
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'Ashish.Kumar@teleglobals.com')" title="Ashish.Kumar@teleglobals.com">
+                    <span class="cc-chip-label">Ashish Kumar</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'kamlesh.kumar@teleglobals.com')" title="kamlesh.kumar@teleglobals.com">
+                    <span class="cc-chip-label">Kamlesh Kumar</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'Mrugendra.Narwade@teleglobals.com')" title="Mrugendra.Narwade@teleglobals.com">
+                    <span class="cc-chip-label">Mrugendra Narwade</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'parimmal.n@teleglobals.com')" title="parimmal.n@teleglobals.com">
+                    <span class="cc-chip-label">Parimmal N</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'yogesh@teleglobal.in')" title="yogesh@teleglobal.in">
+                    <span class="cc-chip-label">Yogesh</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'accounts@teleglobals.com')" title="accounts@teleglobals.com">
+                    <span class="cc-chip-label">Accounts Team</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'ashok.pandey@teleglobals.com')" title="ashok.pandey@teleglobals.com">
+                    <span class="cc-chip-label">Ashok Pandey</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'vijay.bogam@teleglobals.com')" title="vijay.bogam@teleglobals.com">
+                    <span class="cc-chip-label">Vijay Bogam</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'manoj.pawar@teleglobals.com')" title="manoj.pawar@teleglobals.com">
+                    <span class="cc-chip-label">Manoj Pawar</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'prateek.sharma@teleglobals.com')" title="prateek.sharma@teleglobals.com">
+                    <span class="cc-chip-label">Prateek Sharma</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'akash.umap@teleglobals.com')" title="akash.umap@teleglobals.com">
+                    <span class="cc-chip-label">Akash Umap</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
+                <div class="cc-chip" onclick="toggleCcChoice(this, 'ajay.jagtap@teleglobal.in')" title="ajay.jagtap@teleglobal.in">
+                    <span class="cc-chip-label">Ajay Jagtap</span>
+                    <span class="cc-chip-check">✓</span>
+                </div>
             </div>
         </div>
 
@@ -604,7 +733,39 @@
         updateToggleIcon(newTheme);
     });
 
-    // 2. Alert & Feedback Status Banner Display Engine
+    // 2. CC Selection Management Framework
+    let activeSelectedCcs = ['noc@teleglobal.in'];
+
+    function updateCcInputField() {
+        const ccInput = document.getElementById('cc_emails');
+        if (!ccInput) return;
+
+        const customInputVal = ccInput.value;
+        const manualEntries = customInputVal
+            .split(',')
+            .map(e => e.trim())
+            .filter(e => e && !activeSelectedCcs.includes(e));
+
+        const combinedList = [...activeSelectedCcs, ...manualEntries];
+        ccInput.value = combinedList.join(', ');
+    }
+
+    function toggleCcChoice(element, emailAddress) {
+        if (activeSelectedCcs.includes(emailAddress)) {
+            activeSelectedCcs = activeSelectedCcs.filter(item => item !== emailAddress);
+            element.classList.remove('selected');
+        } else {
+            activeSelectedCcs.push(emailAddress);
+            element.classList.add('selected');
+        }
+        updateCcInputField();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        updateCcInputField();
+    });
+
+    // 3. Alert & Feedback Status Banner Display Engine
     function displayStatus(message, type = 'success') {
         const banner = document.getElementById('statusAlert');
         banner.className = `status-banner ${type}`;
@@ -617,7 +778,7 @@
         banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    // 3. Dynamic Network Lookup System (Multi-match Dropdown)
+    // 4. Dynamic Network Lookup System (Multi-match Dropdown)
     async function lookupNetworkCircuits() {
         const inputVal = document.getElementById('circuit_search').value.trim();
         const dropdown = document.getElementById('circuit_selection_dropdown');
@@ -702,13 +863,15 @@
         }
     });
 
-    // 4. Form Post Delivery Intercept Script
+    // 5. Form Post Delivery Intercept Script
     document.getElementById('welcomeMailForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const submitBtn = document.getElementById('submitBtn');
         submitBtn.disabled = true;
         submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Transmitting Routing Packets...`;
+
+        updateCcInputField(); // Sync active CC chips into the input field before transmission
 
         displayStatus('Synchronizing client tables and transmitting secure routing packets...', 'info');
 
@@ -726,6 +889,15 @@
             displayStatus(result.message || 'Provisioning Welcome Mail dispatched and DB synced successfully.', 'success');
             e.target.reset();
             document.getElementById('circuit_search').value = '';
+
+            // Reset CC chip selections to default state
+            activeSelectedCcs = ['noc@teleglobal.in'];
+            document.querySelectorAll('.cc-chip').forEach(el => {
+                if (!el.classList.contains('locked')) {
+                    el.classList.remove('selected');
+                }
+            });
+            updateCcInputField();
         } catch (err) {
             displayStatus(err.message, 'error');
         } finally {

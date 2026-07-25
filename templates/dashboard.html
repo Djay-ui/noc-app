@@ -438,7 +438,17 @@
         .nav-dropdown-content a { color: var(--text-main); padding: 14px 20px; text-decoration: none; display: block; font-size: 13.5px; font-weight: 700; text-align: left; transition: background 0.15s ease; border-bottom: 1px solid var(--border-light); }
         .nav-dropdown-content a:last-child { border-bottom: none; }
         .nav-dropdown-content a:hover { background-color: var(--dropdown-hover); color: var(--text-highlight) !important; }
-        .nav-dropdown:hover .nav-dropdown-content { display: block; }
+        .nav-dropdown.active .nav-dropdown-content { display: block !important; }
+        
+        
+        .nav-dropdown-content::before {
+    content: "";
+    position: absolute;
+    top: -15px;
+    left: 0;
+    right: 0;
+    height: 15px;
+}
     </style>
 </head>
 <body>
@@ -472,27 +482,33 @@
             <a href="/admin/users" class="nav-link-btn" style="background:#0ea5e9;"><i class="fa-solid fa-users-gear"></i> Users Profile</a>
             {% endif %}
             
-            <div class="nav-dropdown">
-                <button type="button" class="nav-link-btn" style="background: #0ea5e9; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-envelope-open-text"></i> Mail & Dispatch Options ▼</button>
-                <div class="nav-dropdown-content">
-                    <a href="/system-mail/welcome"><i class="fa-regular fa-paper-plane" style="margin-right: 8px;"></i> Welcome Mail</a>
-                    <a href="/system-mail/event-welcome" target="_blank" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; font-weight: 700;">
-                        <i class="fa-solid fa-wand-magic-sparkles" style="margin-right: 8px;"></i> Event Welcome Mail
-                    </a>
-		            <a href="/system-mail/access" class="dropdown-item">
-    			        <i class="fa-solid fa-key"></i> Access Mail
-			        </a>
-                    <a href="/system-mail/bandwidth"><i class="fa-solid fa-gauge-high" style="margin-right: 8px;"></i> Bandwidth Scale Sync</a>
-                    <a href="/system-mail/terminate"><i class="fa-regular fa-circle-xmark" style="margin-right: 8px;"></i> Link Termination</a>
-	            <!-- APPEND THIS LINK TO THE NAV DROPDOWN CONTENT -->
-			<a href="/system-mail/custom" style="color: #38bdf8; font-weight: 700;">
-   				 <i class="fa-solid fa-envelope-open-text" style="margin-right: 8px;"></i> Custom Mail Dispatch
-			</a>
-                    <a href="/system-mail/rfo" style="color: #38bdf8; font-weight: 700;"><i class="fa-solid fa-file-shield" style="margin-right: 8px;"></i> Dispatch RFO File</a>
-                    <a href="/reports" style="background: rgba(22, 163, 74, 0.15); color: #4ade80; font-weight: 700;"><i class="fa-solid fa-cloud-arrow-down" style="margin-right: 8px;"></i> Operational Performance Logs</a>
-                </div>
-            </div>
+            <div class="nav-dropdown" id="mailDropdownContainer">
+    <button type="button" class="nav-link-btn" onclick="toggleMailMenu(event)" style="background: #0ea5e9; display: flex; align-items: center; gap: 6px;">
+        <i class="fa-solid fa-envelope-open-text"></i> Mail & Dispatch Options ▼
+    </button>
+    <div class="nav-dropdown-content">
+        <a href="/system-mail/welcome"><i class="fa-regular fa-paper-plane" style="margin-right: 8px;"></i> Welcome Mail</a>
+        <a href="/system-mail/event-welcome" target="_blank" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; font-weight: 700;">
+            <i class="fa-solid fa-wand-magic-sparkles" style="margin-right: 8px;"></i> Event Welcome Mail
+        </a>
+        <a href="/system-mail/access" class="dropdown-item">
+            <i class="fa-solid fa-key"></i> Access Mail
+        </a>
+        <a href="/system-mail/bandwidth"><i class="fa-solid fa-gauge-high" style="margin-right: 8px;"></i> Bandwidth Scale Sync</a>
+        <a href="/system-mail/terminate"><i class="fa-regular fa-circle-xmark" style="margin-right: 8px;"></i> Link Termination</a>
+        <a href="/system-mail/custom" style="color: #38bdf8; font-weight: 700;">
+             <i class="fa-solid fa-envelope-open-text" style="margin-right: 8px;"></i> Custom Mail Dispatch
+        </a>
+        <a href="/system-mail/rfo" style="color: #38bdf8; font-weight: 700;"><i class="fa-solid fa-file-shield" style="margin-right: 8px;"></i> Dispatch RFO File</a>
+        <a href="/reports" style="background: rgba(22, 163, 74, 0.15); color: #4ade80; font-weight: 700;"><i class="fa-solid fa-cloud-arrow-down" style="margin-right: 8px;"></i> Operational Performance Logs</a>
+    </div>
+</div>
+		<!-- Duty Roster Navigation Link -->
+		<a href="/roster" class="nav-link-btn" style="background: #eab308; color: #0f172a; font-weight: 800;">
+		    <i class="fa-solid fa-calendar-days"></i> Duty Roster
+		</a>
 
+<!--a href="/api/auth/logout" class="nav-link-btn logout"><i class="fa-solid fa-power-off"></i> Sign Out</a-->
             <a href="/api/auth/logout" class="nav-link-btn logout"><i class="fa-solid fa-power-off"></i> Sign Out</a>
         </div>
     </div>
@@ -896,6 +912,21 @@ function evaluateOperationalCategory() {
         processingMode.style.border = "1px solid var(--border)";
     }
 }
+
+function toggleMailMenu(event) {
+    event.stopPropagation();
+    const dropdown = document.getElementById('mailDropdownContainer');
+    dropdown.classList.toggle('active');
+}
+
+// Global click listener to close menu when clicking anywhere outside
+document.addEventListener('click', function (e) {
+    const dropdown = document.getElementById('mailDropdownContainer');
+    if (dropdown && !dropdown.contains(e.target)) {
+        dropdown.classList.remove('active');
+    }
+});
+
 </script>
 </body>
 </html>

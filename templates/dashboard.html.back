@@ -492,7 +492,12 @@
                     <a href="/reports" style="background: rgba(22, 163, 74, 0.15); color: #4ade80; font-weight: 700;"><i class="fa-solid fa-cloud-arrow-down" style="margin-right: 8px;"></i> Operational Performance Logs</a>
                 </div>
             </div>
+		<!-- Duty Roster Navigation Link -->
+		<a href="/roster" class="nav-link-btn" style="background: #eab308; color: #0f172a; font-weight: 800;">
+		    <i class="fa-solid fa-calendar-days"></i> Duty Roster
+		</a>
 
+<!--a href="/api/auth/logout" class="nav-link-btn logout"><i class="fa-solid fa-power-off"></i> Sign Out</a-->
             <a href="/api/auth/logout" class="nav-link-btn logout"><i class="fa-solid fa-power-off"></i> Sign Out</a>
         </div>
     </div>

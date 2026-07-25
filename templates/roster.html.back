@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teleglobal NOC - Shift Roster Management</title>
+    <style>
+        :root[data-theme="dark"] {
+            --bg-color: #0b1120;
+            --card-bg: #151e32;
+            --text-color: #f1f5f9;
+            --border-color: #243049;
+            --header-bg: #0284c7;
+            --header-text: #ffffff;
+            --sub-header-bg: #16a34a;
+            --control-bg: #1e293b;
+            --legend-bg: #0f172a;
+        }
+
+        :root[data-theme="light"] {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #0f172a;
+            --border-color: #cbd5e1;
+            --header-bg: #0284c7;
+            --header-text: #ffffff;
+            --sub-header-bg: #16a34a;
+            --control-bg: #f1f5f9;
+            --legend-bg: #e2e8f0;
+        }
+
+        /* Shift Color Coding */
+        .shift-G  { background-color: #ea580c !important; color: #fff; }
+        .shift-M  { background-color: #16a34a !important; color: #fff; }
+        .shift-A  { background-color: #ca8a04 !important; color: #fff; }
+        .shift-N  { background-color: #6366f1 !important; color: #fff; }
+        .shift-WO { background-color: #ef4444 !important; color: #fff; }
+        .shift-SL { background-color: #06b6d4 !important; color: #fff; }
+        .shift-CO { background-color: #a855f7 !important; color: #fff; }
+        .shift-L  { background-color: #0284c7 !important; color: #fff; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container { max-width: 100%; margin: 0 auto; }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--card-bg);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .controls-group { display: flex; align-items: center; gap: 15px; }
+
+        .control-input {
+            background-color: var(--control-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .btn {
+            background-color: #0284c7;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover { opacity: 0.9; }
+        .btn-alt { background-color: #475569; }
+
+        .legend-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            background-color: var(--legend-bg);
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+
+        .legend-badge {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 8px 4px;
+            min-width: 32px;
+        }
+
+        th.engineer-col, td.engineer-col {
+            text-align: left;
+            padding-left: 12px;
+            font-weight: bold;
+            min-width: 150px;
+            position: sticky;
+            left: 0;
+            background-color: var(--card-bg);
+            z-index: 2;
+        }
+
+        .month-header {
+            background-color: var(--header-bg);
+            color: var(--header-text);
+            font-size: 16px;
+            font-weight: bold;
+            padding: 10px;
+        }
+
+        .date-header { background-color: #ea580c; color: white; }
+        .day-header { background-color: var(--sub-header-bg); color: white; }
+
+        .shift-cell {
+            cursor: pointer;
+            font-weight: bold;
+            user-select: none;
+        }
+
+        .shift-cell:hover { opacity: 0.8; outline: 2px solid #ffffff; }
+
+        #shiftPicker {
+            display: none;
+            position: absolute;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            border-radius: 8px;
+            padding: 8px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            z-index: 100;
+        }
+
+        .picker-option {
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: bold;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="toolbar">
+        <div class="controls-group">
+            <a href="/" class="btn btn-alt">🏠 Back to Operations Dashboard</a>
+            <label for="monthPicker"><strong>Select Month:</strong></label>
+            <input type="month" id="monthPicker" class="control-input" value="2026-06">
+        </div>
+
+        <div style="font-size: 14px;">
+            Authorized Operator: <strong>{% if user %}{{ user.full_name }}{% else %}NOC Operator{% endif %}</strong>
+        </div>
+
+        <div class="controls-group">
+            <button class="btn" onclick="saveRoster()">💾 Save Changes</button>
+            <button class="btn" id="themeToggleBtn" onclick="toggleTheme()">☀️ Toggle Theme</button>
+        </div>
+    </div>
+
+    <!-- Shift Legend -->
+    <div class="legend-bar">
+        <span>ℹ️ SHIFT LEGEND:</span>
+        <div class="legend-item"><span class="legend-badge shift-G">G</span> General (09:30 - 18:30)</div>
+        <div class="legend-item"><span class="legend-badge shift-M">M</span> Morning (07:00 - 16:00)</div>
+        <div class="legend-item"><span class="legend-badge shift-A">A</span> Afternoon (14:00 - 23:00)</div>
+        <div class="legend-item"><span class="legend-badge shift-N">N</span> Night (22:00 - 07:00)</div>
+        <div class="legend-item"><span class="legend-badge shift-WO">WO</span> Week Off</div>
+        <div class="legend-item"><span class="legend-badge shift-SL">SL</span> Sick Leave</div>
+        <div class="legend-item"><span class="legend-badge shift-CO">CO</span> Comp Off</div>
+        <div class="legend-item"><span class="legend-badge shift-L">L</span> Leave</div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrapper">
+        <table id="rosterTable">
+            <thead>
+                <tr>
+                    <th colspan="32" class="month-header" id="monthHeaderTitle">June 2026</th>
+                </tr>
+                <tr id="dateHeaderRow">
+                    <th class="engineer-col date-header">Engineer Name</th>
+                </tr>
+                <tr id="dayHeaderRow">
+                    <th class="engineer-col day-header">day</th>
+                </tr>
+            </thead>
+            <tbody id="rosterBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="shiftPicker">
+    <div class="picker-option shift-G" onclick="applyShiftSelection('G')">G</div>
+    <div class="picker-option shift-M" onclick="applyShiftSelection('M')">M</div>
+    <div class="picker-option shift-A" onclick="applyShiftSelection('A')">A</div>
+    <div class="picker-option shift-N" onclick="applyShiftSelection('N')">N</div>
+    <div class="picker-option shift-WO" onclick="applyShiftSelection('WO')">WO</div>
+    <div class="picker-option shift-SL" onclick="applyShiftSelection('SL')">SL</div>
+    <div class="picker-option shift-CO" onclick="applyShiftSelection('CO')">CO</div>
+    <div class="picker-option shift-L" onclick="applyShiftSelection('L')">L</div>
+</div>
+
+<script>
+    const engineers = ["Rahul Dev", "Nihal K", "Amar", "Prashant M", "Dhananjay T", "Aniruddha", "Nachiket B"];
+    const shiftTypes = ['G', 'M', 'A', 'N', 'WO', 'SL', 'CO', 'L'];
+    let activeCell = null;
+
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+    }
+
+    function renderRoster(yearMonth) {
+        const [year, month] = yearMonth.split('-').map(Number);
+        const daysInMonth = new Date(year, month, 0).getDate();
+        
+        const dateObj = new Date(year, month - 1);
+        const monthName = dateObj.toLocaleString('default', { month: 'long' });
+        document.getElementById('monthHeaderTitle').innerText = `${monthName} ${year}`;
+        document.getElementById('monthHeaderTitle').colSpan = daysInMonth + 1;
+
+        const dateHeaderRow = document.getElementById('dateHeaderRow');
+        dateHeaderRow.innerHTML = '<th class="engineer-col date-header">Engineer Name</th>';
+        
+        const dayHeaderRow = document.getElementById('dayHeaderRow');
+        dayHeaderRow.innerHTML = '<th class="engineer-col day-header">day</th>';
+
+        const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const d = new Date(year, month - 1, day);
+            dateHeaderRow.innerHTML += `<th class="date-header">${day}</th>`;
+            dayHeaderRow.innerHTML += `<th class="day-header">${dayNames[d.getDay()]}</th>`;
+        }
+
+        const rosterBody = document.getElementById('rosterBody');
+        rosterBody.innerHTML = '';
+
+        engineers.forEach(engineer => {
+            let rowHtml = `<tr><td class="engineer-col">${engineer}</td>`;
+            for (let day = 1; day <= daysInMonth; day++) {
+                const d = new Date(year, month - 1, day);
+                let defaultShift = (d.getDay() === 0 || d.getDay() === 6) ? 'WO' : 'G';
+                rowHtml += `<td class="shift-cell shift-${defaultShift}" onclick="openPicker(event, this)">${defaultShift}</td>`;
+            }
+            rowHtml += `</tr>`;
+            rosterBody.innerHTML += rowHtml;
+        });
+    }
+
+    function openPicker(event, cell) {
+        event.stopPropagation();
+        activeCell = cell;
+        const picker = document.getElementById('shiftPicker');
+        picker.style.display = 'grid';
+        picker.style.left = `${event.pageX}px`;
+        picker.style.top = `${event.pageY}px`;
+    }
+
+    function applyShiftSelection(shiftCode) {
+        if (activeCell) {
+            shiftTypes.forEach(s => activeCell.classList.remove(`shift-${s}`));
+            activeCell.classList.add(`shift-${shiftCode}`);
+            activeCell.innerText = shiftCode;
+        }
+        closePicker();
+    }
+
+    function closePicker() {
+        document.getElementById('shiftPicker').style.display = 'none';
+        activeCell = null;
+    }
+
+    function saveRoster() {
+        alert("Roster changes saved successfully!");
+    }
+
+    document.addEventListener('click', closePicker);
+    document.getElementById('monthPicker').addEventListener('change', (e) => renderRoster(e.target.value));
+    renderRoster(document.getElementById('monthPicker').value);
+</script>
+
+</body>
+</html>
