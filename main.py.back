@@ -206,6 +206,14 @@ class CircuitModel(BaseModel):
     phone_number: str
     address: str
 
+class FiberModel(BaseModel):
+    id: Optional[int] = None
+    fiber_name: str
+    fiber_vendor: str
+    contact_numbers: Optional[str] = None
+    email_address: Optional[str] = None
+    route_details: Optional[str] = None
+
 class UserUpdateModel(BaseModel):
     user_id: int
     username: str
@@ -263,7 +271,6 @@ class TicketResponse(TicketBase):
     class Config:
         from_attributes = True  # Handles native ORM row object mappings
 
-
 # Page Routing Interceptors
 @app.get("/login", response_class=HTMLResponse)
 async def route_login_page(request: Request, user=Depends(get_optional_user)):
@@ -276,6 +283,18 @@ async def route_dashboard(request: Request, user=Depends(get_optional_user)):
     if not user:
         return RedirectResponse(url="/login", status_code=303)
     return templates.TemplateResponse(request=request, name="dashboard.html", context={"user": user})
+
+# Place your roster route right here alongside other UI page routes:
+@app.get("/roster", response_class=HTMLResponse)
+async def route_roster_page(request: Request, user=Depends(get_optional_user)):
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="roster.html",
+        context={"user": user}
+    )
 
 @app.get("/tickets", response_class=HTMLResponse)
 async def route_tickets_page(request: Request, user=Depends(get_optional_user)):
@@ -290,6 +309,14 @@ async def route_circuits_page(request: Request, user=Depends(get_optional_user))
     if user["role"] != "admin":
         return HTMLResponse("<html><body><h3>Access Denied: Clearance Required</h3><a href='/'>Return Dashboard</a></body></html>", status_code=403)
     return templates.TemplateResponse(request=request, name="circuits.html", context={"user": user})
+
+@app.get("/fiber", response_class=HTMLResponse)
+async def route_fiber_page(request: Request, user=Depends(get_optional_user)):
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+    if user["role"] != "admin":
+        return HTMLResponse("<html><body><h3>Access Denied: Clearance Required</h3><a href='/'>Return Dashboard</a></body></html>", status_code=403)
+    return templates.TemplateResponse(request=request, name="fiber.html", context={"user": user})
 
 @app.get("/system-mail/welcome", response_class=HTMLResponse)
 async def route_system_mail_welcome_page(request: Request, user=Depends(get_optional_user)):
@@ -763,6 +790,88 @@ async def api_save_circuit(request: Request, user=Depends(get_current_user)):
         if conn:
             conn.close()
 
+
+
+@app.get("/api/fiber/all")
+async def api_get_all_fiber(search: str = "", user=Depends(get_current_user)):
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        if search:
+            term = f"%{search.strip()}%"
+            cursor.execute("""
+                SELECT id, fiber_name, fiber_vendor, contact_numbers, email_address, route_details 
+                FROM fiber_db 
+                WHERE LOWER(fiber_name) LIKE LOWER(%s)
+                   OR LOWER(fiber_vendor) LIKE LOWER(%s)
+                   OR contact_numbers LIKE %s
+                   OR LOWER(email_address) LIKE LOWER(%s)
+                ORDER BY fiber_name ASC
+            """, (term, term, term, term))
+        else:
+            cursor.execute("SELECT id, fiber_name, fiber_vendor, contact_numbers, email_address, route_details FROM fiber_db ORDER BY fiber_name ASC")
+        return cursor.fetchall()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database fetch failure: {str(e)}")
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.post("/api/fiber/save")
+@app.put("/api/fiber/save")
+async def api_save_fiber(request: Request, user=Depends(get_current_user)):
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin authorization required.")
+
+    try:
+        data = await request.json()
+    except Exception:
+        try:
+            form_data = await request.form()
+            data = dict(form_data)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid request format.")
+
+    fiber_id = data.get("id")
+    fiber_name = data.get("fiber_name")
+    fiber_vendor = data.get("fiber_vendor")
+    contact_numbers = data.get("contact_numbers")
+    email_address = data.get("email_address")
+    route_details = data.get("route_details")
+
+    if not fiber_name or not fiber_vendor:
+        raise HTTPException(status_code=400, detail="Missing required fields: fiber_name and fiber_vendor are mandatory.")
+
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        if fiber_id:
+            cursor.execute("""
+                UPDATE fiber_db
+                SET fiber_name = %s, fiber_vendor = %s, contact_numbers = %s, email_address = %s, route_details = %s
+                WHERE id = %s
+            """, (str(fiber_name).strip(), str(fiber_vendor).strip(), str(contact_numbers).strip() if contact_numbers else None, str(email_address).strip() if email_address else None, str(route_details).strip() if route_details else None, fiber_id))
+        else:
+            cursor.execute("""
+                INSERT INTO fiber_db (fiber_name, fiber_vendor, contact_numbers, email_address, route_details)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (str(fiber_name).strip(), str(fiber_vendor).strip(), str(contact_numbers).strip() if contact_numbers else None, str(email_address).strip() if email_address else None, str(route_details).strip() if route_details else None))
+
+        conn.commit()
+        return {"status": "success", "message": "Fiber record saved successfully."}
+
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Database save failure: {str(e)}")
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 ##User_Auth
 

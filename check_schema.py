@@ -24,12 +24,12 @@ def verify_database_schema():
             print(f"🔹 Table found: {row[0]}")
             
         print("\n=========================================")
-        print("2. ACTUAL COLUMNS INSIDE THE 'tickets' TABLE:")
+        print("2. ACTUAL COLUMNS INSIDE THE 'fiber_db' TABLE:")
         print("=========================================")
         cursor.execute("""
             SELECT column_name, data_type 
             FROM information_schema.columns 
-            WHERE table_name = 'tickets'
+            WHERE table_name = 'fiber_db'
             ORDER BY column_name;
         """)
         for row in cursor.fetchall():

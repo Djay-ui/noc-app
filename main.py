@@ -206,6 +206,14 @@ class CircuitModel(BaseModel):
     phone_number: str
     address: str
 
+class FiberModel(BaseModel):
+    id: Optional[int] = None
+    fiber_name: str
+    fiber_vendor: str
+    contact_numbers: Optional[str] = None
+    email_address: Optional[str] = None
+    route_details: Optional[str] = None
+
 class UserUpdateModel(BaseModel):
     user_id: int
     username: str
@@ -301,6 +309,14 @@ async def route_circuits_page(request: Request, user=Depends(get_optional_user))
     if user["role"] != "admin":
         return HTMLResponse("<html><body><h3>Access Denied: Clearance Required</h3><a href='/'>Return Dashboard</a></body></html>", status_code=403)
     return templates.TemplateResponse(request=request, name="circuits.html", context={"user": user})
+
+@app.get("/fiber", response_class=HTMLResponse)
+async def route_fiber_page(request: Request, user=Depends(get_optional_user)):
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+    if user["role"] != "admin":
+        return HTMLResponse("<html><body><h3>Access Denied: Clearance Required</h3><a href='/'>Return Dashboard</a></body></html>", status_code=403)
+    return templates.TemplateResponse(request=request, name="fiber.html", context={"user": user})
 
 @app.get("/system-mail/welcome", response_class=HTMLResponse)
 async def route_system_mail_welcome_page(request: Request, user=Depends(get_optional_user)):
@@ -774,6 +790,88 @@ async def api_save_circuit(request: Request, user=Depends(get_current_user)):
         if conn:
             conn.close()
 
+
+
+@app.get("/api/fiber/all")
+async def api_get_all_fiber(search: str = "", user=Depends(get_current_user)):
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        if search:
+            term = f"%{search.strip()}%"
+            cursor.execute("""
+                SELECT id, fiber_name, fiber_vendor, contact_numbers, email_address, route_details 
+                FROM fiber_db 
+                WHERE LOWER(fiber_name) LIKE LOWER(%s)
+                   OR LOWER(fiber_vendor) LIKE LOWER(%s)
+                   OR contact_numbers LIKE %s
+                   OR LOWER(email_address) LIKE LOWER(%s)
+                ORDER BY fiber_name ASC
+            """, (term, term, term, term))
+        else:
+            cursor.execute("SELECT id, fiber_name, fiber_vendor, contact_numbers, email_address, route_details FROM fiber_db ORDER BY fiber_name ASC")
+        return cursor.fetchall()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database fetch failure: {str(e)}")
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.post("/api/fiber/save")
+@app.put("/api/fiber/save")
+async def api_save_fiber(request: Request, user=Depends(get_current_user)):
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin authorization required.")
+
+    try:
+        data = await request.json()
+    except Exception:
+        try:
+            form_data = await request.form()
+            data = dict(form_data)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid request format.")
+
+    fiber_id = data.get("id")
+    fiber_name = data.get("fiber_name")
+    fiber_vendor = data.get("fiber_vendor")
+    contact_numbers = data.get("contact_numbers")
+    email_address = data.get("email_address")
+    route_details = data.get("route_details")
+
+    if not fiber_name or not fiber_vendor:
+        raise HTTPException(status_code=400, detail="Missing required fields: fiber_name and fiber_vendor are mandatory.")
+
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        if fiber_id:
+            cursor.execute("""
+                UPDATE fiber_db
+                SET fiber_name = %s, fiber_vendor = %s, contact_numbers = %s, email_address = %s, route_details = %s
+                WHERE id = %s
+            """, (str(fiber_name).strip(), str(fiber_vendor).strip(), str(contact_numbers).strip() if contact_numbers else None, str(email_address).strip() if email_address else None, str(route_details).strip() if route_details else None, fiber_id))
+        else:
+            cursor.execute("""
+                INSERT INTO fiber_db (fiber_name, fiber_vendor, contact_numbers, email_address, route_details)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (str(fiber_name).strip(), str(fiber_vendor).strip(), str(contact_numbers).strip() if contact_numbers else None, str(email_address).strip() if email_address else None, str(route_details).strip() if route_details else None))
+
+        conn.commit()
+        return {"status": "success", "message": "Fiber record saved successfully."}
+
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Database save failure: {str(e)}")
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 ##User_Auth
 
@@ -2077,3 +2175,137 @@ async def api_send_custom_mail(
         "status": "success", 
         "message": f"Custom email dispatched successfully to {customer_email}."
     }
+
+
+# ==========================================
+# DAILY SHIFT UPDATE ROUTES & INFRASTRUCTURE
+# ==========================================
+
+# Helper to fetch latest active updates content
+def get_latest_shift_update():
+    conn = get_db_connection()
+    if not conn:
+        return ""
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                SELECT updates_content FROM daily_shift_updates 
+                ORDER BY updated_at DESC LIMIT 1
+            """)
+            result = cur.fetchone()
+            return result["updates_content"] if result else ""
+    except Exception as e:
+        print(f"Error fetching latest shift update: {e}")
+        return ""
+    finally:
+        conn.close()
+
+# API endpoint to retrieve active updates content dynamically
+@app.get("/api/daily-update/latest")
+async def api_get_latest_daily_update(user = Depends(get_current_user)):
+    content = get_latest_shift_update()
+    return {"status": "success", "updates_content": content}
+
+# Route to render the Daily Shift Update UI page
+@app.get("/system-mail/update", response_class=HTMLResponse)
+async def route_system_mail_update_page(request: Request, user = Depends(get_optional_user)):
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+    
+    # Retrieve current active update text to populate text area
+    latest_updates = get_latest_shift_update()
+    return templates.TemplateResponse(
+        request=request, 
+        name="system_mail_update.html", 
+        context={
+            "user": user, 
+            "initial_updates": latest_updates,
+            "current_date": datetime.now().strftime("%d/%m/%Y")
+        }
+    )
+
+import re
+
+# Route to handle Daily Shift Update Email dispatch & State Save
+@app.post("/api/tools/send-daily-update")
+async def api_send_daily_update(
+    background_tasks: BackgroundTasks,
+    shift_date: str = Form(...),          # e.g., "28/07/2026"
+    shift_type: str = Form(...),          # MNG, AFT, NGT
+    updates_content: str = Form(...),     # Raw text area content
+    recipients_to: str = Form(...),       # Default: noc@teleglobal.in
+    cc_emails: str = Form(""),
+    user = Depends(get_current_user)
+):
+    engineer_identity = user.get("full_name", user.get("username", "NOC Specialist"))
+
+    # Map Shift Code to full descriptive name
+    shift_map = {
+        "MNG": "Morning Shift",
+        "AFT": "Afternoon Shift",
+        "NGT": "Night Shift"
+    }
+    shift_type_label = shift_map.get(shift_type.strip(), f"{shift_type.strip()} Shift")
+
+    # 1. Save state to DB
+    conn = get_db_connection()
+    if conn:
+        try:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    INSERT INTO daily_shift_updates (shift_date, shift_type, updates_content, updated_by)
+                    VALUES (%s, %s, %s, %s)
+                """, (shift_date.strip(), shift_type.strip(), updates_content.strip(), engineer_identity))
+                conn.commit()
+        except Exception as db_err:
+            print(f"DB Save Error: {db_err}")
+        finally:
+            conn.close()
+
+    # 2. Convert line breaks into structured list items and remove existing numbers
+    raw_lines = [line.strip() for line in updates_content.strip().split("\n") if line.strip()]
+    cleaned_items = []
+    
+    for line in raw_lines:
+        # Regex strips leading numbers like "1. ", "2) ", "10 .", "1.1 " to prevent duplicate numbering
+        cleaned = re.sub(r'^\s*\d+[\s\.\)]*', '', line).strip()
+        if cleaned:
+            cleaned_items.append(cleaned)
+
+    # 3. Render emails/daily_update.html template
+    try:
+        template = templates.get_template("emails/daily_update.html")
+        hydrated_body = template.render({
+            "shift_date": shift_date.strip(),
+            "shift_type": shift_type.strip(),
+            "shift_type_label": shift_type_label,
+            "update_items": cleaned_items,
+            "sender_name": engineer_identity
+        })
+    except Exception as render_err:
+        raise HTTPException(status_code=500, detail=f"Template Error: {str(render_err)}")
+
+    # 4. Construct Email Message
+    msg = MIMEMultipart()
+    msg['From'] = SMTP_USER
+    to_recipients = [addr.strip() for addr in recipients_to.split(",") if addr.strip()]
+    msg['To'] = ", ".join(to_recipients)
+    msg['Subject'] = f"RE: Updates || {shift_date.strip()} || {shift_type.strip()}"
+
+    # Attach HTML body with automated NOC signature appended
+    msg.attach(MIMEText(append_signature(hydrated_body, user), 'html'))
+
+    # Recipients & CC logic
+    recipients = list(to_recipients)
+    cc_list = list(GLOBAL_MANDATORY_CC)
+    if cc_emails.strip():
+        for addr in cc_emails.split(","):
+            if addr.strip(): cc_list.append(addr.strip())
+
+    msg['Cc'] = ", ".join(cc_list)
+    recipients.extend(cc_list)
+
+    # Dispatch via background task
+    background_tasks.add_task(send_smtp_email_background, msg.as_string(), recipients)
+
+    return {"status": "success", "message": "Daily Shift Update dispatched and carry-forward state saved!"}

@@ -462,6 +462,7 @@
         <a href="/" class="active"><i class="fa-solid fa-chart-line"></i> Dashboard</a> 
         <a href="/tickets"><i class="fa-solid fa-ticket-simple"></i> Tickets Matrix</a>
         <a href="/circuits"><i class="fa-solid fa-server"></i> Circuits Inventory</a>
+	<a href="/fiber"><i class="fa-solid fa-diagram-project"></i> Fiber DB</a>
     </nav>
 </header>
 
@@ -479,6 +480,7 @@
             
             {% if user.role == 'admin' %}
             <a href="/circuits" class="nav-link-btn alt"><i class="fa-solid fa-database"></i> Circuits DB</a>
+	    <a href="/fiber" class="nav-link-btn alt" style="background: #0284c7;"><i class="fa-solid fa-diagram-project"></i> Fiber DB</a>
             <a href="/admin/users" class="nav-link-btn" style="background:#0ea5e9;"><i class="fa-solid fa-users-gear"></i> Users Profile</a>
             {% endif %}
             
@@ -503,6 +505,11 @@
         <a href="/reports" style="background: rgba(22, 163, 74, 0.15); color: #4ade80; font-weight: 700;"><i class="fa-solid fa-cloud-arrow-down" style="margin-right: 8px;"></i> Operational Performance Logs</a>
     </div>
 </div>
+		<!-- Daily Update Navigation Link -->
+<a href="/system-mail/update" class="nav-link-btn" style="background: #2563eb; color: #ffffff; font-weight: 700; margin-right: 8px;">
+    <i class="fa-solid fa-list-check" style="margin-right: 6px;"></i> Daily Update
+</a>
+
 		<!-- Duty Roster Navigation Link -->
 		<a href="/roster" class="nav-link-btn" style="background: #eab308; color: #0f172a; font-weight: 800;">
 		    <i class="fa-solid fa-calendar-days"></i> Duty Roster

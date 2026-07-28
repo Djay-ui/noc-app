@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teleglobal NOC | Daily Shift Updates Console</title>
+    <!-- Bootstrap 5.3 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-main: #0a0f1d;
+            --card-bg: #131b2e;
+            --card-border: #23314d;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --input-bg: #0d1424;
+            --input-border: #2d3e5f;
+            --input-text: #ffffff;
+            --accent-blue: #2563eb;
+            --accent-hover: #1d4ed8;
+            --notice-bg: rgba(37, 99, 235, 0.12);
+            --notice-border: #3b82f6;
+        }
+
+        [data-bs-theme="light"] {
+            --bg-main: #f4f6f9;
+            --card-bg: #ffffff;
+            --card-border: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --input-bg: #f8fafc;
+            --input-border: #cbd5e1;
+            --input-text: #0f172a;
+            --accent-blue: #2563eb;
+            --accent-hover: #1d4ed8;
+            --notice-bg: #eff6ff;
+            --notice-border: #2563eb;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .navbar-custom {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--card-border);
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-custom {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            padding: 1.75rem;
+        }
+
+        .form-label {
+            color: var(--text-main) !important;
+            font-weight: 700;
+            font-size: 0.825rem;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.4rem;
+        }
+
+        .form-control, .form-select {
+            background-color: var(--input-bg) !important;
+            border: 1px solid var(--input-border) !important;
+            color: var(--input-text) !important;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            padding: 0.6rem 0.8rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--accent-blue) !important;
+            box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25) !important;
+        }
+
+        .notice-box {
+            background: var(--notice-bg);
+            border-left: 4px solid var(--notice-border);
+            color: var(--text-main);
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-size: 0.925rem;
+        }
+
+        .btn-theme {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-theme:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--text-main);
+        }
+
+        .btn-dashboard {
+            background-color: #0284c7;
+            color: #ffffff !important;
+            font-weight: 600;
+            border: none;
+        }
+
+        .btn-dashboard:hover {
+            background-color: #0369a1;
+        }
+
+        .btn-submit-mail {
+            background-color: var(--accent-blue);
+            color: #ffffff;
+            font-weight: 700;
+            border: none;
+            padding: 0.65rem 1.75rem;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .btn-submit-mail:hover {
+            background-color: var(--accent-hover);
+            color: #ffffff;
+        }
+
+        textarea.editor-area {
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            resize: vertical;
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .badge-count {
+            background: var(--notice-bg);
+            border: 1px solid var(--notice-border);
+            color: var(--text-main);
+            font-size: 0.75rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body class="p-3 p-md-4">
+
+    <div class="container-fluid max-w-1400">
+        
+        <!-- Header Console Navigation -->
+        <div class="navbar-custom d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-primary text-white rounded-3 p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                    <i class="fa-solid fa-list-check fs-4"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-0" style="color: var(--text-main);">Daily Shift Updates & Handover</h4>
+                    <small style="color: var(--text-muted);">Teleglobal NOC Duty Shift Operations Console</small>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <!-- Theme Toggle Button -->
+                <button class="btn btn-theme btn-sm px-3" id="themeToggleBtn" onclick="toggleTheme()">
+                    <i class="fa-solid fa-sun text-warning me-1" id="themeIcon"></i>
+                    <span id="themeText">Light Mode</span>
+                </button>
+
+                <!-- Back to Dashboard Button -->
+                <a href="/dashboard" class="btn btn-dashboard btn-sm px-3">
+                    <i class="fa-solid fa-house-laptop me-1"></i> Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="card card-custom">
+            
+            <div class="notice-box d-flex align-items-center gap-3">
+                <i class="fa-solid fa-circle-info fs-4 text-primary"></i>
+                <div>
+                    <strong>Carry-Forward Active:</strong> Content automatically retains entries from previous shifts. Add new points, edit active statuses, or clear resolved issues before dispatching.
+                </div>
+            </div>
+
+            <form id="dailyUpdateForm">
+                <!-- Inputs Row -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <label class="form-label text-uppercase">Shift Date</label>
+                        <input type="text" class="form-control" id="shiftDate" name="shift_date" value="{{ current_date }}" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-uppercase">Shift Type</label>
+                        <select class="form-select" id="shiftType" name="shift_type" required>
+                            <option value="MNG">MNG (Morning Shift)</option>
+                            <option value="AFT" selected>AFT (Afternoon Shift)</option>
+                            <option value="NGT">NGT (Night Shift)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-uppercase">To Recipients</label>
+                        <input type="text" class="form-control" id="recipientsTo" name="recipients_to" value="noc@teleglobal.in" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-uppercase">CC Recipients (Optional)</label>
+                        <input type="text" class="form-control" id="ccEmails" name="cc_emails" placeholder="e.g. manager@teleglobal.in">
+                    </div>
+                </div>
+
+                <!-- Text Area Editor Section -->
+                <div class="mb-4">
+                    <div class="editor-header">
+                        <label class="form-label text-uppercase mb-0">
+                            Shift Updates List <small style="color: var(--text-muted);">(1 line per point)</small>
+                        </label>
+                        <span class="badge-count" id="lineCount">0 Points Active</span>
+                    </div>
+                    <textarea class="form-control editor-area" id="updatesContent" name="updates_content" rows="16" placeholder="Type or paste updates line by line..." required>{{ initial_updates }}</textarea>
+                </div>
+
+                <!-- Action Footer -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 pt-2">
+                    <button type="button" class="btn btn-outline-info btn-sm px-3" onclick="reloadLatestUpdate()">
+                        <i class="fa-solid fa-rotate me-1"></i> Fetch Latest Carry-Forward
+                    </button>
+                    
+                    <button type="submit" class="btn btn-submit-mail" id="submitBtn">
+                        <i class="fa-solid fa-paper-plane me-2"></i> Dispatch Shift Update Email
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <script>
+        // Line counter updater
+        const updatesArea = document.getElementById('updatesContent');
+        const lineCountBadge = document.getElementById('lineCount');
+
+        function updateLineCount() {
+            const lines = updatesArea.value.split('\n').filter(l => l.trim().length > 0);
+            lineCountBadge.innerText = `${lines.length} Points Active`;
+        }
+
+        updatesArea.addEventListener('input', updateLineCount);
+        updateLineCount();
+
+        // Theme Toggle Logic
+        function toggleTheme() {
+            const htmlTag = document.documentElement;
+            const currentTheme = htmlTag.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            htmlTag.setAttribute('data-bs-theme', newTheme);
+            localStorage.setItem('noc_theme', newTheme);
+            
+            updateThemeUI(newTheme);
+        }
+
+        function updateThemeUI(theme) {
+            const icon = document.getElementById('themeIcon');
+            const text = document.getElementById('themeText');
+            if (theme === 'light') {
+                icon.className = 'fa-solid fa-moon text-dark me-1';
+                text.innerText = 'Dark Mode';
+            } else {
+                icon.className = 'fa-solid fa-sun text-warning me-1';
+                text.innerText = 'Light Mode';
+            }
+        }
+
+        // Apply saved theme on page load
+        (function initTheme() {
+            const savedTheme = localStorage.getItem('noc_theme') || 'dark';
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+            updateThemeUI(savedTheme);
+        })();
+
+        // Reload Latest Updates Function
+        async function reloadLatestUpdate() {
+            try {
+                const res = await fetch('/api/daily-update/latest');
+                const data = await res.json();
+                if(data.status === "success") {
+                    document.getElementById('updatesContent').value = data.updates_content;
+                    updateLineCount();
+                    alert("Latest shift updates reloaded!");
+                }
+            } catch(e) {
+                alert("Failed to refresh updates.");
+            }
+        }
+
+        // Form Submit Handler
+        document.getElementById('dailyUpdateForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Dispatching...`;
+
+            const formData = new FormData(this);
+
+            try {
+                const response = await fetch('/api/tools/send-daily-update', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                
+                if(response.ok && result.status === 'success') {
+                    alert('Shift Update dispatched and saved successfully!');
+                } else {
+                    alert('Error: ' + (result.detail || result.message));
+                }
+            } catch (err) {
+                alert('Failed to dispatch update email: ' + err);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-paper-plane me-2"></i> Dispatch Shift Update Email`;
+            }
+        });
+    </script>
+</body>
+</html>
