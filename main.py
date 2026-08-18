@@ -1,27 +1,26 @@
-import smtplib
-import io
 import csv
 import hashlib
 import hmac
+import io
 import json
 import os
-from datetime import datetime, timezone, timedelta
-from fastapi import FastAPI, Request, Form, HTTPException, UploadFile, File, Depends, BackgroundTasks
-from fastapi.responses import HTMLResponse, StreamingResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
-from fastapi import Query
-from pydantic import BaseModel
-import psycopg2
-from psycopg2.extras import RealDictCursor
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.mime.base import MIMEBase
+import smtplib
+from datetime import datetime, timedelta, timezone
 from email import encoders
 from email.mime.application import MIMEApplication
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from typing import Optional
-from datetime import datetime
-from typing import Optional
+
+import psycopg2
+from fastapi import (BackgroundTasks, Depends, FastAPI, File, Form,
+                     HTTPException, Query, Request, UploadFile)
+from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
+from fastapi.templating import Jinja2Templates
+from psycopg2.extras import RealDictCursor
 from pydantic import BaseModel, Field
+
 from email_helpers import build_email_message
 
 app = FastAPI(title="Teleglobal NOC Automation Platform")
@@ -59,9 +58,9 @@ def send_smtp_email_background(msg_string: str, all_recipients: list):
 # SCALABLE ALARM CONFIGURATION MATRIX
 
 from datetime import datetime, timedelta, timezone
-from fastapi import FastAPI, Depends, HTTPException, Form, UploadFile, File, BackgroundTasks
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+
+from fastapi import (BackgroundTasks, Depends, FastAPI, File, Form,
+                     HTTPException, UploadFile)
 
 # --- SCALABLE ALARM CONFIGURATION MATRIX ---
 
@@ -103,7 +102,6 @@ def assign_priority_and_sla(issue_category: str):
     else:
         return "P4", now + timedelta(days=3)
 
-
 # Security & Crypto Helpers
 def hash_password(password: str) -> str:
     pwd_bytes = password.encode('utf-8')
@@ -142,6 +140,7 @@ def verify_session_token(token: str) -> dict:
 #signiture
 
 import re
+
 
 # --- SIGNATURE AUTOMATION HELPERS ---
 def get_dynamic_signature(user_info: dict) -> str:
@@ -184,7 +183,6 @@ def append_signature(html_body: str, user_info: dict) -> str:
     html_body = html_body.replace("{DESIGNATION}", designation)
     
     return html_body
-
 
 # Dependency Providers
 async def get_current_user(request: Request):
@@ -243,7 +241,6 @@ class ReportPayload(BaseModel):
 
 ###############################################################################################
 
-
 # Base payload definitions used during core requests
 class TicketBase(BaseModel):
     circuit_id: str
@@ -286,11 +283,8 @@ async def route_dashboard(request: Request, user=Depends(get_optional_user)):
 
 # Place your roster route right here alongside other UI page routes:
 
-import json
-import os
-from fastapi import FastAPI, Request, Depends, HTTPException, status
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
-from pydantic import BaseModel
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
 # App base directory (/opt/noc-app)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -400,7 +394,6 @@ async def route_system_mail_access_page(request: Request, user = Depends(get_opt
         return RedirectResponse(url="/login", status_code=303)
     return templates.TemplateResponse(request=request, name="system_mail_access.html", context={"user": user})
 
-
 @app.get("/system-mail/bandwidth", response_class=HTMLResponse)
 async def route_bandwidth_change_page(request: Request, user=Depends(get_optional_user)):
     if not user:
@@ -447,7 +440,6 @@ async def get_reports_page(request: Request, user=Depends(get_optional_user)):
         return RedirectResponse(url="/login", status_code=303)
     return templates.TemplateResponse(request=request, name="reports.html", context={"user": user})
 
-
 # Auth Actions
 @app.post("/api/auth/login")
 async def api_login(username: str = Form(...), password: str = Form(...)):
@@ -478,8 +470,6 @@ async def api_logout():
 @app.get("/api/auth/me")
 async def api_get_me(user=Depends(get_current_user)):
     return user
-
-
 
 # =========================================================================
 # WELCOME MAIL PIPELINE 
@@ -856,8 +846,6 @@ async def api_save_circuit(request: Request, user=Depends(get_current_user)):
         if conn:
             conn.close()
 
-
-
 @app.get("/api/fiber/all")
 async def api_get_all_fiber(search: str = "", user=Depends(get_current_user)):
     conn = get_db_connection()
@@ -1035,7 +1023,6 @@ async def api_create_new_user(payload: UserCreateModel, user=Depends(get_current
         cursor.close()
         conn.close()
 
-
 @app.post("/api/admin/users/delete/{target_id}")
 async def api_delete_user(target_id: int, user=Depends(get_current_user)):
     if user["role"] != "admin":
@@ -1149,12 +1136,6 @@ async def api_welcome_handover(
     all_recipients = [customer_email.strip()] + recipients_cc
     background_tasks.add_task(send_smtp_email_background, msg.as_string(), all_recipients)
     return {"status": "success", "message": "Welcome Onboarding Pack dispatched successfully."}
-
-
-from datetime import datetime, timedelta, timezone
-from fastapi import FastAPI, Depends, HTTPException, Form, UploadFile, File, BackgroundTasks
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 
 # --- SCALABLE ALARM CONFIGURATION MATRIX ---
 
@@ -1320,7 +1301,7 @@ async def process_raise_ticket(
             .replace("{SNAPSHOT_CONTAINER}", inline_snapshot_html)
 
         email_content_with_signature = append_signature(final_html_body, user)
-    except Exception as io_err:
+    except Exception:
         # Fallback text if template fails
         email_content_with_signature = f"Dear Operations Team,\n\nIncident Reference: #{formatted_ticket_id}\nCircuit Reference: {circuit_id}\nRegards,\n{engineer_identity}"
 
@@ -1436,7 +1417,6 @@ async def update_ticket_status(payload: dict, background_tasks: BackgroundTasks,
 
     return {"status": "success"}
 
-
 @app.get("/api/tickets/recent")
 async def get_recent_tickets(
     limit: int = 50, 
@@ -1495,18 +1475,13 @@ async def get_recent_tickets(
         if conn:
             conn.close()
 
-
-
-import io
-from datetime import datetime
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import Response
-from psycopg2.extras import RealDictCursor
-
 # OpenPyXL Imports for Professional Excel Formatting
 from openpyxl import Workbook
-from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
+
 
 # =========================================================================
 # HELPER: DATETIME FORMATTER
@@ -1585,7 +1560,7 @@ async def stream_excel_report_dataset(payload: ReportPayload, user: dict = Depen
     try:
         conn = get_db_connection()
         cursor = conn.cursor(cursor_factory=RealDictCursor)
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=500, detail="Unable to connect to database engine.")
 
     try:
@@ -1849,8 +1824,6 @@ async def stream_excel_report_dataset(payload: ReportPayload, user: dict = Depen
 # APPEND THESE ENDPOINTS TO THE BOTTOM OF MAIN.PY
 # =========================================================================
 
-from datetime import datetime
-
 @app.get("/api/ticket/search-details/{query_str}")
 async def api_search_ticket_details(query_str: str, user=Depends(get_current_user)):
     """ Queries operational logs by formatted ticket reference numbers, raw IDs, or circuit IDs accurately """
@@ -1910,8 +1883,6 @@ async def api_search_ticket_details(query_str: str, user=Depends(get_current_use
         cursor.close()
         conn.close()
 
-
-import os
 from jinja2 import Template
 
 # =========================================================================
@@ -2000,7 +1971,6 @@ async def api_send_rfo_mail(
 
     return {"status": "success", "message": f"RFO email compiled and dispatched for ticket {email_context['ticket_id']}"}
 
-
 # =====================================================================
 # EVENT WELCOME MAILER ROUTING SUBSYSTEM
 # =====================================================================
@@ -2021,7 +1991,6 @@ async def route_system_mail_event_welcome_page(request: Request, user = Depends(
     if not user:
         return RedirectResponse(url="/login", status_code=303)
     return templates.TemplateResponse(request=request, name="system_mail_event_welcome.html", context={"user": user})
-
 
 @app.get("/api/circuits/search")
 async def api_search_event_circuits(query: str = Query(...), user = Depends(get_current_user)):
@@ -2051,9 +2020,6 @@ async def api_search_event_circuits(query: str = Query(...), user = Depends(get_
     finally:
         cursor.close()
         conn.close()
-
-
-
 
 # Updated route in main.py
 @app.post("/api/tools/send-event-welcome")
@@ -2174,9 +2140,6 @@ async def download_event_welcome_logs(user = Depends(get_current_user)):
     finally:
         cursor.close()
         conn.close()
-
-
-
 
 # Route to handle Access Mail dispatch
 @app.post("/api/tools/send-access-mail")
@@ -2330,7 +2293,6 @@ async def route_change_password_page(request: Request, user=Depends(get_optional
         return RedirectResponse(url="/login", status_code=303)
     return templates.TemplateResponse(request=request, name="change_password.html", context={"user": user})
 
-
 @app.post("/api/auth/change-password")
 async def api_change_password(payload: ChangePasswordPayload, user=Depends(get_current_user)):
     if len(payload.new_password.strip()) < 6:
@@ -2387,7 +2349,6 @@ async def api_admin_force_password_reset(target_user_id: int, user=Depends(get_c
     finally:
         cursor.close()
         conn.close()
-
 
 # =========================================================================
 # CUSTOM MAIL DISPATCH PIPELINE
@@ -2474,7 +2435,6 @@ async def api_send_custom_mail(
         "message": f"Custom email dispatched successfully to {customer_email}."
     }
 
-
 # ==========================================
 # DAILY SHIFT UPDATE ROUTES & INFRASTRUCTURE
 # ==========================================
@@ -2522,13 +2482,9 @@ async def route_system_mail_update_page(request: Request, user = Depends(get_opt
         }
     )
 
-import re
-
 # Route to handle Daily Shift Update Email dispatch & State Save
-import re
-from fastapi import Form, Depends, BackgroundTasks, HTTPException
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+from fastapi import BackgroundTasks, Depends, Form, HTTPException
+
 
 # Route to handle Daily Shift Update Email dispatch & State Save
 @app.post("/api/tools/send-daily-update")
@@ -2616,22 +2572,11 @@ async def api_send_daily_update(
 
     return {"status": "success", "message": "Daily Shift Update dispatched and carry-forward state saved!"}
 
-
-import io
-import os
-import smtplib
-from datetime import datetime
-from email.mime.application import MIMEApplication
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from typing import List, Optional
 
 from fastapi import BackgroundTasks, Depends, HTTPException, Response
 from jinja2 import Environment, FileSystemLoader
-from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
-from openpyxl.utils import get_column_letter
-from pydantic import BaseModel
 
 # Global Mail Server Settings
 SMTP_SERVER = "mail.teleglobal.in"
@@ -2645,7 +2590,6 @@ email_jinja_env = Environment(
     loader=FileSystemLoader("/opt/noc-app/templates/emails")
 )
 
-
 class SendReportMailPayload(BaseModel):
     report_type: str
     start_date: Optional[str] = None
@@ -2653,7 +2597,6 @@ class SendReportMailPayload(BaseModel):
     team: Optional[str] = None
     recipients: Optional[List[str]] = []
     cc_list: Optional[List[str]] = []
-
 
 def format_display_date(date_str):
     """Converts YYYY-MM-DD into readable date string (e.g. 23 July 2026)."""
@@ -2665,14 +2608,12 @@ def format_display_date(date_str):
     except Exception:
         return date_str
 
-
 def format_excel_datetime(dt_obj):
     if not dt_obj:
         return ""
     if isinstance(dt_obj, datetime):
         return dt_obj.strftime("%Y-%m-%d %H:%M:%S")
     return str(dt_obj)
-
 
 def generate_excel_bytes(payload: SendReportMailPayload, user: dict):
     """Generates Excel File AND returns structured data for HTML rendering."""
@@ -2939,7 +2880,6 @@ def generate_excel_bytes(payload: SendReportMailPayload, user: dict):
         summary_cards,
     )
 
-
 def send_email_in_background(
     recipients, cc_list, subject, html_body, excel_bytes, filename
 ):
@@ -2974,7 +2914,6 @@ def send_email_in_background(
 
     except Exception as e:
         print(f"Background email dispatch error: {str(e)}")
-
 
 @app.post("/api/reports/send-reports")
 async def send_reports_via_email(
@@ -3051,14 +2990,9 @@ async def send_reports_via_email(
             status_code=500, detail=f"Failed to prepare report mail: {str(e)}"
         )
 
-
 # =========================================================================
 # SHIFT HANDOVER / TICKET FORWARDING ENDPOINTS
 # =========================================================================
-
-from pydantic import BaseModel
-from typing import Optional
-from datetime import datetime
 
 class TicketForwardPayload(BaseModel):
     ticket_id: int
@@ -3094,7 +3028,6 @@ async def get_users_list(current_user=Depends(get_current_user)):
             cursor.close()
         if conn:
             conn.close()
-
 
 @app.post("/api/tickets/forward")
 async def forward_ticket(
