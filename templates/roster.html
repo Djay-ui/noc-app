@@ -27,15 +27,15 @@
             --legend-bg: #e2e8f0;
         }
 
-        /* Softer, Desaturated Eye-Friendly Shift Colors */
-        .shift-G  { background-color: #c2410c !important; color: #ffffff; }
-        .shift-M  { background-color: #15803d !important; color: #ffffff; }
-        .shift-A  { background-color: #b45309 !important; color: #ffffff; }
-        .shift-N  { background-color: #4338ca !important; color: #ffffff; }
-        .shift-WO { background-color: #b91c1c !important; color: #ffffff; }
-        .shift-SL { background-color: #0e7490 !important; color: #ffffff; }
-        .shift-CO { background-color: #7e22ce !important; color: #ffffff; }
-        .shift-L  { background-color: #0369a1 !important; color: #ffffff; }
+        /* Distinct, Refreshing, High-Contrast Shift Colors */
+        .shift-G  { background-color: #475569 !important; color: #ffffff; } /* General: Slate Gray */
+        .shift-M  { background-color: #16a34a !important; color: #ffffff; } /* Morning: Emerald Green */
+        .shift-A  { background-color: #d97706 !important; color: #ffffff; } /* Afternoon: Warm Amber/Orange */
+        .shift-N  { background-color: #4338ca !important; color: #ffffff; } /* Night: Deep Indigo */
+        .shift-WO { background-color: #dc2626 !important; color: #ffffff; } /* Week Off: Bright Crimson Red */
+        .shift-SL { background-color: #e11d48 !important; color: #ffffff; } /* Sick Leave: Vibrant Pink/Rose */
+        .shift-CO { background-color: #9333ea !important; color: #ffffff; } /* Comp Off: Deep Purple */
+        .shift-L  { background-color: #0284c7 !important; color: #ffffff; } /* Leave: Vivid Blue */
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -173,8 +173,8 @@
             padding: 12px;
         }
 
-        .date-header { background-color: #9a3412; color: #ffedd5; font-weight: bold; }
-        .day-header { background-color: #166534; color: #dcfce7; font-weight: bold; }
+        .date-header { background-color: #1e293b; color: #f8fafc; font-weight: bold; }
+        .day-header { background-color: #0f172a; color: #94a3b8; font-weight: bold; }
 
         .shift-cell {
             font-weight: bold;
@@ -318,6 +318,9 @@
     let selectedCells = new Set();
     let lastMousePos = { x: 0, y: 0 };
 
+    // IN-MEMORY CACHE (Holds current edits across month switching)
+    const localRosterCache = {};
+
     function toggleTheme() {
         const currentTheme = document.documentElement.getAttribute('data-theme');
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -334,6 +337,9 @@
     }
 
     function navigateMonth(offset) {
+        // Save current visible cells to local memory BEFORE navigating away
+        saveCurrentViewToCache();
+
         const monthInput = document.getElementById('monthPicker');
         const [year, month] = monthInput.value.split('-').map(Number);
         const newDate = new Date(year, month - 1 + offset, 1);
@@ -345,7 +351,28 @@
         renderRoster(`${yyyy}-${mm}`);
     }
 
-    function renderRoster(yearMonth) {
+    // Save temporary UI changes into memory
+    function saveCurrentViewToCache() {
+        const currentMonth = document.getElementById('monthPicker').value;
+        if (!currentMonth) return;
+
+        if (!localRosterCache[currentMonth]) {
+            localRosterCache[currentMonth] = {};
+        }
+
+        document.querySelectorAll('.shift-cell').forEach(cell => {
+            const engineer = cell.dataset.engineer;
+            const day = cell.dataset.day;
+            const shift = cell.innerText.trim();
+
+            if (!localRosterCache[currentMonth][engineer]) {
+                localRosterCache[currentMonth][engineer] = {};
+            }
+            localRosterCache[currentMonth][engineer][day] = shift;
+        });
+    }
+
+    async function renderRoster(yearMonth) {
         clearSelection();
         closePicker();
 
@@ -374,6 +401,22 @@
             dayHeaderRow.innerHTML += `<th class="day-header">${dayOfWeek}</th>`;
         }
 
+        // 1. Fetch backend saved data if not already cached
+        if (!localRosterCache[yearMonth]) {
+            try {
+                const res = await fetch(`/api/roster?month=${yearMonth}`);
+                if (res.ok) {
+                    const serverData = await res.json();
+                    if (serverData && Object.keys(serverData).length > 0) {
+                        localRosterCache[yearMonth] = serverData;
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch server roster:", err);
+            }
+        }
+
+        const currentMonthData = localRosterCache[yearMonth] || {};
         const rosterBody = document.getElementById('rosterBody');
         rosterBody.innerHTML = '';
 
@@ -386,12 +429,17 @@
                 const d = new Date(year, month - 1, day);
                 let defaultShift = (d.getDay() === 0) ? 'WO' : 'G';
 
+                // Prioritize cached/saved shift, fallback to default
+                let shift = (currentMonthData[engineer] && currentMonthData[engineer][day]) 
+                            ? currentMonthData[engineer][day] 
+                            : defaultShift;
+
                 rowHtml += `
-                    <td class="shift-cell shift-${defaultShift} ${cellClass}" 
-                        data-eng-idx="${engIdx}" 
+                    <td class="shift-cell shift-${shift} ${cellClass}" 
+                        data-engineer="${engineer}" 
                         data-day="${day}" 
                         onclick="handleCellClick(event, this)">
-                        ${defaultShift}
+                        ${shift}
                     </td>`;
             }
             rowHtml += `</tr>`;
@@ -400,10 +448,7 @@
     }
 
     function handleCellClick(event, cell) {
-        // Block modification if not Admin
-        if (!IS_ADMIN) {
-            return;
-        }
+        if (!IS_ADMIN) return;
 
         lastMousePos = { x: event.clientX, y: event.clientY };
 
@@ -472,18 +517,46 @@
         });
         clearSelection();
         closePicker();
+
+        // Update in-memory cache immediately on shift apply
+        saveCurrentViewToCache();
     }
 
     function closePicker() {
         document.getElementById('shiftPicker').style.display = 'none';
     }
 
-    function saveRoster() {
+    async function saveRoster() {
         if (!IS_ADMIN) {
             alert("Access Denied: Only Admin users can save roster changes!");
             return;
         }
-        alert("Roster changes saved successfully!");
+
+        saveCurrentViewToCache();
+
+        const yearMonth = document.getElementById('monthPicker').value;
+        const rosterData = localRosterCache[yearMonth] || {};
+
+        try {
+            const res = await fetch('/api/roster/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    yearMonth: yearMonth,
+                    rosterData: rosterData
+                })
+            });
+
+            if (res.ok) {
+                alert("Roster changes saved successfully to backend!");
+            } else {
+                const errData = await res.json().catch(() => ({}));
+                alert(`Failed to save: ${errData.detail || 'Server error'}`);
+            }
+        } catch (err) {
+            console.error("Error saving roster:", err);
+            alert("Error saving roster to server.");
+        }
     }
 
     document.addEventListener('click', (e) => {
@@ -494,11 +567,11 @@
     });
 
     document.getElementById('monthPicker').addEventListener('change', (e) => {
+        saveCurrentViewToCache();
         renderRoster(e.target.value);
     });
 
     setInitialMonth();
 </script>
-
 </body>
 </html>

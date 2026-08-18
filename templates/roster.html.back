@@ -6,38 +6,36 @@
     <title>Teleglobal NOC - Shift Roster Management</title>
     <style>
         :root[data-theme="dark"] {
-            --bg-color: #0b1120;
-            --card-bg: #151e32;
-            --text-color: #f1f5f9;
-            --border-color: #243049;
-            --header-bg: #0284c7;
-            --header-text: #ffffff;
-            --sub-header-bg: #16a34a;
-            --control-bg: #1e293b;
-            --legend-bg: #0f172a;
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #e2e8f0;
+            --border-color: #334155;
+            --header-bg: #0369a1;
+            --header-text: #f8fafc;
+            --control-bg: #0f172a;
+            --legend-bg: #1e293b;
         }
 
         :root[data-theme="light"] {
-            --bg-color: #f8fafc;
+            --bg-color: #f1f5f9;
             --card-bg: #ffffff;
-            --text-color: #0f172a;
+            --text-color: #1e293b;
             --border-color: #cbd5e1;
             --header-bg: #0284c7;
             --header-text: #ffffff;
-            --sub-header-bg: #16a34a;
-            --control-bg: #f1f5f9;
+            --control-bg: #f8fafc;
             --legend-bg: #e2e8f0;
         }
 
-        /* Shift Color Coding */
-        .shift-G  { background-color: #ea580c !important; color: #fff; }
-        .shift-M  { background-color: #16a34a !important; color: #fff; }
-        .shift-A  { background-color: #ca8a04 !important; color: #fff; }
-        .shift-N  { background-color: #6366f1 !important; color: #fff; }
-        .shift-WO { background-color: #ef4444 !important; color: #fff; }
-        .shift-SL { background-color: #06b6d4 !important; color: #fff; }
-        .shift-CO { background-color: #a855f7 !important; color: #fff; }
-        .shift-L  { background-color: #0284c7 !important; color: #fff; }
+        /* Softer, Desaturated Eye-Friendly Shift Colors */
+        .shift-G  { background-color: #c2410c !important; color: #ffffff; }
+        .shift-M  { background-color: #15803d !important; color: #ffffff; }
+        .shift-A  { background-color: #b45309 !important; color: #ffffff; }
+        .shift-N  { background-color: #4338ca !important; color: #ffffff; }
+        .shift-WO { background-color: #b91c1c !important; color: #ffffff; }
+        .shift-SL { background-color: #0e7490 !important; color: #ffffff; }
+        .shift-CO { background-color: #7e22ce !important; color: #ffffff; }
+        .shift-L  { background-color: #0369a1 !important; color: #ffffff; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -45,7 +43,7 @@
             color: var(--text-color);
             margin: 0;
             padding: 20px;
-            transition: background-color 0.3s, color 0.3s;
+            user-select: none;
         }
 
         .container { max-width: 100%; margin: 0 auto; }
@@ -55,15 +53,15 @@
             justify-content: space-between;
             align-items: center;
             background-color: var(--card-bg);
-            padding: 15px 20px;
+            padding: 12px 20px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border: 1px solid var(--border-color);
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
         }
 
-        .controls-group { display: flex; align-items: center; gap: 15px; }
+        .controls-group { display: flex; align-items: center; gap: 10px; }
 
         .control-input {
             background-color: var(--control-bg);
@@ -72,10 +70,11 @@
             padding: 8px 12px;
             border-radius: 6px;
             font-size: 14px;
+            cursor: pointer;
         }
 
         .btn {
-            background-color: #0284c7;
+            background-color: #0369a1;
             color: white;
             border: none;
             padding: 8px 16px;
@@ -83,11 +82,23 @@
             cursor: pointer;
             font-weight: 600;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
         }
 
         .btn:hover { opacity: 0.9; }
         .btn-alt { background-color: #475569; }
+
+        .badge-access {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .badge-admin { background-color: #166534; color: #dcfce7; }
+        .badge-user { background-color: #991b1b; color: #fee2e2; }
 
         .legend-bar {
             display: flex;
@@ -95,9 +106,9 @@
             align-items: center;
             gap: 12px;
             background-color: var(--legend-bg);
-            padding: 12px 20px;
+            padding: 10px 18px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border: 1px solid var(--border-color);
             font-size: 13px;
             font-weight: 600;
@@ -112,11 +123,20 @@
             font-weight: bold;
         }
 
+        .instruction-hint {
+            font-size: 12px;
+            color: #38bdf8;
+            margin-left: auto;
+            font-weight: normal;
+        }
+
+        /* Table Layout */
         .table-wrapper {
             overflow-x: auto;
             background-color: var(--card-bg);
             border-radius: 8px;
             border: 1px solid var(--border-color);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
 
         table {
@@ -130,14 +150,15 @@
         th, td {
             border: 1px solid var(--border-color);
             padding: 8px 4px;
-            min-width: 32px;
+            min-width: 36px;
+            height: 32px;
         }
 
         th.engineer-col, td.engineer-col {
             text-align: left;
-            padding-left: 12px;
+            padding-left: 14px;
             font-weight: bold;
-            min-width: 150px;
+            min-width: 170px;
             position: sticky;
             left: 0;
             background-color: var(--card-bg);
@@ -149,41 +170,59 @@
             color: var(--header-text);
             font-size: 16px;
             font-weight: bold;
-            padding: 10px;
+            padding: 12px;
         }
 
-        .date-header { background-color: #ea580c; color: white; }
-        .day-header { background-color: var(--sub-header-bg); color: white; }
+        .date-header { background-color: #9a3412; color: #ffedd5; font-weight: bold; }
+        .day-header { background-color: #166534; color: #dcfce7; font-weight: bold; }
 
         .shift-cell {
-            cursor: pointer;
             font-weight: bold;
             user-select: none;
         }
 
-        .shift-cell:hover { opacity: 0.8; outline: 2px solid #ffffff; }
+        /* Admin editable style */
+        .shift-cell.editable {
+            cursor: pointer;
+        }
+
+        /* Non-admin read-only style */
+        .shift-cell.read-only {
+            cursor: not-allowed;
+            opacity: 0.95;
+        }
+
+        .shift-cell.selected {
+            outline: 3px solid #38bdf8 !important;
+            outline-offset: -3px;
+            box-shadow: inset 0 0 6px rgba(56, 189, 248, 0.9);
+            z-index: 10;
+        }
 
         #shiftPicker {
             display: none;
-            position: absolute;
+            position: fixed;
             background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            border: 2px solid #0369a1;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
             border-radius: 8px;
-            padding: 8px;
+            padding: 12px;
             grid-template-columns: repeat(4, 1fr);
-            gap: 6px;
-            z-index: 100;
+            gap: 8px;
+            z-index: 9999;
         }
 
         .picker-option {
-            padding: 6px 10px;
-            border-radius: 4px;
+            padding: 10px 14px;
+            border-radius: 6px;
             cursor: pointer;
             text-align: center;
             font-weight: bold;
-            font-size: 12px;
+            font-size: 14px;
+            user-select: none;
         }
+
+        .picker-option:hover { opacity: 0.9; transform: scale(1.05); }
     </style>
 </head>
 <body>
@@ -191,22 +230,30 @@
 <div class="container">
     <div class="toolbar">
         <div class="controls-group">
-            <a href="/" class="btn btn-alt">🏠 Back to Operations Dashboard</a>
-            <label for="monthPicker"><strong>Select Month:</strong></label>
-            <input type="month" id="monthPicker" class="control-input" value="2026-06">
+            <a href="/" class="btn btn-alt">🏠 Back to Dashboard</a>
+            <button class="btn btn-alt" onclick="navigateMonth(-1)">◀ Prev Month</button>
+            <input type="month" id="monthPicker" class="control-input">
+            <button class="btn btn-alt" onclick="navigateMonth(1)">Next Month ▶</button>
         </div>
 
-        <div style="font-size: 14px;">
-            Authorized Operator: <strong>{% if user %}{{ user.full_name }}{% else %}NOC Operator{% endif %}</strong>
+        <div style="font-size: 14px; display: flex; align-items: center; gap: 10px;">
+            User: <strong>{% if user %}{{ user.username }}{% else %}Guest{% endif %}</strong>
+            {% if user and (user.role == 'admin' or user.username == 'admin') %}
+                <span class="badge-access badge-admin">Mode: Admin (Editable)</span>
+            {% else %}
+                <span class="badge-access badge-user">Mode: Read-Only</span>
+            {% endif %}
         </div>
 
         <div class="controls-group">
-            <button class="btn" onclick="saveRoster()">💾 Save Changes</button>
+            {% if user and (user.role == 'admin' or user.username == 'admin') %}
+                <button class="btn" onclick="saveRoster()">💾 Save Roster</button>
+            {% endif %}
             <button class="btn" id="themeToggleBtn" onclick="toggleTheme()">☀️ Toggle Theme</button>
         </div>
     </div>
 
-    <!-- Shift Legend -->
+    <!-- Shift Legend Bar -->
     <div class="legend-bar">
         <span>ℹ️ SHIFT LEGEND:</span>
         <div class="legend-item"><span class="legend-badge shift-G">G</span> General (09:30 - 18:30)</div>
@@ -217,14 +264,22 @@
         <div class="legend-item"><span class="legend-badge shift-SL">SL</span> Sick Leave</div>
         <div class="legend-item"><span class="legend-badge shift-CO">CO</span> Comp Off</div>
         <div class="legend-item"><span class="legend-badge shift-L">L</span> Leave</div>
+        
+        <div class="instruction-hint">
+            {% if user and (user.role == 'admin' or user.username == 'admin') %}
+                💡 Hold <strong>Ctrl</strong> + Click to select multiple days, then release Ctrl to change shift
+            {% else %}
+                🔒 Read-Only Mode: Only Admin users can edit roster shifts.
+            {% endif %}
+        </div>
     </div>
 
-    <!-- Table -->
+    <!-- Table Wrapper -->
     <div class="table-wrapper">
         <table id="rosterTable">
             <thead>
                 <tr>
-                    <th colspan="32" class="month-header" id="monthHeaderTitle">June 2026</th>
+                    <th colspan="32" class="month-header" id="monthHeaderTitle">Loading...</th>
                 </tr>
                 <tr id="dateHeaderRow">
                     <th class="engineer-col date-header">Engineer Name</th>
@@ -238,21 +293,30 @@
     </div>
 </div>
 
+<!-- Floating Shift Selector Popup -->
 <div id="shiftPicker">
-    <div class="picker-option shift-G" onclick="applyShiftSelection('G')">G</div>
-    <div class="picker-option shift-M" onclick="applyShiftSelection('M')">M</div>
-    <div class="picker-option shift-A" onclick="applyShiftSelection('A')">A</div>
-    <div class="picker-option shift-N" onclick="applyShiftSelection('N')">N</div>
-    <div class="picker-option shift-WO" onclick="applyShiftSelection('WO')">WO</div>
-    <div class="picker-option shift-SL" onclick="applyShiftSelection('SL')">SL</div>
-    <div class="picker-option shift-CO" onclick="applyShiftSelection('CO')">CO</div>
-    <div class="picker-option shift-L" onclick="applyShiftSelection('L')">L</div>
+    <div class="picker-option shift-G" onclick="applyShiftToSelection('G')">G</div>
+    <div class="picker-option shift-M" onclick="applyShiftToSelection('M')">M</div>
+    <div class="picker-option shift-A" onclick="applyShiftToSelection('A')">A</div>
+    <div class="picker-option shift-N" onclick="applyShiftToSelection('N')">N</div>
+    <div class="picker-option shift-WO" onclick="applyShiftToSelection('WO')">WO</div>
+    <div class="picker-option shift-SL" onclick="applyShiftToSelection('SL')">SL</div>
+    <div class="picker-option shift-CO" onclick="applyShiftToSelection('CO')">CO</div>
+    <div class="picker-option shift-L" onclick="applyShiftToSelection('L')">L</div>
 </div>
 
 <script>
-    const engineers = ["Rahul Dev", "Nihal K", "Amar", "Prashant M", "Dhananjay T", "Aniruddha", "Nachiket B"];
+    // Server-side Jinja check passed to JavaScript
+    const IS_ADMIN = {% if user and (user.role == 'admin' or user.username == 'admin') %}true{% else %}false{% endif %};
+
+    const engineers = [
+        "Rahul Dev", "Nihal K", "Amar", "Prashant M", 
+        "Dhananjay T", "Aniruddha", "Nachiket B"
+    ];
+
     const shiftTypes = ['G', 'M', 'A', 'N', 'WO', 'SL', 'CO', 'L'];
-    let activeCell = null;
+    let selectedCells = new Set();
+    let lastMousePos = { x: 0, y: 0 };
 
     function toggleTheme() {
         const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -260,12 +324,37 @@
         document.documentElement.setAttribute('data-theme', newTheme);
     }
 
+    function setInitialMonth() {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const monthInput = document.getElementById('monthPicker');
+        monthInput.value = `${yyyy}-${mm}`;
+        renderRoster(`${yyyy}-${mm}`);
+    }
+
+    function navigateMonth(offset) {
+        const monthInput = document.getElementById('monthPicker');
+        const [year, month] = monthInput.value.split('-').map(Number);
+        const newDate = new Date(year, month - 1 + offset, 1);
+        
+        const yyyy = newDate.getFullYear();
+        const mm = String(newDate.getMonth() + 1).padStart(2, '0');
+        
+        monthInput.value = `${yyyy}-${mm}`;
+        renderRoster(`${yyyy}-${mm}`);
+    }
+
     function renderRoster(yearMonth) {
+        clearSelection();
+        closePicker();
+
         const [year, month] = yearMonth.split('-').map(Number);
         const daysInMonth = new Date(year, month, 0).getDate();
         
-        const dateObj = new Date(year, month - 1);
-        const monthName = dateObj.toLocaleString('default', { month: 'long' });
+        const monthDate = new Date(year, month - 1, 1);
+        const monthName = monthDate.toLocaleString('en-IN', { month: 'long' });
+        
         document.getElementById('monthHeaderTitle').innerText = `${monthName} ${year}`;
         document.getElementById('monthHeaderTitle').colSpan = daysInMonth + 1;
 
@@ -279,55 +368,136 @@
 
         for (let day = 1; day <= daysInMonth; day++) {
             const d = new Date(year, month - 1, day);
+            const dayOfWeek = dayNames[d.getDay()];
+
             dateHeaderRow.innerHTML += `<th class="date-header">${day}</th>`;
-            dayHeaderRow.innerHTML += `<th class="day-header">${dayNames[d.getDay()]}</th>`;
+            dayHeaderRow.innerHTML += `<th class="day-header">${dayOfWeek}</th>`;
         }
 
         const rosterBody = document.getElementById('rosterBody');
         rosterBody.innerHTML = '';
 
-        engineers.forEach(engineer => {
+        const cellClass = IS_ADMIN ? 'editable' : 'read-only';
+
+        engineers.forEach((engineer, engIdx) => {
             let rowHtml = `<tr><td class="engineer-col">${engineer}</td>`;
+            
             for (let day = 1; day <= daysInMonth; day++) {
                 const d = new Date(year, month - 1, day);
-                let defaultShift = (d.getDay() === 0 || d.getDay() === 6) ? 'WO' : 'G';
-                rowHtml += `<td class="shift-cell shift-${defaultShift}" onclick="openPicker(event, this)">${defaultShift}</td>`;
+                let defaultShift = (d.getDay() === 0) ? 'WO' : 'G';
+
+                rowHtml += `
+                    <td class="shift-cell shift-${defaultShift} ${cellClass}" 
+                        data-eng-idx="${engIdx}" 
+                        data-day="${day}" 
+                        onclick="handleCellClick(event, this)">
+                        ${defaultShift}
+                    </td>`;
             }
             rowHtml += `</tr>`;
             rosterBody.innerHTML += rowHtml;
         });
     }
 
-    function openPicker(event, cell) {
-        event.stopPropagation();
-        activeCell = cell;
-        const picker = document.getElementById('shiftPicker');
-        picker.style.display = 'grid';
-        picker.style.left = `${event.pageX}px`;
-        picker.style.top = `${event.pageY}px`;
+    function handleCellClick(event, cell) {
+        // Block modification if not Admin
+        if (!IS_ADMIN) {
+            return;
+        }
+
+        lastMousePos = { x: event.clientX, y: event.clientY };
+
+        if (event.ctrlKey || event.metaKey) {
+            closePicker();
+            toggleCellSelection(cell);
+        } else {
+            if (!selectedCells.has(cell)) {
+                clearSelection();
+                addCellToSelection(cell);
+            }
+            openPicker(event.clientX, event.clientY);
+        }
     }
 
-    function applyShiftSelection(shiftCode) {
-        if (activeCell) {
-            shiftTypes.forEach(s => activeCell.classList.remove(`shift-${s}`));
-            activeCell.classList.add(`shift-${shiftCode}`);
-            activeCell.innerText = shiftCode;
+    document.addEventListener('keyup', (event) => {
+        if (!IS_ADMIN) return;
+        if (event.key === 'Control' || event.key === 'Meta') {
+            if (selectedCells.size > 0) {
+                openPicker(lastMousePos.x, lastMousePos.y);
+            }
         }
+    });
+
+    function toggleCellSelection(cell) {
+        if (selectedCells.has(cell)) {
+            cell.classList.remove('selected');
+            selectedCells.delete(cell);
+        } else {
+            addCellToSelection(cell);
+        }
+    }
+
+    function addCellToSelection(cell) {
+        cell.classList.add('selected');
+        selectedCells.add(cell);
+    }
+
+    function clearSelection() {
+        selectedCells.forEach(cell => cell.classList.remove('selected'));
+        selectedCells.clear();
+    }
+
+    function openPicker(clientX, clientY) {
+        if (!IS_ADMIN || selectedCells.size === 0) return;
+
+        const picker = document.getElementById('shiftPicker');
+        picker.style.display = 'grid';
+        
+        let posX = clientX + 10;
+        let posY = clientY + 10;
+
+        if (posX + 200 > window.innerWidth) posX = window.innerWidth - 210;
+        if (posY + 120 > window.innerHeight) posY = window.innerHeight - 130;
+
+        picker.style.left = `${posX}px`;
+        picker.style.top = `${posY}px`;
+    }
+
+    function applyShiftToSelection(shiftCode) {
+        if (!IS_ADMIN) return;
+        selectedCells.forEach(cell => {
+            shiftTypes.forEach(s => cell.classList.remove(`shift-${s}`));
+            cell.classList.add(`shift-${shiftCode}`);
+            cell.innerText = shiftCode;
+        });
+        clearSelection();
         closePicker();
     }
 
     function closePicker() {
         document.getElementById('shiftPicker').style.display = 'none';
-        activeCell = null;
     }
 
     function saveRoster() {
+        if (!IS_ADMIN) {
+            alert("Access Denied: Only Admin users can save roster changes!");
+            return;
+        }
         alert("Roster changes saved successfully!");
     }
 
-    document.addEventListener('click', closePicker);
-    document.getElementById('monthPicker').addEventListener('change', (e) => renderRoster(e.target.value));
-    renderRoster(document.getElementById('monthPicker').value);
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#shiftPicker') && !e.target.classList.contains('shift-cell')) {
+            closePicker();
+            clearSelection();
+        }
+    });
+
+    document.getElementById('monthPicker').addEventListener('change', (e) => {
+        renderRoster(e.target.value);
+    });
+
+    setInitialMonth();
 </script>
 
 </body>

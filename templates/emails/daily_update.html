@@ -1,112 +1,137 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>NOC Daily Shift Updates</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 14px;
+            color: #111111;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #ffffff;
+        }
+        .greeting {
+            margin-bottom: 14px;
+            font-size: 14px;
+            color: #1e293b;
+        }
+        ol {
+            margin-top: 10px;
+            margin-bottom: 24px;
+            padding-left: 22px;
+        }
+        li {
+            margin-bottom: 8px;
+            color: #0f172a;
+            line-height: 1.5;
+        }
+        
+        /* Signature Styles */
+        .sig-container {
+            margin-top: 30px;
+            padding-top: 16px;
+            border-top: 1px solid #e2e8f0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .sig-salutation {
+            font-size: 14px;
+            color: #475569;
+            margin-bottom: 12px;
+        }
+        .sig-card {
+            border-left: 4px solid #003b8e;
+            padding-left: 14px;
+            margin-bottom: 16px;
+        }
+        .sig-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #003b8e;
+            line-height: 1.2;
+        }
+        .sig-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #2575fc;
+            padding-top: 3px;
+        }
+        .sig-company {
+            font-size: 13px;
+            font-weight: bold;
+            color: #1e293b;
+            padding-top: 2px;
+        }
+        .sig-support-box {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 12px 16px;
+            max-width: 520px;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #475569;
+        }
+        .sig-support-header {
+            color: #003b8e;
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        .sig-link {
+            color: #0284c7;
+            text-decoration: none;
+        }
+        .sig-disclaimer {
+            margin-top: 12px;
+            font-size: 11px;
+            color: #94a3b8;
+            font-style: italic;
+        }
+    </style>
 </head>
-<body style="margin:0;padding:0;background:#f3f7fb;font-family:'Segoe UI',Arial,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
-<table width="100%" bgcolor="#f3f7fb" cellpadding="0" cellspacing="0" border="0">
-    <tr>
-        <td align="center" style="padding:30px 15px;">
-            <table width="720" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border-radius:10px;overflow:hidden;border:1px solid #d9e2ec;max-width:720px;width:100%;">
-                
-                <!-- Header Banner -->
-                <tr>
-                    <td style="background:linear-gradient(90deg, #003b8e, #0b74de);padding:28px;">
-                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                            <tr>
-                                <td>
-                                    <h2 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;line-height:1.2;">TeleGlobal Communications Pvt. Ltd.</h2>
-                                    <div style="color:#e0edff;font-size:14px;margin-top:4px;">NOC Daily Shift Handover Report</div>
-                                </td>
-                                <td align="right" valign="middle">
-                                    <span style="background:#ffffff;color:#003b8e;padding:6px 14px;border-radius:20px;font-weight:bold;font-size:12px;display:inline-block;letter-spacing:0.5px;">SHIFT REPORT</span>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
+<body>
 
-                <!-- Meta Info Bar -->
-                <tr>
-                    <td style="background:#f5f9ff;padding:14px 28px;border-bottom:1px solid #dce7f5;color:#334155;font-size:13px;line-height:1.5;">
-                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                            <tr>
-                                <td><b>Date:</b> {{ shift_date }}</td>
-                                <td><b>Shift:</b> {{ shift_type_label }}</td>
-                                <td align="right"><b>Engineer:</b> {{ sender_name }}</td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
+    <!-- Email Greeting -->
+    <div class="greeting">
+        Dear Team,<br><br>
+        Find below update of <b>{{ shift_type_label }}</b>:
+    </div>
 
-                <!-- Main Content Body -->
-                <tr>
-                    <td style="padding:32px 28px;color:#334155;line-height:1.7;font-size:14px;">
-                        
-                        <p style="margin:0 0 16px 0;font-size:15px;color:#1e293b;">
-                            <b>Dear Team,</b>
-                        </p>
-                        <p style="margin:0 0 24px 0;font-size:14px;color:#334155;">
-                            Find below update of <b>{{ shift_type_label }}</b>:
-                        </p>
+    <!-- Shift Updates List -->
+    <div>
+        <ol>
+        {% for item in update_items %}
+            <li>{{ item }}</li>
+        {% endfor %}
+        </ol>
+    </div>
 
-                        <!-- Updates Section Header -->
-                        <div style="background:#eef5ff;border-left:4px solid #003b8e;padding:10px 14px;margin-bottom:20px;border-radius:0 6px 6px 0;">
-                            <b style="color:#003b8e;font-size:15px;">📋 Active Shift Updates & Carry-Forward</b>
-                        </div>
+    <!-- Professional Embedded Signature Block -->
+    <div class="sig-container">
+        <div class="sig-salutation">Best Regards,</div>
 
-                        <!-- Updates List Items -->
-                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                            {% for item in update_items %}
-                            <tr>
-                                <td style="padding-bottom:12px;">
-                                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fafbfd;border:1px solid #e3e8ef;border-left:4px solid #0b74de;border-radius:6px;">
-                                        <tr>
-                                            <td width="42" valign="middle" align="center" style="padding:12px 0 12px 12px;">
-                                                <div style="background:#003b8e;color:#ffffff;font-weight:bold;border-radius:50%;width:26px;height:26px;line-height:26px;text-align:center;font-size:12px;">
-                                                    {{ loop.index }}
-                                                </div>
-                                            </td>
-                                            <td valign="middle" style="padding:12px 16px 12px 8px;color:#1e293b;font-size:14px;line-height:1.5;">
-                                                {{ item }}
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </table>
+        <div class="sig-card">
+            <div class="sig-name">{{ sender_name }}</div>
+            <div class="sig-title">Network Operations Centre (NOC) Specialist</div>
+            <div class="sig-company">TeleGlobal Communications Pvt. Ltd.</div>
+        </div>
 
-                        <!-- 24x7 NOC Support Card (From event.html reference) -->
-                        <div style="background:#eefaf3;border-left:5px solid #198754;padding:16px;margin:28px 0 24px 0;border-radius:0 6px 6px 0;">
-                            <b style="color:#198754;font-size:14px;">24×7 NOC Support Desk</b><br>
-                            📧 <a href="mailto:noc@teleglobal.in" style="color:#198754;text-decoration:none;">noc@teleglobal.in</a><br>
-                            ☎ 020-48522500<br>
-                            📱 +91 8855811141
-                        </div>
+        <!-- 24x7 NOC Desk Card -->
+        <div class="sig-support-box">
+            <div class="sig-support-header">📞 24×7 NOC Desk Support</div>
+            📧 <strong>Email:</strong> <a href="mailto:noc@teleglobal.in" class="sig-link">noc@teleglobal.in</a> | 
+            ☎ <strong>Landline:</strong> 020-48522500<br>
+            📱 <strong>Hotline:</strong> +91 8855811141 | 
+            🌐 <strong>Web:</strong> <a href="https://www.teleglobal.in" class="sig-link" target="_blank">www.teleglobal.in</a>
+        </div>
 
-                        <!-- Sign-off (Matching event.html layout) -->
-                        <p style="margin:20px 0 0 0;line-height:1.6;color:#334155;">
-                            Best Regards,<br>
-                            <b style="color:#003b8e;font-size:15px;">{{ sender_name }}</b><br>
-                            Network Operations Centre (NOC)<br>
-                            <b>TeleGlobal Communications Pvt. Ltd.</b>
-                        </p>
-                    </td>
-                </tr>
+        <div class="sig-disclaimer">
+            This is an automated shift update email generated from TeleGlobal NOC Operations Desk.
+        </div>
+    </div>
 
-                <!-- Footer Banner -->
-                <tr>
-                    <td style="background:#2575fc;color:#ffffff;text-align:center;padding:14px;font-size:12px;line-height:1.4;">
-                        This is an automated shift handover update email generated from TeleGlobal NOC Operations Desk.
-                    </td>
-                </tr>
-
-            </table>
-        </td>
-    </tr>
-</table>
 </body>
 </html>

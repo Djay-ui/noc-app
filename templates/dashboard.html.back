@@ -505,6 +505,11 @@
         <a href="/reports" style="background: rgba(22, 163, 74, 0.15); color: #4ade80; font-weight: 700;"><i class="fa-solid fa-cloud-arrow-down" style="margin-right: 8px;"></i> Operational Performance Logs</a>
     </div>
 </div>
+		<!-- Daily Update Navigation Link -->
+<a href="/system-mail/update" class="nav-link-btn" style="background: #2563eb; color: #ffffff; font-weight: 700; margin-right: 8px;">
+    <i class="fa-solid fa-list-check" style="margin-right: 6px;"></i> Daily Update
+</a>
+
 		<!-- Duty Roster Navigation Link -->
 		<a href="/roster" class="nav-link-btn" style="background: #eab308; color: #0f172a; font-weight: 800;">
 		    <i class="fa-solid fa-calendar-days"></i> Duty Roster
@@ -522,6 +527,33 @@
         <div class="kpi-card monitoring"><div class="label-text">In Monitoring</div><div class="kpi-val" id="kpi_monitor">0</div></div>
         <div class="kpi-card closed"><div class="label-text">Resolved Tickets</div><div class="kpi-val" id="kpi_closed">0</div></div>
     </div>
+
+
+	<!-- PRTG Live Sensor Stream Panel -->
+<div class="card my-4 shadow-sm">
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-cpu"></i> PRTG Live Monitoring Stream</h5>
+        <button onclick="fetchPRTGAlerts()" class="btn btn-sm btn-outline-light">Refresh Stream</button>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Alert / Ticket ID</th>
+                    <th>Circuit Reference</th>
+                    <th>Sensor Details</th>
+                    <th>Status</th>
+                    <th>Logged Timestamp</th>
+                </tr>
+            </thead>
+            <tbody id="prtgAlertsBody">
+                <tr>
+                    <td colspan="5" class="text-center text-muted">Loading live PRTG sensor data...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
     <div class="card" style="position: relative;">
         <h3><i class="fa-solid fa-magnifying-glass-chart"></i> 1. Lookup Network Circuit</h3>
@@ -929,6 +961,50 @@ document.addEventListener('click', function (e) {
     }
 });
 
+
+
+
+
+
+async function fetchPRTGAlerts() {
+    try {
+        const response = await fetch('/api/prtg/sensors');
+        if (!response.ok) return;
+        const data = await response.json();
+        
+        const tableBody = document.getElementById('prtgAlertsBody');
+        tableBody.innerHTML = '';
+        
+        if (data.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No active PRTG alerts logged.</td></tr>';
+            return;
+        }
+        
+        data.forEach(item => {
+            const statusBadge = item.status === 'Open' 
+                ? '<span class="badge bg-danger">Down / Error</span>' 
+                : '<span class="badge bg-success">Resolved</span>';
+            
+            tableBody.innerHTML += `
+                <tr>
+                    <td><strong>#${item.ticket_id}</strong></td>
+                    <td>${item.circuit_id}</td>
+                    <td>${item.issue_category}</td>
+                    <td>${statusBadge}</td>
+                    <td>${new Date(item.created_at).toLocaleString()}</td>
+                </tr>
+            `;
+        });
+    } catch (err) {
+        console.error('Failed to load PRTG sensor stream:', err);
+    }
+}
+
+// Auto-refresh PRTG stream every 30 seconds
+document.addEventListener('DOMContentLoaded', () => {
+    fetchPRTGAlerts();
+    setInterval(fetchPRTGAlerts, 30000);
+});
 </script>
 </body>
 </html>

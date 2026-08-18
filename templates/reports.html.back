@@ -4,7 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NOC Operational Reports Engine - Teleglobal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --primary-blue: #2563eb;
+            --success-green: #10b981;
+        }
+
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
         .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .header-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 25px; gap: 15px; flex-wrap: wrap; }
@@ -15,38 +23,60 @@
         .nav-link-btn:hover { opacity: 0.9; }
         
         .card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 25px; border-radius: 6px; margin-bottom: 20px; }
+        .card h3 { margin-top: 0; color: #1e293b; font-size: 16px; display: flex; align-items: center; gap: 8px; }
         .form-group { margin-bottom: 18px; }
         label { display: block; font-weight: 600; margin-bottom: 8px; color: #475569; font-size: 14px; }
         input, select { width: 100%; padding: 11px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 14px; background-color: #fff; }
         .row { display: flex; gap: 15px; }
         .col { flex: 1; }
-        .download-btn { background: #10b981; color: white; border: none; padding: 14px; width: 100%; cursor: pointer; border-radius: 6px; font-size: 16px; font-weight: bold; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2); }
-        .download-btn:hover { background: #059669; }
-        
+
+        /* Status Alert Banner */
+        .status-banner { padding: 12px 16px; border-radius: 6px; margin-bottom: 20px; display: none; align-items: center; gap: 10px; font-weight: 500; font-size: 14px; }
+        .status-banner.success { display: flex; background-color: #def7ec; color: #03543f; border: 1px solid #bcf0da; }
+        .status-banner.error { display: flex; background-color: #fde8e8; color: #9b1c1c; border: 1px solid #fbd5d5; }
+
+        /* CC Chips Grid Styling */
+        .cc-grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-top: 12px; }
+        .cc-chip { background: #fff; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 12px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: #334155; transition: all 0.2s ease; user-select: none; }
+        .cc-chip:hover { border-color: var(--primary-blue); background: #f0f7ff; }
+        .cc-chip.selected { background: #e0f2fe; border-color: #0284c7; color: #0369a1; font-weight: 600; }
+        .cc-chip.locked { background: #f1f5f9; cursor: not-allowed; border-color: #cbd5e1; color: #64748b; }
+        .cc-chip-check { opacity: 0; font-size: 12px; }
+        .cc-chip.selected .cc-chip-check { opacity: 1; color: #0284c7; }
+        .cc-chip.locked .cc-chip-check { opacity: 1; color: #64748b; }
+
+        .btn-group { display: flex; gap: 15px; margin-top: 20px; }
+        .btn { padding: 14px; flex: 1; cursor: pointer; border-radius: 6px; font-size: 15px; font-weight: bold; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity 0.2s; }
+        .btn-success { background: #10b981; color: white; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2); }
+        .btn-primary { background: #0284c7; color: white; box-shadow: 0 2px 4px rgba(2, 132, 199, 0.2); }
+        .btn:hover { opacity: 0.9; }
+
         .specification-box { background: #f1f5f9; border-left: 4px solid #3b82f6; padding: 15px; border-radius: 0 6px 6px 0; font-size: 13px; color: #334155; margin-top: 15px; line-height: 1.5; }
-        @media (max-width: 768px) { .row { flex-direction: column; gap: 0; } }
+        @media (max-width: 768px) { .row, .btn-group { flex-direction: column; } }
     </style>
 </head>
 <body>
 
 <div class="container">
 
-<!-- Locate this section inside your reports.html file (around line 38-43) and replace it with this: -->
-<div class="header-bar">
-    <div>
-        <h1>Teleglobal NOC Operational Reports Hub</h1>
-        <div style="color: #64748b; font-size: 14px; margin-top: 4px;">
-            Authorized Operator: <strong style="color: #1e293b;">{% if user %}{{ user.full_name }}{% else %}NOC Operator{% endif %}</strong>
+    <div class="header-bar">
+        <div>
+            <h1>Teleglobal NOC Operational Reports Hub</h1>
+            <div style="color: #64748b; font-size: 14px; margin-top: 4px;">
+                Authorized Operator: <strong style="color: #1e293b;">{% if user %}{{ user.full_name }}{% else %}NOC Operator{% endif %}</strong>
+            </div>
+        </div>
+        <div class="nav-group">
+            <a href="/" class="nav-link-btn alt">🏠 Back to Operations Dashboard</a>
         </div>
     </div>
-    <div class="nav-group">
-        <a href="/" class="nav-link-btn alt">🏠 Back to Operations Dashboard</a>
-    </div>
-</div>
+
+    <!-- Status Alert Banner -->
+    <div id="statusAlert" class="status-banner"></div>
 
     <div class="card">
-        <h3>Configure Export Parameters</h3>
-        <form id="reportForm" onsubmit="triggerReportDownload(event)">
+        <h3><i class="fa-solid fa-sliders"></i> Configure Export Parameters</h3>
+        <form id="reportForm">
             
             <div class="form-group">
                 <label>Select Core Report Model Category</label>
@@ -80,19 +110,135 @@
                 </select>
             </div>
 
+            <div class="form-group">
+                <label>Direct Recipient Emails (Comma Separated)</label>
+                <input type="text" id="recipient_emails" placeholder="e.g. client@example.com, manager@teleglobals.com">
+            </div>
+
+            <div class="form-group" style="display:none;">
+                <input type="text" id="cc_emails">
+            </div>
+
             <div class="specification-box">
                 <strong>📋 Expected Output Specifications:</strong>
                 <div id="spec_text">Exports Ticket Identification numbers, circuit relational bindings, associated diagnostics schemas, active durations, system operators, and categorical statuses.</div>
             </div>
-
-            <button type="submit" class="download-btn">
-                <span>📥 Generate & Download Structured CSV Report</span>
-            </button>
         </form>
+    </div>
+
+    <!-- Select Notification CC Recipients Section -->
+    <div class="card">
+        <h3><i class="fa-solid fa-share-nodes"></i> Select Notification CC Recipients</h3>
+        <label style="margin-bottom: 10px; display:block; font-size:12px; color:var(--text-muted);">Click recipients to toggle CC notification routing</label>
+        <div class="cc-grid-container">
+            <!-- Locked Default NOC Desk Mail -->
+            <div class="cc-chip selected locked" title="noc@teleglobal.in">
+                <span class="cc-chip-label"><i class="fa-solid fa-lock" style="font-size:11px; margin-right:4px; opacity:0.7;"></i> NOC Ops Desk</span>
+                <span class="cc-chip-check">✓</span>
+            </div>
+            
+            <!-- Existing Recipient Chips -->
+            <div class="cc-chip" onclick="toggleCcChoice(this, 'Ashish.Kumar@teleglobals.com')" title="Ashish.Kumar@teleglobals.com">
+                <span class="cc-chip-label">Ashish Kumar</span>
+                <span class="cc-chip-check">✓</span>
+            </div>
+            <div class="cc-chip" onclick="toggleCcChoice(this, 'kamlesh.kumar@teleglobals.com')" title="kamlesh.kumar@teleglobals.com">
+                <span class="cc-chip-label">Kamlesh Kumar</span>
+                <span class="cc-chip-check">✓</span>
+            </div>
+            <div class="cc-chip" onclick="toggleCcChoice(this, 'Mrugendra.Narwade@teleglobals.com')" title="Mrugendra.Narwade@teleglobals.com">
+                <span class="cc-chip-label">Mrugendra Narwade</span>
+                <span class="cc-chip-check">✓</span>
+            </div>
+            <div class="cc-chip" onclick="toggleCcChoice(this, 'parimmal.n@teleglobals.com')" title="parimmal.n@teleglobals.com">
+                <span class="cc-chip-label">Parimmal N</span>
+                <span class="cc-chip-check">✓</span>
+            </div>
+            <div class="cc-chip" onclick="toggleCcChoice(this, 'yogesh@teleglobal.in')" title="yogesh@teleglobal.in">
+                <span class="cc-chip-label">Yogesh</span>
+                <span class="cc-chip-check">✓</span>
+            </div>
+            <div class="cc-chip" onclick="toggleCcChoice(this, 'accounts@teleglobals.com')" title="accounts@teleglobals.com">
+                <span class="cc-chip-label">Accounts Team</span>
+                <span class="cc-chip-check">✓</span>
+            </div>
+            <div class="cc-chip" onclick="toggleCcChoice(this, 'ashok.pandey@teleglobals.com')" title="ashok.pandey@teleglobals.com">
+                <span class="cc-chip-label">Ashok Pandey</span>
+                <span class="cc-chip-check">✓</span>
+            </div>
+
+            <!-- Newly Added Recipient Chips -->
+            <div class="cc-chip" onclick="toggleCcChoice(this, 'vijay.bogam@teleglobals.com')" title="vijay.bogam@teleglobals.com">
+                <span class="cc-chip-label">Vijay Bogam</span>
+                <span class="cc-chip-check">✓</span>
+            </div>
+            <div class="cc-chip" onclick="toggleCcChoice(this, 'manoj.pawar@teleglobals.com')" title="manoj.pawar@teleglobals.com">
+                <span class="cc-chip-label">Manoj Pawar</span>
+                <span class="cc-chip-check">✓</span>
+            </div>
+            <div class="cc-chip" onclick="toggleCcChoice(this, 'prateek.sharma@teleglobals.com')" title="prateek.sharma@teleglobals.com">
+                <span class="cc-chip-label">Prateek Sharma</span>
+                <span class="cc-chip-check">✓</span>
+            </div>
+            <div class="cc-chip" onclick="toggleCcChoice(this, 'akash.umap@teleglobals.com')" title="akash.umap@teleglobals.com">
+                <span class="cc-chip-label">Akash Umap</span>
+                <span class="cc-chip-check">✓</span>
+            </div>
+            <div class="cc-chip" onclick="toggleCcChoice(this, 'ajay.jagtap@teleglobal.in')" title="ajay.jagtap@teleglobal.in">
+                <span class="cc-chip-label">Ajay Jagtap</span>
+                <span class="cc-chip-check">✓</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button type="button" onclick="triggerReportDownload()" class="btn btn-success">
+            <i class="fa-solid fa-file-excel"></i> Download Excel Report
+        </button>
+        <button type="button" onclick="triggerSendEmail()" class="btn btn-primary">
+            <i class="fa-solid fa-paper-plane"></i> Dispatch Report Mail
+        </button>
     </div>
 </div>
 
 <script>
+// CC Selection Logic
+let activeSelectedCcs = ['noc@teleglobal.in'];
+
+function updateCcInputField() {
+    const ccInput = document.getElementById('cc_emails');
+    if (!ccInput) return;
+
+    const customInputVal = ccInput.value;
+    const manualEntries = customInputVal
+        .split(',')
+        .map(e => e.trim())
+        .filter(e => e && !activeSelectedCcs.includes(e));
+
+    const combinedList = [...activeSelectedCcs, ...manualEntries];
+    ccInput.value = combinedList.join(', ');
+}
+
+function toggleCcChoice(element, emailAddress) {
+    if (activeSelectedCcs.includes(emailAddress)) {
+        activeSelectedCcs = activeSelectedCcs.filter(item => item !== emailAddress);
+        element.classList.remove('selected');
+    } else {
+        activeSelectedCcs.push(emailAddress);
+        element.classList.add('selected');
+    }
+    updateCcInputField();
+}
+
+function displayStatus(message, isSuccess) {
+    const banner = document.getElementById('statusAlert');
+    banner.className = `status-banner ${isSuccess ? 'success' : 'error'}`;
+    banner.innerHTML = isSuccess 
+        ? `<i class="fa-solid fa-circle-check"></i> <span>${message}</span>`
+        : `<i class="fa-solid fa-triangle-exclamation"></i> <span>${message}</span>`;
+    banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
 function updateSpecificationPreview() {
     const type = document.getElementById('report_type').value;
     const specText = document.getElementById('spec_text');
@@ -113,33 +259,44 @@ function updateSpecificationPreview() {
     }
 }
 
-async function triggerReportDownload(e) {
-    e.preventDefault();
-    
+function getPayload() {
     const report_type = document.getElementById('report_type').value;
     const start_date = document.getElementById('start_date').value || null;
     const end_date = document.getElementById('end_date').value || null;
     const team = report_type === 'tickets' ? document.getElementById('assigned_team').value : null;
+    
+    const recipientVal = document.getElementById('recipient_emails').value.trim();
+    const recipients = recipientVal ? recipientVal.split(',').map(e => e.trim()).filter(Boolean) : [];
+
+    return {
+        report_type,
+        start_date,
+        end_date,
+        team,
+        recipients,
+        cc_list: activeSelectedCcs
+    };
+}
+
+async function triggerReportDownload() {
+    const payload = getPayload();
 
     try {
         const response = await fetch('/api/reports/download', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ report_type, start_date, end_date, team })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
             const errorData = await response.json();
-            alert(`Export Failed: ${errorData.detail || 'Unknown server error'}`);
+            displayStatus(`Export Failed: ${errorData.detail || 'Unknown server error'}`, false);
             return;
         }
 
         const blob = await response.blob();
-        
         const disposition = response.headers.get('Content-Disposition');
-        let filename = `noc_report_${new Date().toISOString().slice(0,10)}.csv`;
+        let filename = `teleglobal_report_${new Date().toISOString().slice(0,10)}.xlsx`;
         if (disposition && disposition.includes('filename=')) {
             filename = disposition.split('filename=')[1].replaceAll('"', '');
         }
@@ -148,19 +305,46 @@ async function triggerReportDownload(e) {
         const transientAnchor = document.createElement('a');
         transientAnchor.href = downloadUrl;
         transientAnchor.download = filename;
-        
         document.body.appendChild(transientAnchor);
         transientAnchor.click();
-        
         transientAnchor.remove();
         window.URL.revokeObjectURL(downloadUrl);
 
+        displayStatus("Excel report downloaded successfully!", true);
+
     } catch (error) {
-        console.error("Transmission breakdown during CSV extraction:", error);
-        alert("Critical network error occurred while generating your report.");
+        console.error("Transmission breakdown during download:", error);
+        displayStatus("Critical network error occurred while downloading report.", false);
     }
 }
-document.addEventListener('DOMContentLoaded', updateSpecificationPreview);
+
+async function triggerSendEmail() {
+    const payload = getPayload();
+
+    try {
+        const response = await fetch('/api/reports/send-reports', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            displayStatus(result.message || "Report email dispatched successfully!", true);
+        } else {
+            displayStatus(`Failed to send report: ${result.detail || 'Unknown error'}`, false);
+        }
+    } catch (error) {
+        console.error("Error sending email:", error);
+        displayStatus("Critical network error occurred while dispatching email.", false);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    updateCcInputField();
+    updateSpecificationPreview();
+});
 </script>
 </body>
 </html>
