@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body {
+    background-color: #0b1120;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+  .workflow-container {
+    width: 90%;
+    max-width: 1000px;
+  }
+  /* Glowing pulse animation along arrows */
+  .flow-line {
+    stroke: #1e293b;
+    stroke-width: 3;
+    fill: none;
+  }
+  .pulse-line {
+    stroke: #38bdf8;
+    stroke-width: 4;
+    fill: none;
+    stroke-dasharray: 15, 120;
+    animation: flow 2s linear infinite;
+  }
+  @keyframes flow {
+    0% { stroke-dashoffset: 135; }
+    100% { stroke-dashoffset: 0; }
+  }
+  .card {
+    fill: #131b2e;
+    stroke: #1e293b;
+    stroke-width: 2;
+    rx: 10;
+    transition: all 0.3s;
+  }
+  .card:hover {
+    stroke: #38bdf8;
+    filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.4));
+  }
+  .title { fill: #38bdf8; font-size: 14px; font-weight: bold; }
+  .text { fill: #94a3b8; font-size: 11px; }
+  .header { fill: #f8fafc; font-size: 18px; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div class="workflow-container">
+<svg viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg">
+  <text x="450" y="30" text-anchor="middle" class="header">TELEGLOBAL NOC WORKFLOW PIPELINE</text>
+
+  <path class="flow-line" d="M 190 160 L 250 160 M 390 160 L 450 160 M 590 160 L 650 160" />
+  <path class="pulse-line" d="M 190 160 L 250 160 M 390 160 L 450 160 M 590 160 L 650 160" />
+
+  <g class="step">
+    <rect x="50" y="80" width="140" height="160" class="card" />
+    <text x="120" y="110" text-anchor="middle" class="title">1. INGESTION</text>
+    <text x="120" y="145" text-anchor="middle" class="text">• PRTG Sensors</text>
+    <text x="120" y="170" text-anchor="middle" class="text">• Nagios Alerts</text>
+    <text x="120" y="195" text-anchor="middle" class="text">• Centreon Streams</text>
+  </g>
+
+  <g class="step">
+    <rect x="250" y="80" width="140" height="160" class="card" />
+    <text x="320" y="110" text-anchor="middle" class="title">2. TICKETING</text>
+    <text x="320" y="145" text-anchor="middle" class="text">• Auto Dispatch</text>
+    <text x="320" y="170" text-anchor="middle" class="text">• Status Tracking</text>
+    <text x="320" y="195" text-anchor="middle" class="text">• Forwarding</text>
+  </g>
+
+  <g class="step">
+    <rect x="450" y="80" width="140" height="160" class="card" />
+    <text x="520" y="110" text-anchor="middle" class="title">3. OPERATIONS</text>
+    <text x="520" y="145" text-anchor="middle" class="text">• Shift Roster</text>
+    <text x="520" y="170" text-anchor="middle" class="text">• Customer Data</text>
+    <text x="520" y="195" text-anchor="middle" class="text">• Fiber Vendors</text>
+  </g>
+
+  <g class="step">
+    <rect x="650" y="80" width="140" height="160" class="card" />
+    <text x="720" y="110" text-anchor="middle" class="title">4. AUTOMATION</text>
+    <text x="720" y="145" text-anchor="middle" class="text">• ISP Mailers</text>
+    <text x="720" y="170" text-anchor="middle" class="text">• RFO Reports</text>
+    <text x="720" y="195" text-anchor="middle" class="text">• CSV Exports</text>
+  </g>
+</svg>
+</div>
+
+</body>
+</html>

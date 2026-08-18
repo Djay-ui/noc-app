@@ -529,7 +529,7 @@
     </div>
 
 
-	<!-- PRTG Live Sensor Stream Panel -->
+	<!-- PRTG Live Sensor Stream Panel ->
 <div class="card my-4 shadow-sm">
     <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
         <h5 class="mb-0"><i class="bi bi-cpu"></i> PRTG Live Monitoring Stream</h5>
@@ -553,7 +553,7 @@
             </tbody>
         </table>
     </div>
-</div>
+</div-->
 
     <div class="card" style="position: relative;">
         <h3><i class="fa-solid fa-magnifying-glass-chart"></i> 1. Lookup Network Circuit</h3>

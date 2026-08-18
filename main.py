@@ -1436,6 +1436,7 @@ async def update_ticket_status(payload: dict, background_tasks: BackgroundTasks,
 
     return {"status": "success"}
 
+
 @app.get("/api/tickets/recent")
 async def get_recent_tickets(
     limit: int = 50, 
@@ -1456,12 +1457,15 @@ async def get_recent_tickets(
                 circuit_id,
                 issue_category,
                 open_by_name,
+                COALESCE(assigned_team, 'Unassigned') AS assigned_team,
+                COALESCE(assigned_team, 'Unassigned') AS assigned_operator_team,
                 COALESCE(assigned_to_name, open_by_name) AS assigned_to_name,
                 closed_by_name,
                 status,
                 resolution_minutes,
                 forwarding_remarks,
-                created_at
+                created_at,
+                closed_at
             FROM tickets
             WHERE 1=1
         """
@@ -1490,6 +1494,8 @@ async def get_recent_tickets(
             cursor.close()
         if conn:
             conn.close()
+
+
 
 import io
 from datetime import datetime

@@ -464,6 +464,10 @@
         <a href="/circuits"><i class="fa-solid fa-server"></i> Circuits Inventory</a>
 	<a href="/fiber"><i class="fa-solid fa-diagram-project"></i> Fiber DB</a>
     </nav>
+	
+	<div style="color: var(--text-highlight); font-family: 'JetBrains Mono', monospace; font-size: 13px; margin-top: 4px;">
+    		<i class="fa-regular fa-clock"></i> Server Time: <span id="live_server_clock">--:--:--</span>
+	</div>
 </header>
 
 <div class="container">
@@ -884,6 +888,32 @@ async function submitTicket(e) {
     }
 }
 
+// --- TIMESTAMP FORMATTER (Fixes UTC -> Local Server Time Zone) ---
+function formatNocTimestamp(dateStr) {
+    if (!dateStr || dateStr === '--') return '--';
+    
+    // Append 'Z' if missing so JS handles it as explicit UTC
+    let isoStr = dateStr;
+    if (typeof dateStr === 'string' && !dateStr.endsWith('Z') && !dateStr.includes('+')) {
+        isoStr = dateStr.replace(' ', 'T') + 'Z';
+    }
+
+    const d = new Date(isoStr);
+    if (isNaN(d.getTime())) return dateStr;
+    
+    const pad = n => String(n).padStart(2, '0');
+    const YYYY = d.getFullYear();
+    const MM = pad(d.getMonth() + 1);
+    const DD = pad(d.getDate());
+    const hh = pad(d.getHours());
+    const mm = pad(d.getMinutes());
+    const ss = pad(d.getSeconds());
+    
+    return `${YYYY}-${MM}-${DD} ${hh}:${mm}:${ss}`;
+}
+
+
+// --- MAIN REFRESH FUNCTION ---
 async function refreshDashboardLogs() {
     try {
         const res = await fetch('/api/tickets/recent?limit=10000000000');
@@ -904,12 +934,21 @@ async function refreshDashboardLogs() {
                 if(t.status === 'Closed') { pillBg = 'rgba(16, 185, 129, 0.15)'; pillColor = '#10b981'; }
                 else if(t.status === 'In Monitoring') { pillBg = 'rgba(245, 158, 11, 0.15)'; pillColor = '#f59e0b'; }
 
+                // Timestamp Parsing & UTC Conversion
+                const rawOpened = t.created_at || t.timestamp || t.opened_time;
+                const rawClosed = t.closed_at || t.closed_timestamp || t.closed_time;
+                const openedFormatted = formatNocTimestamp(rawOpened);
+                const closedFormatted = formatNocTimestamp(rawClosed);
+                
+                // Assigned Operator Team Fallback
+                const assignedTeam = t.assigned_team || t.assigned_operator_team || t.operator_team || t.team || t.assigned_to || '--';
+
                 body.innerHTML += `
                 <tr>
                     <td style="font-weight:700; color: var(--text-highlight);">#${t.ticket_id}</td>
                     <td style="font-family:'JetBrains Mono', monospace; font-weight: 600;">${t.circuit_id}</td>
                     <td style="font-weight: 600;">${t.issue_category}</td>
-                    <td style="font-weight:700; color:var(--text-muted);">${t.assigned_team}</td>
+                    <td style="font-weight:700; color:var(--text-muted);">${assignedTeam}</td>
                     <td>${t.open_by_name}</td>
                     <td>${t.closed_by_name || '<span style="opacity:0.3;">--</span>'}</td>
                     <td>
@@ -917,9 +956,9 @@ async function refreshDashboardLogs() {
                             <span class="ping-pulse-beacon" style="color:${pillColor}; background:currentColor;"></span>${t.status}
                         </span>
                     </td>
-                    <td style="color:var(--text-muted); font-size:13px; font-family:'JetBrains Mono', monospace;">${t.timestamp}</td>
-                    <td style="color:var(--text-muted); font-size:13px; font-family:'JetBrains Mono', monospace;">${t.closed_timestamp || '--'}</td>
-                    <td style="font-weight:700; font-family:'JetBrains Mono', monospace;">${durationText}</td>
+                    <td style="color:var(--text-muted); font-size:12px; font-family:'JetBrains Mono', monospace; white-space:nowrap;">${openedFormatted}</td>
+                    <td style="color:var(--text-muted); font-size:12px; font-family:'JetBrains Mono', monospace; white-space:nowrap;">${closedFormatted}</td>
+                    <td style="font-weight:700; font-family:'JetBrains Mono', monospace; white-space:nowrap;">${durationText}</td>
                 </tr>`;
             }
         });
@@ -930,6 +969,7 @@ async function refreshDashboardLogs() {
         document.getElementById('kpi_closed').textContent = closedCount;
     } catch(err) { console.error(err); }
 }
+
 window.addEventListener('DOMContentLoaded', refreshDashboardLogs);
 
 function evaluateOperationalCategory() {
@@ -1005,6 +1045,20 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchPRTGAlerts();
     setInterval(fetchPRTGAlerts, 30000);
 });
+
+function updateLiveClock() {
+    const now = new Date();
+    const clockEl = document.getElementById('live_server_clock');
+    if (clockEl) {
+        clockEl.textContent = now.toLocaleTimeString() + ' ' + Intl.DateTimeFormat().resolvedOptions().timeZone;
+    }
+}
+setInterval(updateLiveClock, 1000);
+updateLiveClock();
+
+
+
+
 </script>
 </body>
 </html>
